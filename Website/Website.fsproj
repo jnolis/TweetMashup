@@ -16,6 +16,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
+    <NameOfLastUsedPublishProfile>TwitterMashup</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -49,7 +50,6 @@
     <Content Include="Web.config" />
     <Content Include="Global.asax" />
     <Compile Include="Global.asax.fs" />
-    <Content Include="Setup.fsx" />
     <Content Include="packages.config" />
   </ItemGroup>
   <Target Name="IncludeContent" BeforeTargets="Compile">

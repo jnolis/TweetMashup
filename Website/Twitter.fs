@@ -39,13 +39,14 @@ module Twitter =
         |> Seq.groupBy fst
         |> Seq.map (fun (key,s) -> (key,Seq.map (fun (key, value) -> value) s))
         |> Map.ofSeq
-    let getCredentials filename = 
-        filename
+
+    let getCredentials () = 
+        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/Keys.json"
         |> System.IO.File.ReadAllText
         |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Credentials.TwitterCredentials> (x))
 
-    let getTweets (filename: string) (username:string) = 
-        Auth.SetCredentials (getCredentials filename)
+    let getTweets (username:string) = 
+        Auth.SetCredentials (getCredentials ())
         try Timeline.GetUserTimeline(username, 3200)
             |> Seq.filter (fun tweet -> (not tweet.IsRetweet) && (not tweet.InReplyToStatusId.HasValue))
             |> Seq.map (fun tweet -> (tweet.Id,tweet))
@@ -55,10 +56,10 @@ module Twitter =
 
             
 
-    let mashup (filename: string) (user1: string) (user2: string) =
+    let mashup (user1: string) (user2: string) =
         let getAllTweets ()= 
-            let user1Tweets = getTweets filename user1
-            let user2Tweets = getTweets filename user2
+            let user1Tweets = getTweets user1
+            let user2Tweets = getTweets user2
             (user1Tweets, user2Tweets)
 
         let getTweetWordMaps (tweets:Map<int64,Core.Interfaces.ITweet>) =
