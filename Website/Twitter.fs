@@ -34,6 +34,14 @@ module Twitter =
             else ()
         sb.ToString()
 
+    let removeFirstAndLast (x : seq<'a>) =
+        if Seq.length x >= 2 then 
+            x
+            |> Seq.take (Seq.length x - 1)
+            |> Seq.skip 1
+        else
+            Seq.empty<'a>
+
     let groupAndMap (x: seq<'a*'b>) =
         x
         |> Seq.groupBy fst
@@ -71,6 +79,7 @@ module Twitter =
                 |> Seq.ofArray
                 |> Seq.map (fun word -> (removeSpecialCharacters (word.ToLowerInvariant()),num))
                 |> Seq.filter (fun (word,num) -> word.Length > 0)
+                |> removeFirstAndLast
                 )
             |> Seq.concat
             |> groupAndMap
