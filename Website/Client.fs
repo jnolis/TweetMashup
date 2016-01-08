@@ -7,13 +7,6 @@ open WebSharper.Piglets
 [<JavaScript>]
 module Client =
 
-    let Start user1 user2 k =
-        async {
-            let! data = Server.makeMashup user1 user2
-            return k data
-        }
-        |> Async.Start
-
     let Main () =
         let userUI (i:int) (x: Stream<string>) = 
             Div [Attr.Class "input-group input-group-lg"] -<
@@ -28,6 +21,8 @@ module Client =
                 ]
 
         let output = H1 []
+        let user1Image = Img []
+        let user2Image = Img []
         let userUI =
             Piglet.Return (fun x y -> (x, y))
             <*> Piglet.Yield ""
@@ -35,8 +30,16 @@ module Client =
             |> Piglet.WithSubmit
             |> Piglet.Run (fun (x, y) ->
                 async {
-                    let! data = Server.makeMashup x y
-                    output.Text <- data
+                    let! mashup =  Server.makeMashup x y
+                    match mashup with
+                    | Website.Reponse.Success (a,b,c) ->
+                        output.Text <- a
+                        match b with | Some bv -> user1Image.SetAttribute("src",bv) | None -> user1Image.RemoveAttribute("src")
+                        match c with | Some cv -> user2Image.SetAttribute("src",cv) | None -> user2Image.RemoveAttribute("src")
+                    | Website.Reponse.Failure d ->
+                        output.Text <- d
+                        user1Image.RemoveAttribute("src")
+                        user2Image.RemoveAttribute("src")
                 }
                 |> Async.Start)
             |> Piglet.Render (fun x y submit ->
@@ -46,11 +49,16 @@ module Client =
                         Div [userUI 2 y] -< [Attr.Class "col-lg-6"]
                     ] -< [Attr.Class "row"]
                     Br []
-                    Div [Div [Controls.Submit submit -< [Attr.Class "btn btn-primary btn-lg"]   -< [Text "Make the mashup!"]] -< [Attr.Class "col-md-6"]] -< [Attr.Class "row"]
+                    Div [Div [Controls.Submit submit -< [Attr.Class "btn btn-primary btn-lg"; Attr.NewAttr "Value" "Make the mash-up!"] ] -< [Attr.Class "col-md-6"]] -< [Attr.Class "row"]
                 ])
 
         
         Div [
             userUI
+            Br []
+            Div [
+                Div [user1Image -< [Attr.Class "img-responsive"]] -< [Attr.Class "col-lg-6" ]
+                Div [user2Image -< [Attr.Class "img-responsive"]] -< [Attr.Class "col-lg-6"]
+            ] -< [Attr.Class "row"]
             output
         ]

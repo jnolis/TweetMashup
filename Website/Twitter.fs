@@ -8,12 +8,27 @@ type Mashup =
     {
     Word: string
     Combined: string
-    Tweet1Embedded: string
-    Tweet2Embedded: string
+    Tweet1: Core.Interfaces.ITweet
+    Tweet2: Core.Interfaces.ITweet
+    User1: Core.Interfaces.IUser
+    User2: Core.Interfaces.IUser
     }
+
+type CacheSet<'a> = {DateTime: System.DateTime; Value: 'a}
 
 module Twitter =
     let random = new System.Random()
+
+    let tweetCache = new System.Collections.Generic.Dictionary<string,CacheSet<Map<int64,string>>>()
+    let userCache = new System.Collections.Generic.Dictionary<string,CacheSet<Core.Interfaces.IUser>>()
+
+    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Hours > 0
+
+    let cleanCache (cache: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>) =
+        for x in cache do
+            if tooOld x.Value.DateTime then
+                cache.Remove x.Key
+                |> ignore
 
     let concatenate (s: string seq) =
         match Seq.length s with
@@ -53,29 +68,71 @@ module Twitter =
         |> System.IO.File.ReadAllText
         |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Credentials.TwitterCredentials> (x))
 
-    let getTweets (username:string) = 
-        Auth.SetCredentials (getCredentials ())
-        try Timeline.GetUserTimeline(username, 3200)
-            |> Seq.filter (fun tweet -> (not tweet.IsRetweet) && (not tweet.InReplyToStatusId.HasValue))
-            |> Seq.map (fun tweet -> (tweet.Id,tweet))
-            |> Map.ofSeq
+    let getCredentialsFromFile (filename) = 
+        filename
+        |> System.IO.File.ReadAllText
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Credentials.TwitterCredentials> (x))
+
+    let getTweetFromID (credentials) (tweetID: int64) =
+        Auth.SetCredentials (credentials)
+        Tweet.GetTweet tweetID
+
+    let getFromCache (cache: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>) (getValue: 'a -> 'b option) (key: 'a)=
+        try
+            do cleanCache(cache)
+            let storedValue =
+                if cache.ContainsKey key then
+                    let value = cache.Item key
+                    if tooOld value.DateTime then
+                        cache.Remove key
+                        |> ignore
+                        None
+                    else
+                        Some value
+                else None
+            match storedValue with 
+                | Some x -> Some x.Value 
+                | None ->
+                    let dateTime = System.DateTime.Now
+                    let newValue = getValue key
+                    match newValue with
+                    | Some nv -> 
+                        do cache.Add((key,{DateTime = dateTime; Value = nv}))
+                        Some nv
+                    | None -> None
         with
-        | _ -> Map.empty<int64,Core.Interfaces.ITweet>
+          | _ -> None
+
+    let getUserFromString (credentials) (username: string) =
+        let getUser (credentials) (username) =
+            try 
+                Auth.SetCredentials credentials
+                User.GetUserFromScreenName username
+                |> Some
+            with | _ -> None
+        getFromCache userCache (getUser credentials) username
+
+    let getTweets (credentials) (username:string) = 
+        let getTweets (credentials) (username:string) = 
+                Auth.SetCredentials credentials
+                try Timeline.GetUserTimeline(username, 3200)
+                    |> Seq.filter (fun tweet -> (not tweet.IsRetweet) && (not tweet.InReplyToStatusId.HasValue))
+                    |> Seq.map (fun tweet -> (tweet.Id, tweet.Text))
+                    |> Map.ofSeq
+                    |> Some
+                with
+                | _ -> None
+        getFromCache tweetCache (getTweets credentials) username
+
 
             
 
-    let mashup (user1: string) (user2: string) =
-        let getAllTweets ()= 
-            let user1Tweets = getTweets user1
-            let user2Tweets = getTweets user2
-            (user1Tweets, user2Tweets)
-
-        let getTweetWordMaps (tweets:Map<int64,Core.Interfaces.ITweet>) =
+    let mashup (credentials) (userID1: string) (userID2: string) =
+        let getTweetWordMaps (tweets:Map<int64,string>) =
             tweets
             |> Map.toSeq
             |> Seq.map (fun (num,tweet) ->
-                tweet.Text
-                |> (fun x -> x.Split(' '))
+                tweet.Split(' ')
                 |> Seq.ofArray
                 |> Seq.map (fun word -> (removeSpecialCharacters (word.ToLowerInvariant()),num))
                 |> Seq.filter (fun (word,num) -> word.Length > 0)
@@ -97,12 +154,12 @@ module Twitter =
             |> Set.toSeq
             |> (fun x -> match Seq.length x with | 0 -> None | _ -> Some (seqRandom x))
         
-        let getTweetWithWord (word:string) (tweetWordMap : Map<string,seq<int64>>) (tweets: Map<int64,Core.Interfaces.ITweet>) =
+        let getTweetWithWord (word:string) (tweetWordMap : Map<string,seq<int64>>) (tweets: Map<int64,string>) =
             let tweetID = Map.find word tweetWordMap
                              |> (fun tweets -> seqRandom tweets)
-            Map.find tweetID tweets
+            (tweetID, Map.find tweetID tweets)
 
-        let mashTwoTweets (word:string) (tweet1: Core.Interfaces.ITweet) (tweet2: Core.Interfaces.ITweet) =
+        let mashTwoTweets (word:string) (tweet1: string) (tweet2: string) =
             let cutTweetText (isLeft: bool) (word: string) (text:string) =
                 let isWord (formattedWord: string) (rawWord: string) =
                     formattedWord = removeSpecialCharacters (rawWord.ToLowerInvariant())
@@ -126,23 +183,58 @@ module Twitter =
             match random.NextDouble() > 0.5 with
             | true -> (tweet1,tweet2)
             | false -> (tweet2,tweet1)
-            |> (fun (ta, tb) -> (cutTweetText true word ta.Text) + " " + (cutTweetText false word tb.Text))
+            |> (fun (ta, tb) -> (cutTweetText true word ta) + " " + (cutTweetText false word tb))
             
-        let (tweets1,tweets2) = getAllTweets()
-        let (twm1,twm2) = (getTweetWordMaps tweets1, getTweetWordMaps tweets2)
-        let wordInBoth = getWordInBoth (twm1, twm2)
-        match wordInBoth with
-        | Some word ->
-            let tweet1 = getTweetWithWord word twm1 tweets1
-            let tweet2 = getTweetWithWord word twm2 tweets2
-            let combined = mashTwoTweets word tweet1 tweet2
+        let (tweets1Option,tweets2Option) =             
+            seq [userID1;userID2]
+            |> Seq.map (fun user ->
+                async {
+                    return getTweets credentials user
+                    }
+                )
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> (fun x -> (Array.item 0 x, Array.item 1 x))
+        let (user1Option,user2Option) =             
+            seq [userID1;userID2]
+            |> Seq.map (fun user ->
+                async {
+                    return getUserFromString credentials user
+                    }
+                )
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> (fun x -> (Array.item 0 x, Array.item 1 x))
+        match (tweets1Option,tweets2Option) with
+        | (Some tweets1, Some tweets2) ->
+            let (twm1,twm2) = (getTweetWordMaps tweets1, getTweetWordMaps tweets2)
+            let wordInBoth = getWordInBoth (twm1, twm2)
+            match (wordInBoth,user1Option,user2Option) with
+            | (Some word, Some user1, Some user2) ->
+                let (tweet1ID,tweet1String) = getTweetWithWord word twm1 tweets1
+                let (tweet2ID,tweet2String) = getTweetWithWord word twm2 tweets2
+                let combined = mashTwoTweets word tweet1String tweet2String
+                let (tweet1,tweet2) =
+                    seq [tweet1ID;tweet2ID]
+                    |> Seq.map (fun tweetID ->
+                        async {
+                            return getTweetFromID credentials tweetID
+                            }
+                        )
+                    |> Async.Parallel
+                    |> Async.RunSynchronously
+                    |> (fun x -> (Array.item 0 x, Array.item 1 x))
             
-            Some {
-                Combined = combined;
-                Word = word;
-                Tweet1Embedded= Tweet.GenerateOEmbedTweet(tweet1.Id).HTML;
-                Tweet2Embedded =  Tweet.GenerateOEmbedTweet(tweet2.Id).HTML}
-        | None -> None
+                Some {
+                    Combined = combined;
+                    Word = word;
+                    Tweet1 = tweet1;
+                    Tweet2 = tweet2;
+                    User1 = user1;
+                    User2 = user2;
+                }
+            | _ -> None
+        | _ -> None
                 
                 
             

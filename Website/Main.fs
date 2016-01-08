@@ -31,8 +31,8 @@ module Site =
     open WebSharper.Html.Server
 
     let HomePage ctx =
-        Templating.Main ctx "Twitter Mashup!" [
-            H1 [Text "Twitter Mashup!"]
+        Templating.Main ctx "Twitter Mash-up!" [
+            H1 [Text "Twitter Mash-up!"]
             Div [ClientSide <@ Client.Main() @>]
         ]
 
