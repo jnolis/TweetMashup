@@ -1,0 +1,136 @@
+/* Sticky footer styles */
+html {
+    position: relative;
+    min-height: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #f9f9f9;
+}
+
+.container .text-muted {
+    margin: 20px 0;
+}
+
+.nav-tabs > li, .nav-pills > li {
+    float:none;
+    display:inline-block;
+    padding: 20px 0 0 0;
+    *display: inline;
+    zoom: 1;
+}
+
+.nav-tabs, .nav-pills {
+    text-align:center;
+}
+
+.form-inline {
+    text-align: center;
+}
+
+.bg-primary {
+    background-color: #F9F9F9;
+}
+
+h1 {
+    font-size: 72px;
+    color: #404040;
+}
+
+h2 {
+    color: #404040;
+}
+
+h3 {
+    font-size: 24px;
+    color: #404040;
+}
+
+h4 {
+    color: #404040;
+}
+
+section {
+    padding: 50px 0 0 0;
+}
+
+aside {
+    padding: 50px 0;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.form {
+    padding: 25px 0 25px 0;
+}
+
+.tweet-text {
+    font-size: 48px;
+    color: #404040;
+}
+
+.img-circle {
+    border-radius: 50%;
+}
+
+.overlapping-images
+{
+    position: relative;
+    height: 128px;
+}
+
+.img-left
+{
+    border: 4px solid #ffffff;
+    display: block;
+    position: absolute;
+    left: calc(35% - 64px);
+    z-index: 1;
+}
+
+.img-right
+{
+    border: 4px solid #ffffff;
+    display: block;
+    position: absolute;
+    z-index: 2;
+    top: 0px;
+    left: calc(65% - 64px); 
+
+}
+
+.left-name
+{
+    padding: 32px 0 32px 0;
+    height: 64px;
+    text-align: right;
+}
+
+.right-name
+{
+    padding: 32px 0 32px 0;
+    height: 64px;
+    text-align: left;
+}
+
+.vcenter {
+
+    vertical-align: middle;
+}
