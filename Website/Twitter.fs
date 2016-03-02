@@ -14,6 +14,12 @@ type Mashup =
 
 type CacheSet<'a> = {DateTime: System.DateTime; Value: 'a}
 
+type SmallUser = {
+    Username: string;
+    FullName: string;
+    Image: string
+    }
+
 type TweetWordData = {
     Tweet:int64
     CharactersBeforeWord: int
@@ -131,17 +137,19 @@ module Twitter =
                     | None -> None
         with
           | _ -> None
-          
+
+    let getUser (username) =
+        try 
+            TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
+            User.GetUserFromScreenName username
+            |> Some
+        with 
+        | exn -> 
+            do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
+            None
+
     let getTweetsAndUserInfo (username:string) = 
-        let getUser (username) =
-            try 
-                TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
-                User.GetUserFromScreenName username
-                |> Some
-            with 
-            | exn -> 
-                do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
-                None
+
         let getTweetMap (username:string) = 
                 let parameters = 
                     let temp = new Core.Parameters.UserTimelineParameters()
@@ -149,7 +157,7 @@ module Twitter =
                     temp.IncludeContributorDetails <- false
                     temp.ExcludeReplies <- true
                     temp.TrimUser <- true
-                    temp.MaximumNumberOfTweetsToRetrieve <- 500
+                    temp.MaximumNumberOfTweetsToRetrieve <- 1600
                     temp
                 TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(60.0))
                 try Timeline.GetUserTimeline(username, parameters) //Timeline.GetUserTimeline(username, 600)
@@ -211,14 +219,19 @@ module Twitter =
                         )
         getFromCache tweetCache getCombinedInfo username
 
+    let userToSmallUser (u:Core.Interfaces.IUser) : SmallUser =
+        {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
 
-    let tweetWithContext (username1:string) (username2:string) (text:string): string =
+    let tweetWithContext (username1:string) (username2:string) (text:string): string*int =
         let adjustUsername (username:string) =
             "@" + username.TrimStart('@')
-        sprintf "%s %s mashup: %s %s" username1 username2 text "http://bit.ly/1RgJDXm"
+        let tweet = sprintf "%s %s mashup: %s %s" (adjustUsername username1) (adjustUsername username2) text "http://bit.ly/1RgJDXm"
+        let length = tweet.Length + 2
+        (tweet,length)
 
     let getMaxTweetLength (username1:string) (username2:string): int =
-        140 - (tweetWithContext username1 username2 "").Length
+        let (tweet,length) = (tweetWithContext username1 username2 "")
+        140 - length
         |> max 0
 
     let canMakeTweet (word: string) (maxTweetLength: int) (otherUserMins: int*int) (userWord: TweetWordData) =
@@ -319,6 +332,7 @@ module Twitter =
                     CombinedWithContext = 
                         tweet
                         |> tweetWithContext user1TweetsInfo.User.ScreenName user2TweetsInfo.User.ScreenName
+                        |> fst
                         |> System.Web.HttpUtility.UrlEncode
                         |> Some;
                     User1 = user1TweetsInfo.User;

@@ -134,3 +134,29 @@ aside {
 
     vertical-align: middle;
 }
+
+.overlapping-images-small
+{
+    position: relative;
+    height: 96px;
+}
+
+.img-left-small
+{
+    border: 4px solid #ffffff;
+    display: block;
+    position: absolute;
+    left: calc(35% - 48px);
+    z-index: 1;
+}
+
+.img-right-small
+{
+    border: 4px solid #ffffff;
+    display: block;
+    position: absolute;
+    z-index: 2;
+    top: 0px;
+    left: calc(65% - 48px); 
+
+}
