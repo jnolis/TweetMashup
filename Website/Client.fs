@@ -6,16 +6,19 @@ open WebSharper.Html.Client
 open WebSharper.Piglets
 [<JavaScript>]
 module Client =
+    let tweetButtonTemplate () = A [I [Attr.Class "fa fa-twitter wow bounceIn"];
+                                    Span [Text "Tweet this!"] -< [Attr.Class "label"]
+                                    ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
     let preset (userPairs: (Backend.SmallUser*Backend.SmallUser) []) = 
         let output = P [] -< [Attr.Class "tweet-text text-center"]
-        let tweetThisButton = A [Text "Tweet this!"] -< [Attr.Class "btn btn-primary btn-lg twitter-share-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"]
+        let tweetThisButton = tweetButtonTemplate()
         let pairUI (userPair:Backend.SmallUser*Backend.SmallUser) =
             let (user1,user2) = userPair
             Piglet.Return ()
             |> Piglet.WithSubmit
             |> Piglet.Run (fun () ->
                 async {
-                    let! mashup =  Server.makeMashup user1.Username user2.Username
+                    let! mashup = Server.makeMashup user1.Username user2.Username
                     do tweetThisButton.SetAttribute("style","")
                     match mashup with
                     | Website.Reponse.Success 
@@ -43,7 +46,7 @@ module Client =
                                 Div [
                                     Div [
                                         Div [
-                                            (Controls.Submit submit) -< [Attr.Class "btn btn-success btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
+                                            (Controls.Submit submit) -< [Attr.Class "btn go-button btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
                                             ] -< [Attr.Class "input-group"]
                                         ] -< [Attr.Class "form-group"]
                                     ] -< [Attr.Class "form form-inline col-xs-6 col-md-4"]
@@ -51,11 +54,13 @@ module Client =
                             Div [H4 [Text (user1.FullName + " & " + user2.FullName)]] -< [Attr.Class "row text-center"]
                         ] -< [Attr.Class "col-sm-6 col-md-4"]
                     )
-        Div [
-            Div (userPairs |> Seq.map pairUI |> List.ofSeq)  -< [Attr.Class "container"]; 
-            output;
-            Div [tweetThisButton] -< [Attr.Class "text-center row"]
+        Section [Attr.Class "container"] -<
+            [Div (userPairs |> Seq.map pairUI |> List.ofSeq) -< [Attr.Class "row"]; 
+            Div [output] -< [Attr.Class "row"];
+            Div [tweetThisButton] -< [Attr.Class "row text-center"];
             ]
+            
+
 
 
     let tryIt () =
@@ -77,7 +82,7 @@ module Client =
         let output = P [] -< [Attr.Class "tweet-text text-center"]
         let user1Image = Img [Attr.Class "img-circle img-left"; Attr.Width "128"; Attr.Height "128"]
         let user2Image = Img [Attr.Class "img-circle img-right"; Attr.Width "128"; Attr.Height "128"]
-        let tweetThisButton = A [Text "Tweet this!"] -< [Attr.Class "btn btn-primary btn-lg twitter-share-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"]
+        let tweetThisButton = tweetButtonTemplate()
         let user1Name = H4 [Attr.Style "display: none;"]
         let user2Name = H4 [Attr.Style "display: none;"]
         let userUI =
@@ -136,7 +141,7 @@ module Client =
                             userUI 2 y
                             Div [
                                 Div [
-                                    (Controls.Submit submit) -< [Attr.Class "btn btn-success btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
+                                    (Controls.Submit submit) -< [Attr.Class "btn go-button btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
                                     ] -< [Attr.Class "input-group col-md-10"]
                                 ] -< [Attr.Class "form-group"]
                         ] -< [Attr.Class "form form-inline"]

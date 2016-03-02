@@ -1,18 +1,17 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,Html,Client,Operators,List,T,Tags,Attr,Piglets,Piglet,Concurrency,Remoting,AjaxRemotingProvider,Controls,Seq,String,Pervasives;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,Html,Client,Operators,List,T,Tags,Attr,Website,Client1,Piglets,Piglet,Concurrency,Remoting,AjaxRemotingProvider,Controls,Seq,String,Pervasives;
  Runtime.Define(Global,{
   Website:{
    Client:{
     preset:function(userPairs)
     {
-     var output,arg10,tweetThisButton,arg101,pairUI,arg10e,source,x3;
+     var output,arg10,tweetThisButton,pairUI,arg10d,source,x3,arg10e,arg10f;
      arg10=Runtime.New(T,{
       $:0
      });
      output=Operators.add(Tags.Tags().NewTag("p",arg10),List.ofArray([Attr.Attr().NewAttr("class","tweet-text text-center")]));
-     arg101=List.ofArray([Tags.Tags().text("Tweet this!")]);
-     tweetThisButton=Operators.add(Tags.Tags().NewTag("a",arg101),List.ofArray([Attr.Attr().NewAttr("class","btn btn-primary btn-lg twitter-share-button"),Attr.Attr().NewAttr("href","http://www.google.com"),Attr.Attr().NewAttr("style","display: none;")]));
+     tweetThisButton=Client1.tweetButtonTemplate();
      pairUI=function(userPair)
      {
       var user2,user1,_arg00_,x,action,x2,_arg00_1;
@@ -73,32 +72,34 @@
       x2=Piglet.Run(action,x);
       _arg00_1=function(submit)
       {
-       var arg102,arg103,arg104,arg105,arg106,arg107,arg108,arg109,arg10a,arg10b,arg10c,arg10d,x1;
-       arg106=user1.Image;
-       arg105=List.ofArray([Attr.Attr().NewAttr("src",arg106),Attr.Attr().NewAttr("class","img-circle img-left-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-       arg108=user2.Image;
-       arg107=List.ofArray([Attr.Attr().NewAttr("src",arg108),Attr.Attr().NewAttr("class","img-circle img-right-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-       arg104=List.ofArray([Tags.Tags().NewTag("img",arg105),Tags.Tags().NewTag("img",arg107)]);
-       arg10b=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn btn-success btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
-       arg10a=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","input-group")]))]);
-       arg109=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
-       arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small col-xs-6 col-md-8")])),Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","form form-inline col-xs-6 col-md-4")]))]);
+       var arg101,arg102,arg103,arg104,arg105,arg106,arg107,arg108,arg109,arg10a,arg10b,arg10c,x1;
+       arg105=user1.Image;
+       arg104=List.ofArray([Attr.Attr().NewAttr("src",arg105),Attr.Attr().NewAttr("class","img-circle img-left-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
+       arg107=user2.Image;
+       arg106=List.ofArray([Attr.Attr().NewAttr("src",arg107),Attr.Attr().NewAttr("class","img-circle img-right-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
+       arg103=List.ofArray([Tags.Tags().NewTag("img",arg104),Tags.Tags().NewTag("img",arg106)]);
+       arg10a=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
+       arg109=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","input-group")]))]);
+       arg108=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
+       arg102=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small col-xs-6 col-md-8")])),Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","form form-inline col-xs-6 col-md-4")]))]);
        x1=user1.FullName+" & "+user2.FullName;
-       arg10d=List.ofArray([Tags.Tags().text(x1)]);
-       arg10c=List.ofArray([Tags.Tags().NewTag("h4",arg10d)]);
-       arg102=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]);
-       return Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","col-sm-6 col-md-4")]));
+       arg10c=List.ofArray([Tags.Tags().text(x1)]);
+       arg10b=List.ofArray([Tags.Tags().NewTag("h4",arg10c)]);
+       arg101=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]);
+       return Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","col-sm-6 col-md-4")]));
       };
       return Piglet.Render(_arg00_1,x2);
      };
+     arg10d=List.ofArray([Attr.Attr().NewAttr("class","container")]);
      source=Seq.map(pairUI,userPairs);
      x3=List.ofSeq(source);
-     arg10e=List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","container")])),output,tweetThisButton]);
-     return Tags.Tags().NewTag("div",arg10e);
+     arg10e=List.ofArray([output]);
+     arg10f=List.ofArray([tweetThisButton]);
+     return Operators.add(Tags.Tags().NewTag("section",arg10d),List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10e),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10f),List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]));
     },
     tryIt:function()
     {
-     var userUI,output,arg105,x3,user1Image,x4,user2Image,tweetThisButton,arg106,x5,user1Name,x6,user2Name,_arg00_,x7,x8,userUI1,arg107,arg108,arg109,arg10a,arg10b,arg10c,arg10d;
+     var userUI,output,arg105,x3,user1Image,x4,user2Image,tweetThisButton,x5,user1Name,x6,user2Name,_arg00_,x7,x8,userUI1,arg106,arg107,arg108,arg109,arg10a,arg10b,arg10c;
      userUI=function(i,x)
      {
       var arg10,arg101,x1,arg102,arg103,arg104;
@@ -124,8 +125,7 @@
      user1Image=Tags.Tags().NewTag("img",x3);
      x4=List.ofArray([Attr.Attr().NewAttr("class","img-circle img-right"),Attr.Attr().NewAttr("width","128"),Attr.Attr().NewAttr("height","128")]);
      user2Image=Tags.Tags().NewTag("img",x4);
-     arg106=List.ofArray([Tags.Tags().text("Tweet this!")]);
-     tweetThisButton=Operators.add(Tags.Tags().NewTag("a",arg106),List.ofArray([Attr.Attr().NewAttr("class","btn btn-primary btn-lg twitter-share-button"),Attr.Attr().NewAttr("href","http://www.google.com"),Attr.Attr().NewAttr("style","display: none;")]));
+     tweetThisButton=Client1.tweetButtonTemplate();
      x5=List.ofArray([Attr.Attr().NewAttr("style","display: none;")]);
      user1Name=Tags.Tags().NewTag("h4",x5);
      x6=List.ofArray([Attr.Attr().NewAttr("style","display: none;")]);
@@ -259,21 +259,29 @@
         var arg10,arg101,arg102,arg103,arg104;
         arg102=List.ofArray([Tags.Tags().text("&")]);
         arg101=List.ofArray([Tags.Tags().NewTag("h1",arg102)]);
-        arg104=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn btn-success btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
+        arg104=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
         arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","input-group col-md-10")]))]);
         arg10=List.ofArray([userUI(1,x),Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","form-group")])),userUI(2,y),Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
         return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form form-inline")]));
        };
       };
      },x8);
-     arg109=List.ofArray([user1Name]);
-     arg10a=List.ofArray([user1Image,user2Image]);
-     arg10b=List.ofArray([user2Name]);
-     arg108=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")])),Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images col-md-4 col-lg-4")])),Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")]))]);
-     arg10c=List.ofArray([output]);
-     arg10d=List.ofArray([tweetThisButton]);
-     arg107=List.ofArray([userUI1,Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10d),List.ofArray([Attr.Attr().NewAttr("class","text-center row")]))]);
-     return Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","container")]));
+     arg108=List.ofArray([user1Name]);
+     arg109=List.ofArray([user1Image,user2Image]);
+     arg10a=List.ofArray([user2Name]);
+     arg107=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")])),Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images col-md-4 col-lg-4")])),Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")]))]);
+     arg10b=List.ofArray([output]);
+     arg10c=List.ofArray([tweetThisButton]);
+     arg106=List.ofArray([userUI1,Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Attr.Attr().NewAttr("class","text-center row")]))]);
+     return Operators.add(Tags.Tags().NewTag("div",arg106),List.ofArray([Attr.Attr().NewAttr("class","container")]));
+    },
+    tweetButtonTemplate:function()
+    {
+     var arg10,arg101,arg102;
+     arg101=List.ofArray([Attr.Attr().NewAttr("class","fa fa-twitter wow bounceIn")]);
+     arg102=List.ofArray([Tags.Tags().text("Tweet this!")]);
+     arg10=List.ofArray([Tags.Tags().NewTag("i",arg101),Operators.add(Tags.Tags().NewTag("span",arg102),List.ofArray([Attr.Attr().NewAttr("class","label")]))]);
+     return Operators.add(Tags.Tags().NewTag("a",arg10),List.ofArray([Attr.Attr().NewAttr("class","btn btn-lg twitter-button"),Attr.Attr().NewAttr("href","http://www.google.com"),Attr.Attr().NewAttr("style","display: none;"),Attr.Attr().NewAttr("target","_blank")]));
     }
    }
   }
@@ -287,6 +295,8 @@
   T=Runtime.Safe(List.T);
   Tags=Runtime.Safe(Client.Tags);
   Attr=Runtime.Safe(Client.Attr);
+  Website=Runtime.Safe(Global.Website);
+  Client1=Runtime.Safe(Website.Client);
   Piglets=Runtime.Safe(Global.WebSharper.Piglets);
   Piglet=Runtime.Safe(Piglets.Piglet);
   Concurrency=Runtime.Safe(Global.WebSharper.Concurrency);

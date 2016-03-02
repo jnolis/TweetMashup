@@ -66,7 +66,7 @@ h4 {
 }
 
 section {
-    padding: 50px 0 0 0;
+    padding: 20px 0 0 0;
 }
 
 aside {
@@ -159,4 +159,68 @@ aside {
     top: 0px;
     left: calc(65% - 48px); 
 
+}
+
+.twitter-button
+{
+    background-color: #1b95e0;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.twitter-button:hover
+{
+    background-color: #0c7abf;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.twitter-button:focus
+{
+    background-color: #0c76b8;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.go-button
+{
+    background-color: #8E44AD;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.go-button:hover
+{
+    background-color: #6F3C84;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.go-button:focus
+{
+    background-color: #5F396F;
+    color: #ffffff;
+    border: 1px transparent;
+}
+
+.navbar-collapse.collapse {
+display: block!important;
+}
+
+.navbar-nav>li, .navbar-nav {
+float: left !important;
+}
+
+.navbar-nav.navbar-right:last-child {
+margin-right: -15px !important;
+}
+
+.navbar-right {
+float: right!important;
+}
+
+.navbar {
+    margin: 0 0 0 0;
+    border: 0px transparent;
+    background-color: #F9F9F9;
 }
