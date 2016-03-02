@@ -6,7 +6,7 @@
    Client:{
     preset:function(userPairs)
     {
-     var output,arg10,tweetThisButton,arg101,pairUI,arg10c,source;
+     var output,arg10,tweetThisButton,arg101,pairUI,arg10e,source,x3;
      arg10=Runtime.New(T,{
       $:0
      });
@@ -73,25 +73,28 @@
       x2=Piglet.Run(action,x);
       _arg00_1=function(submit)
       {
-       var arg102,arg103,arg104,arg105,arg106,arg107,arg108,arg109,arg10a,arg10b,x1;
+       var arg102,arg103,arg104,arg105,arg106,arg107,arg108,arg109,arg10a,arg10b,arg10c,arg10d,x1;
        arg106=user1.Image;
        arg105=List.ofArray([Attr.Attr().NewAttr("src",arg106),Attr.Attr().NewAttr("class","img-circle img-left-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
        arg108=user2.Image;
        arg107=List.ofArray([Attr.Attr().NewAttr("src",arg108),Attr.Attr().NewAttr("class","img-circle img-right-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
        arg104=List.ofArray([Tags.Tags().NewTag("img",arg105),Tags.Tags().NewTag("img",arg107)]);
-       arg109=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn btn-success btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
-       arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small col-xs-8")])),Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-4")]))]);
+       arg10b=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn btn-success btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
+       arg10a=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","input-group")]))]);
+       arg109=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
+       arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small col-xs-6 col-md-8")])),Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","form form-inline col-xs-6 col-md-4")]))]);
        x1=user1.FullName+" & "+user2.FullName;
-       arg10b=List.ofArray([Tags.Tags().text(x1)]);
-       arg10a=List.ofArray([Tags.Tags().NewTag("h4",arg10b)]);
-       arg102=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","form-group row")])),Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]);
-       return Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","form form-inline container")]));
+       arg10d=List.ofArray([Tags.Tags().text(x1)]);
+       arg10c=List.ofArray([Tags.Tags().NewTag("h4",arg10d)]);
+       arg102=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]);
+       return Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","col-sm-6 col-md-4")]));
       };
       return Piglet.Render(_arg00_1,x2);
      };
      source=Seq.map(pairUI,userPairs);
-     arg10c=List.append(List.ofSeq(source),List.ofArray([output,tweetThisButton]));
-     return Tags.Tags().NewTag("div",arg10c);
+     x3=List.ofSeq(source);
+     arg10e=List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","container")])),output,tweetThisButton]);
+     return Tags.Tags().NewTag("div",arg10e);
     },
     tryIt:function()
     {

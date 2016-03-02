@@ -31,25 +31,25 @@ module Templating =
 module Site =
     open WebSharper.Html.Server
     Tweetinvi.Auth.ApplicationCredentials <- Backend.Twitter.getCredentials()
-
+    let pairCombos = 
+        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
+        |> System.IO.File.ReadAllText
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
+        |> Seq.map
+            (fun (x,y) -> 
+                async {
+                    return match (Backend.Twitter.getUser x,Backend.Twitter.getUser y) with
+                            | (Some ux, Some uy) -> Some (Backend.Twitter.userToSmallUser ux, Backend.Twitter.userToSmallUser uy)
+                            | _ -> None
+                    }
+            )
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Seq.ofArray
+        |> Seq.choose id
+        |> Seq.toArray
     let HomePage (ctx:Context<EndPoint>) =
-        let pairCombos = 
-            System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
-            |> System.IO.File.ReadAllText
-            |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
-            |> Seq.map
-                (fun (x,y) -> 
-                    async {
-                        return match (Backend.Twitter.getUser x,Backend.Twitter.getUser y) with
-                                | (Some ux, Some uy) -> Some (Backend.Twitter.userToSmallUser ux, Backend.Twitter.userToSmallUser uy)
-                                | _ -> None
-                        }
-                )
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> Seq.ofArray
-            |> Seq.choose id
-            |> Seq.toArray
+        let localPairCombos = pairCombos
 
         Templating.Main ctx "Tweet mash-up" [
             Section [
@@ -74,7 +74,7 @@ module Site =
                 ] -< [Attr.Class "bg-primary"]
             Div [
                 Div [ClientSide <@ Client.tryIt() @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane active"; Attr.Id "tryit"]
-                Div [ClientSide <@ Client.preset pairCombos @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "preset"]
+                Div [ClientSide <@ Client.preset localPairCombos @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "preset"]
                 ] -< [Attr.Class "tab-content"]
         ]
 

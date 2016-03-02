@@ -34,20 +34,30 @@ module Client =
                 }
                 |> Async.Start)
             |> Piglet.Render (fun submit ->
-                    Div [       
+                    Div [                            
                             Div [
                                 Div [
                                     Img [Attr.Src user1.Image; Attr.Class "img-circle img-left-small"; Attr.Width "96"; Attr.Height "96"]
                                     Img [Attr.Src user2.Image; Attr.Class "img-circle img-right-small"; Attr.Width "96"; Attr.Height "96"]
-                                ] -< [Attr.Class "overlapping-images-small col-xs-8"]
+                                    ] -< [Attr.Class "overlapping-images-small col-xs-6 col-md-8"]
                                 Div [
-                                    (Controls.Submit submit) -< [Attr.Class "btn btn-success btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
-                                    ] -< [Attr.Class "input-group col-xs-4"]
-                                ] -< [Attr.Class "form-group row"]
+                                    Div [
+                                        Div [
+                                            (Controls.Submit submit) -< [Attr.Class "btn btn-success btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
+                                            ] -< [Attr.Class "input-group"]
+                                        ] -< [Attr.Class "form-group"]
+                                    ] -< [Attr.Class "form form-inline col-xs-6 col-md-4"]
+                                ] -< [Attr.Class "row"]
                             Div [H4 [Text (user1.FullName + " & " + user2.FullName)]] -< [Attr.Class "row text-center"]
-                        ] -< [Attr.Class "form form-inline container"]
+                        ] -< [Attr.Class "col-sm-6 col-md-4"]
                     )
-        Div (List.append (userPairs |> Seq.map pairUI |> List.ofSeq) [output;tweetThisButton])
+        Div [
+            Div (userPairs |> Seq.map pairUI |> List.ofSeq)  -< [Attr.Class "container"]; 
+            output;
+            Div [tweetThisButton] -< [Attr.Class "text-center row"]
+            ]
+
+
     let tryIt () =
         let userUI (i:int) (x: Stream<string>) = 
             Div [
