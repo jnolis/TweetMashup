@@ -12,21 +12,20 @@ module Templating =
 
     type Page =
         {
-            Title : string
             Body : list<Element>
         }
 
-    let MainTemplate =
-        Content.Template<Page>("~/Main.html")
-            .With("title", fun x -> x.Title)
-            .With("body", fun x -> x.Body)
+    let mobile ctx body : Async<Content<EndPoint>> =
+        let template =
+            Content.Template<Page>("~/Mobile.html").With("body", fun x -> x.Body)
+        Content.WithTemplate template
+            {Body = body}
 
-    let Main ctx title body : Async<Content<EndPoint>> =
-        Content.WithTemplate MainTemplate
-            {
-                Title = title
-                Body = body
-            }
+    let main ctx body : Async<Content<EndPoint>> =
+        let template =
+            Content.Template<Page>("~/Main.html").With("body", fun x -> x.Body)
+        Content.WithTemplate template
+            {Body = body}
 
 module Site =
     open WebSharper.Html.Server
@@ -48,29 +47,58 @@ module Site =
         |> Seq.ofArray
         |> Seq.choose id
         |> Seq.toArray
-    let HomePage (ctx:Context<EndPoint>) =
-        let localPairCombos = pairCombos
 
-        Templating.Main ctx "Tweet mash-up" [
-            Section [
+    let mobilePage (ctx:Context<EndPoint>) =
+        let localPairCombos = pairCombos
+        Templating.mobile ctx [
+            Div [
                 Div [
-                    Div [H1 [Text "Tweet mash-up"]; H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
                     Div [
+                        Div [
+                            Div [H3 [Text "Tweet mash-up"]; H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                            ] -< [Attr.Class "container"]
                         UL [
                             LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
                                                         Html.NewAttr "aria-controls" "tryit"; 
                                                         Html.NewAttr "role" "tab"; 
                                                         Html.NewAttr "data-toggle" "tab"]
                                 ]-< [Html.NewAttr "role" "presentation"; Attr.Class "active"] 
-                            LI [A [Text "Or pick from popular combinations"] -< [Attr.HRef "#preset"; 
+                            LI [A [Text "Popular combos"] -< [Attr.HRef "#preset"; 
                                                                                 Html.NewAttr "aria-controls" "preset";
                                                                                 Html.NewAttr "role" "tab";
                                                                                 Html.NewAttr "data-toggle" "tab"]
                                 ]-< [Html.NewAttr "role" "presentation"] 
             
                             ] -< [Attr.Class "nav nav-tabs"; Html.NewAttr "role" "tablist"]
-                        ]
-                    ]
+                        ] -< [Attr.Class "container"]
+                    ] -< [Attr.Class "bg-primary"]
+
+                Div [
+                    Div [ClientSide <@ Client.tryItMobile() @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane active"; Attr.Id "tryit"]
+                    Div [ClientSide <@ Client.presetMobile localPairCombos @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "preset"]
+                    ] -< [Attr.Class "tab-content"]
+                ] 
+        ]
+    let homePage (ctx:Context<EndPoint>) =
+        let localPairCombos = pairCombos
+        Templating.main ctx [
+            Section [
+                Div [
+                    Div [H1 [Text "Tweet mash-up"]; H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                    UL [
+                        LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
+                                                    Html.NewAttr "aria-controls" "tryit"; 
+                                                    Html.NewAttr "role" "tab"; 
+                                                    Html.NewAttr "data-toggle" "tab"]
+                            ]-< [Html.NewAttr "role" "presentation"; Attr.Class "active"] 
+                        LI [A [Text "Or pick from popular combinations"] -< [Attr.HRef "#preset"; 
+                                                                            Html.NewAttr "aria-controls" "preset";
+                                                                            Html.NewAttr "role" "tab";
+                                                                            Html.NewAttr "data-toggle" "tab"]
+                            ]-< [Html.NewAttr "role" "presentation"] 
+            
+                        ] -< [Attr.Class "nav nav-tabs"; Html.NewAttr "role" "tablist"]
+                    ] -< [Attr.Class "container"]
                 ] -< [Attr.Class "bg-primary"]
             Div [
                 Div [ClientSide <@ Client.tryIt() @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane active"; Attr.Id "tryit"]
@@ -82,6 +110,8 @@ module Site =
     [<Website>]
     let Main =
         Application.MultiPage (fun ctx endpoint ->
+            let context = ctx.Environment.["HttpContext"] :?> System.Web.HttpContextWrapper
             match endpoint with
-            | EndPoint.Home -> HomePage ctx
+            | EndPoint.Home -> if context.Request.Browser.IsMobileDevice then mobilePage ctx else homePage ctx
+
         )

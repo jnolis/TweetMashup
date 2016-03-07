@@ -21,6 +21,7 @@ type SmallUser = {
     }
 
 type TweetWordData = {
+    Word: string
     Tweet:int64
     CharactersBeforeWord: int
     CharactersAfterWord: int
@@ -157,11 +158,10 @@ module Twitter =
                     temp.IncludeContributorDetails <- false
                     temp.ExcludeReplies <- true
                     temp.TrimUser <- true
-                    temp.MaximumNumberOfTweetsToRetrieve <- 1600
+                    temp.MaximumNumberOfTweetsToRetrieve <- 3200
                     temp
                 TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(60.0))
-                try Timeline.GetUserTimeline(username, parameters) //Timeline.GetUserTimeline(username, 600)
-                    |> Seq.filter (fun tweet -> (not tweet.IsRetweet) && (not tweet.InReplyToStatusId.HasValue))
+                try Timeline.GetUserTimeline(username, parameters)
                     |> Seq.map (fun tweet -> (tweet.Id, tweetText tweet))
                     |> Map.ofSeq
                     |> Some
@@ -178,7 +178,10 @@ module Twitter =
                 |> (fun words -> Seq.mapFold (fun (startIdx:int) (word:string) -> ((startIdx+1,word),startIdx+word.Length+1)) (-1) words)
                 |> fst
                 |> (fun words -> Seq.mapFoldBack (fun (startIdx:int,word:string) (endIdx:int) -> 
-                    ((word,{TweetWordData.Tweet = num; TweetWordData.CharactersBeforeWord = startIdx; TweetWordData.CharactersAfterWord = endIdx+1})),endIdx+word.Length+1) words (-1))
+                    ((word,{TweetWordData.Tweet = num; 
+                        TweetWordData.CharactersBeforeWord = startIdx;
+                        TweetWordData.Word = word;
+                        TweetWordData.CharactersAfterWord = endIdx+1})),endIdx+word.Length+1) words (-1))
                 |> fst
                 |> Seq.map (fun (word,wordInfo) -> (removeSpecialCharacters (word.ToLowerInvariant()),wordInfo))
                 |> Seq.filter (fun (word,_) -> word.Length > 0)
@@ -274,8 +277,8 @@ module Twitter =
                     userBWords
                     |> Seq.filter (canMakeTweet word maxTweetLength (userAWord.CharactersBeforeWord, userAWord.CharactersAfterWord))
                     |> seqRandom
-                let aBeforeBAllowed = (userAWord.CharactersBeforeWord + word.Length + userBWord.CharactersAfterWord) <= maxTweetLength
-                let bBeforeAAllowed = (userBWord.CharactersBeforeWord + word.Length + userAWord.CharactersAfterWord) <= maxTweetLength
+                let aBeforeBAllowed = (userAWord.CharactersBeforeWord + userAWord.Word.Length + userBWord.CharactersAfterWord) <= maxTweetLength
+                let bBeforeAAllowed = (userBWord.CharactersBeforeWord + userBWord.Word.Length + userAWord.CharactersAfterWord) <= maxTweetLength
                 let isABeforeB =
                     if aBeforeBAllowed && bBeforeAAllowed then
                         (random.NextDouble() > 0.5)
@@ -295,12 +298,14 @@ module Twitter =
                     (Map.find user1Word.Tweet user1TweetsInfo.Tweets).Substring(0,user1Word.CharactersBeforeWord)
                 else
                     (Map.find user2Word.Tweet user2TweetsInfo.Tweets).Substring(0,user2Word.CharactersBeforeWord)
+            let finalWord =
+                if is1Before2 then user2Word.Word else user1Word.Word           
             let rightTweet = 
                 if is1Before2 then
-                    (Map.find user2Word.Tweet user2TweetsInfo.Tweets).Substring(user2Word.CharactersBeforeWord+word.Length,user2Word.CharactersAfterWord)
+                    (Map.find user2Word.Tweet user2TweetsInfo.Tweets).Substring(user2Word.CharactersBeforeWord+finalWord.Length,user2Word.CharactersAfterWord)
                 else
-                    (Map.find user1Word.Tweet user1TweetsInfo.Tweets).Substring(user1Word.CharactersBeforeWord+word.Length,user1Word.CharactersAfterWord)      
-            leftTweet + word  + rightTweet                     
+                    (Map.find user1Word.Tweet user1TweetsInfo.Tweets).Substring(user1Word.CharactersBeforeWord+finalWord.Length,user1Word.CharactersAfterWord)      
+            leftTweet + finalWord + rightTweet                     
 
         match Seq.length validWordInfoJoined with
         | 0 -> None

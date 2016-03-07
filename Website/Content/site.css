@@ -45,6 +45,7 @@ body {
 
 .bg-primary {
     background-color: #F9F9F9;
+    color: #404040;
 }
 
 h1 {
@@ -62,6 +63,14 @@ h3 {
 }
 
 h4 {
+    color: #404040;
+}
+
+h5 {
+    color: #404040;
+}
+
+h6 {
     color: #404040;
 }
 
@@ -83,6 +92,11 @@ aside {
 
 .tweet-text {
     font-size: 48px;
+    color: #404040;
+}
+
+.tweet-mobile {
+    font-size: 16px;
     color: #404040;
 }
 
@@ -223,4 +237,18 @@ float: right!important;
     margin: 0 0 0 0;
     border: 0px transparent;
     background-color: #F9F9F9;
+}
+
+.form-group-mobile {
+    margin: 3px 0px 3px 0px;
+    padding: 0 10px 0 10px;
+}
+
+.form-mobile {
+    margin: 0px 0px 0px 0px;
+    padding: 5px 0px 5px 0px;
+}
+
+.tweet-mobile-ui {
+    margin: 0px 5px 0px 5px;
 }
