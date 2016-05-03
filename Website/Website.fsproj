@@ -16,7 +16,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
-    <NameOfLastUsedPublishProfile>TwitterMashup</NameOfLastUsedPublishProfile>
+    <NameOfLastUsedPublishProfile>tweetmashup (2)</NameOfLastUsedPublishProfile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

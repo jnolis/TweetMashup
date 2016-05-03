@@ -38,6 +38,7 @@ type AsyncReturnInfo =
     | UserInfo of Core.Interfaces.IUser option
 
 module Twitter =
+
     let getCredentials () = 
         System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/Keys.json"
         |> System.IO.File.ReadAllText
@@ -223,7 +224,11 @@ module Twitter =
         getFromCache tweetCache getCombinedInfo username
 
     let userToSmallUser (u:Core.Interfaces.IUser) : SmallUser =
+        try 
         {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
+        with
+        | _ -> {Username = ""; FullName = ""; Image = ""}
+
 
     let tweetWithContext (username1:string) (username2:string) (text:string): string*int =
         let adjustUsername (username:string) =
