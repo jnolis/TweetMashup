@@ -127,7 +127,7 @@
      arg10c=List.ofArray([Attr.Attr().NewAttr("class","container")]);
      source=Seq.map(pairUI,userPairs);
      x3=List.ofSeq(source);
-     return Operators.add(Tags.Tags().NewTag("section",arg10c),List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","row")])),Client1.renderOutputUIWeb(outputUI)]));
+     return Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","row")])),Client1.renderOutputUIWeb(outputUI)]));
     },
     presetMobile:function(userPairs)
     {
@@ -187,10 +187,10 @@
       };
       return Piglet.Render(_arg00_1,x2);
      };
-     arg104=List.ofArray([Attr.Attr().NewAttr("class","container")]);
+     arg104=List.ofArray([Attr.Attr().NewAttr("class","container tweet-mobile-ui")]);
      source=Seq.map(pairUI,userPairs);
      x3=List.ofSeq(source);
-     return Operators.add(Tags.Tags().NewTag("section",arg104),List.ofArray([Operators.add(Tags.Tags().NewTag("div",x3),List.ofArray([Attr.Attr().NewAttr("class","row")])),Client1.renderOutputUIMobile(outputUI)]));
+     return Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Tags.Tags().NewTag("div",x3),Client1.renderOutputUIMobile(outputUI)]));
     },
     processFailureMobile:function(outputUI,failureText)
     {
@@ -342,7 +342,7 @@
      arg101=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small")])),Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","text-center")]))]);
      arg104=List.ofArray([outputUI.TweetText]);
      arg105=List.ofArray([outputUI.TweetThisButton]);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg105),List.ofArray([Attr.Attr().NewAttr("class","text-center row")]))]);
+     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","col-xs-12")])),Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","col-xs-12")])),Operators.add(Tags.Tags().NewTag("div",arg105),List.ofArray([Attr.Attr().NewAttr("class","text-center col-xs-12")]))]);
      return Tags.Tags().NewTag("div",arg10);
     },
     renderOutputUIWeb:function(outputUI)

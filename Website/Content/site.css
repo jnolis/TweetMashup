@@ -205,6 +205,7 @@ aside {
     background-color: #1b95e0;
     color: #ffffff;
     border: 1px transparent;
+	margin: 15px 15px 5px 15px;
 }
 
 .twitter-button:hover
@@ -276,4 +277,12 @@ float: right!important;
 
 .tweet-mobile-ui {
     margin: 0px 5px 0px 5px;
+}
+
+.nav-tabs-mobile {
+    margin: 0px 0px 0px 0px;
+}
+
+.nav-tabs-mobile>li {
+    padding: 0px 0px 0px 0px;
 }

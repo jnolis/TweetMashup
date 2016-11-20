@@ -164,13 +164,13 @@ module Client =
                     outputUI.User2Image
                 ] -< [Attr.Class "overlapping-images-small"]
                 Div [outputUI.Usernames] -< [Attr.Class "text-center"]
-            ] -< [Attr.Class "row"]
+            ] -< [Attr.Class "col-xs-12"]
             Div [
                 outputUI.TweetText
-                ] -< [Attr.Class "row"]
+                ] -< [Attr.Class "col-xs-12"]
             Div [
                 outputUI.TweetThisButton
-                ] -< [Attr.Class "text-center row"]
+                ] -< [Attr.Class "text-center col-xs-12"]
             ]
     let tryIt () =
         let outputUI = buildOutputUIWeb ()
@@ -243,7 +243,7 @@ module Client =
                             Div [H4 [Text (user1.FullName + " & " + user2.FullName)]] -< [Attr.Class "row text-center"]
                         ] -< [Attr.Class "col-sm-6 col-md-4"]
                     )
-        Section [Attr.Class "container"] -<
+        Div [Attr.Class "container"] -<
             [Div (userPairs |> Seq.map pairUI |> List.ofSeq) -< [Attr.Class "row"]; 
             renderOutputUIWeb outputUI;
             ]
@@ -273,8 +273,8 @@ module Client =
                                 ] -< [Attr.Class "form-group form-group-mobile"]
                         ] -< [Attr.Class "form form-horizontal form-mobile"]
                     )
-        Section [Attr.Class "container"] -<
-            [Div (userPairs |> Seq.map pairUI |> List.ofSeq) -< [Attr.Class "row"]; 
+        Div [Attr.Class "container tweet-mobile-ui"] -<
+            [Div (userPairs |> Seq.map pairUI |> List.ofSeq); 
             renderOutputUIMobile outputUI;
             ]
 

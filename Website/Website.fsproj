@@ -126,9 +126,6 @@
     <Content Include="Global.asax" />
     <Compile Include="Global.asax.fs" />
     <Content Include="packages.config" />
-    <Content Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Mobile.html" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +192,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions.dll" />
     <Reference Include="System.Net" />

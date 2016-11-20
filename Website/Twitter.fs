@@ -4,21 +4,21 @@ open Tweetinvi
 open System
 open System.Text.RegularExpressions
 
-type Mashup =
-    {
-    Combined: string
-    CombinedWithContext: string option
-    User1: Core.Interfaces.IUser
-    User2: Core.Interfaces.IUser
-    }
-
-type CacheSet<'a> = {DateTime: System.DateTime; Value: 'a}
-
 type SmallUser = {
     Username: string;
     FullName: string;
     Image: string
     }
+
+type Mashup =
+    {
+    Combined: string
+    CombinedWithContext: string option
+    User1: SmallUser
+    User2: SmallUser
+    }
+
+type CacheSet<'a> = {DateTime: System.DateTime; Value: 'a}
 
 type TweetWordData = {
     Word: string
@@ -28,37 +28,49 @@ type TweetWordData = {
     }
 
 type UserTweetsInfo = {
-    User: Core.Interfaces.IUser
+    User: SmallUser
     Tweets: Map<int64,string>
     WordLookup: Map<string,seq<TweetWordData>>
     }
 
 type AsyncReturnInfo = 
     | TweetInfo of (Map<int64,string>*Map<string,seq<TweetWordData>>) option
-    | UserInfo of Core.Interfaces.IUser option
+    | UserInfo of SmallUser option
 
+type Cache<'a,'b> =
+    {
+    mutable Data: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>
+    mutable LastCleaned: System.DateTime
+    }
 module Twitter =
-
+    let mutable lastClean = System.DateTime.Now
+    let daysBetweenClean = 1
     let getCredentials () = 
-        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/Keys.json"
-        |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Credentials.TwitterCredentials> (x))
+        let consumerKey = System.Configuration.ConfigurationManager.AppSettings.["consumerKey"]
+        System.Console.WriteLine ("CONSUMER KEY: " + consumerKey)
+        let consumerSecret = System.Configuration.ConfigurationManager.AppSettings.["consumerSecret"]
+        let accessToken = System.Configuration.ConfigurationManager.AppSettings.["accessToken"]
+        let accessTokenSecret = System.Configuration.ConfigurationManager.AppSettings.["accessTokenSecret"]
+        new Core.Credentials.TwitterCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
 
-    let getCredentialsFromFile (filename) = 
-        filename
-        |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<Core.Credentials.TwitterCredentials> (x))
 
     let random = new System.Random()
 
-    let tweetCache = new System.Collections.Generic.Dictionary<string,CacheSet<UserTweetsInfo>>()
+    let createCache<'a,'b when 'a: equality> () =
+        {
+            Data = new System.Collections.Generic.Dictionary<'a,CacheSet<'b>>();
+            LastCleaned = System.DateTime.Now;
+        }
 
-    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Hours > 0
+    let userTweetCache = createCache<string,UserTweetsInfo>()
 
-    let cleanCache (cache: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>) =
-        for x in cache do
+    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 3
+
+    let cleanCache (cache: Cache<'a,'b>) =
+        cache.LastCleaned <- System.DateTime.Now
+        for x in cache.Data do
             if tooOld x.Value.DateTime then
-                cache.Remove x.Key
+                cache.Data.Remove x.Key
                 |> ignore
 
     let concatenate (s: string seq) =
@@ -97,7 +109,11 @@ module Twitter =
         |> Seq.map (fun (key,s) -> (key,Seq.map (fun (key, value) -> value) s))
         |> Map.ofSeq
 
-
+    let userToSmallUser (u:Core.Interfaces.IUser) : SmallUser option =
+        try 
+        Some {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
+        with
+        | _ -> None
 
     let getTweetFromID (tweetID: int64) =
         Tweet.GetTweet tweetID
@@ -114,44 +130,46 @@ module Twitter =
         |> (fun y -> y.Trim(' ').TrimEnd(' '))
 
 
-    let getFromCache (cache: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>) (getValue: 'a -> 'b option) (key: 'a)=
-        try
-            do cleanCache(cache)
-            let storedValue =
-                if cache.ContainsKey key then
-                    let value = cache.Item key
-                    if tooOld value.DateTime then
-                        cache.Remove key
-                        |> ignore
-                        None
-                    else
-                        Some value
-                else None
-            match storedValue with 
-                | Some x -> Some x.Value 
-                | None ->
-                    let dateTime = System.DateTime.Now
-                    let newValue = getValue key
-                    match newValue with
-                    | Some nv -> 
-                        do cache.Add((key,{DateTime = dateTime; Value = nv}))
-                        Some nv
-                    | None -> None
-        with
-          | _ -> None
+    let getFromCache (cache: Cache<'a,'b>) (getValue: 'a -> 'b option) (key: 'a) =
+        let value =
+            try
+                let storedValue =
+                    if cache.Data.ContainsKey key then
+                        let value = cache.Data.Item key
+                        if tooOld value.DateTime then
+                            cache.Data.Remove key
+                            |> ignore
+                            None
+                        else
+                            Some value
+                    else None
+                match storedValue with 
+                    | Some x -> Some x.Value 
+                    | None ->
+                        let dateTime = System.DateTime.Now
+                        let newValue = getValue key
+                        match newValue with
+                        | Some nv -> 
+                            do cache.Data.Add((key,{DateTime = dateTime; Value = nv}))
+                            Some nv
+                        | None -> None
+            with
+              | _ -> None
+        if System.DateTime.Now.Subtract(lastClean).Days > daysBetweenClean then 
+            cleanCache cache
+        value
 
     let getUser (username) =
         try 
             TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
             User.GetUserFromScreenName username
-            |> Some
+            |> userToSmallUser
         with 
         | exn -> 
             do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
             None
 
     let getTweetsAndUserInfo (username:string) = 
-
         let getTweetMap (username:string) = 
                 let parameters = 
                     let temp = new Core.Parameters.UserTimelineParameters()
@@ -159,7 +177,7 @@ module Twitter =
                     temp.IncludeContributorDetails <- false
                     temp.ExcludeReplies <- true
                     temp.TrimUser <- true
-                    temp.MaximumNumberOfTweetsToRetrieve <- 3200
+                    temp.MaximumNumberOfTweetsToRetrieve <- 300
                     temp
                 TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(60.0))
                 try Timeline.GetUserTimeline(username, parameters)
@@ -167,9 +185,7 @@ module Twitter =
                     |> Map.ofSeq
                     |> Some
                 with
-                | exn -> 
-                    do System.Diagnostics.Debug.WriteLine("Couldn't pull tweets " + (ExceptionHandler.GetLastException()).TwitterDescription) 
-                    None
+                | exn -> None
         let getTweetWordMaps (tweets:Map<int64,string>) =
             tweets
             |> Map.toSeq
@@ -221,19 +237,17 @@ module Twitter =
                                 }
                         | _ -> None
                         )
-        getFromCache tweetCache getCombinedInfo username
-
-    let userToSmallUser (u:Core.Interfaces.IUser) : SmallUser =
-        try 
-        {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
-        with
-        | _ -> {Username = ""; FullName = ""; Image = ""}
+        getFromCache userTweetCache getCombinedInfo username
 
 
-    let tweetWithContext (username1:string) (username2:string) (text:string): string*int =
+
+
+    let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
+        let url =
+            "http://tweetmashup.com"
         let adjustUsername (username:string) =
             "@" + username.TrimStart('@')
-        let tweet = sprintf "%s %s mashup: %s %s" (adjustUsername username1) (adjustUsername username2) text "http://bit.ly/1RgJDXm"
+        let tweet = sprintf "%s %s - %s: %s" (adjustUsername username1) (adjustUsername username2) url text 
         let length = tweet.Length + 2
         (tweet,length)
 
@@ -247,7 +261,7 @@ module Twitter =
         userWord.CharactersAfterWord + (fst otherUserMins) + word.Length <= maxTweetLength
 
     let generateCombinedTweet (user1TweetsInfo: UserTweetsInfo) (user2TweetsInfo: UserTweetsInfo) =
-        let maxTweetLength = getMaxTweetLength user1TweetsInfo.User.ScreenName user2TweetsInfo.User.ScreenName
+        let maxTweetLength = getMaxTweetLength user1TweetsInfo.User.Username user2TweetsInfo.User.Username
         let validWordInfoJoined =
             let wordsInBoth = 
                 let words (uti: UserTweetsInfo) =
@@ -341,7 +355,7 @@ module Twitter =
                     Combined = tweet;
                     CombinedWithContext = 
                         tweet
-                        |> tweetWithContext user1TweetsInfo.User.ScreenName user2TweetsInfo.User.ScreenName
+                        |> tweetWithContext user1TweetsInfo.User.Username user2TweetsInfo.User.Username
                         |> fst
                         |> System.Web.HttpUtility.UrlEncode
                         |> Some;

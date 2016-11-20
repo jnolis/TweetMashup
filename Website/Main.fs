@@ -38,7 +38,7 @@ module Site =
             (fun (x,y) -> 
                 async {
                     return match (Backend.Twitter.getUser x,Backend.Twitter.getUser y) with
-                            | (Some ux, Some uy) -> Some (Backend.Twitter.userToSmallUser ux, Backend.Twitter.userToSmallUser uy)
+                            | (Some ux, Some uy) -> Some (ux, uy)
                             | _ -> None
                     }
             )
@@ -55,7 +55,7 @@ module Site =
                 Div [
                     Div [
                         Div [
-                            Div [H3 [Text "Tweet mash-up"]; H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                            Div [H3 [Text "Tweet mashup!"]; H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
                             ] -< [Attr.Class "container"]
                         UL [
                             LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
@@ -84,7 +84,7 @@ module Site =
         Templating.main ctx [
             Section [
                 Div [
-                    Div [H1 [Text "Tweet mash-up"]; H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                    Div [H1 [Text "Tweet mashup!"]; H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
                     UL [
                         LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
                                                     Html.NewAttr "aria-controls" "tryit"; 
