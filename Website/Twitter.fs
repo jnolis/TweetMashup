@@ -51,7 +51,7 @@ module Twitter =
         let consumerSecret = System.Configuration.ConfigurationManager.AppSettings.["consumerSecret"]
         let accessToken = System.Configuration.ConfigurationManager.AppSettings.["accessToken"]
         let accessTokenSecret = System.Configuration.ConfigurationManager.AppSettings.["accessTokenSecret"]
-        new Core.Credentials.TwitterCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
+        Auth.CreateCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
 
 
     let random = new System.Random()
@@ -109,7 +109,7 @@ module Twitter =
         |> Seq.map (fun (key,s) -> (key,Seq.map (fun (key, value) -> value) s))
         |> Map.ofSeq
 
-    let userToSmallUser (u:Core.Interfaces.IUser) : SmallUser option =
+    let userToSmallUser (u:Models.IUser) : SmallUser option =
         try 
         Some {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
         with
@@ -122,7 +122,7 @@ module Twitter =
         let rgx = new Regex(pattern)
         rgx.Replace(input,replacement)
 
-    let tweetText (x:Core.Interfaces.ITweet) = 
+    let tweetText (x:Models.ITweet) = 
         x.Text
         |> System.Web.HttpUtility.HtmlDecode 
         |> (substitute "\\s+" " ")
@@ -172,7 +172,7 @@ module Twitter =
     let getTweetsAndUserInfo (username:string) = 
         let getTweetMap (username:string) = 
                 let parameters = 
-                    let temp = new Core.Parameters.UserTimelineParameters()
+                    let temp = new Parameters.UserTimelineParameters()
                     temp.IncludeRTS <- false
                     temp.IncludeContributorDetails <- false
                     temp.ExcludeReplies <- true
