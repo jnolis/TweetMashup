@@ -31,11 +31,11 @@ type TweetWordData = {
 type UserTweetsInfo = {
     User: SmallUser
     Tweets: Map<int64,string>
-    WordLookup: Map<string,seq<TweetWordData>>
+    WordLookup: Map<string,TweetWordData array>
     }
 
 type AsyncReturnInfo = 
-    | TweetInfo of (Map<int64,string>*Map<string,seq<TweetWordData>>) option
+    | TweetInfo of (Map<int64,string>*Map<string,TweetWordData array>) option
     | UserInfo of SmallUser option
 
 
@@ -54,19 +54,19 @@ module Twitter =
 
     let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
-    let concatenate (s: string seq) =
-        match Seq.length s with
+    let concatenate (s: string array) =
+        match Array.length s with
         | 0 -> ""
-        | 1 -> Seq.exactlyOne s
-        | _ -> Seq.fold (fun x y -> x + " " + y) (Seq.head s) (Seq.skip 1 s)
+        | 1 -> Array.exactlyOne s
+        | _ -> Array.fold (fun x y -> x + " " + y) (Array.head s) (Array.skip 1 s)
 
-    let seqRandom (s: seq<'a>) : 'a =
-        let length = Seq.length s
+    let arrayRandom (s: 'a array) : 'a =
+        let length = Array.length s
         match length with
-        | 0 -> failwith "seqRandom requires sequence to have length at least 1"
+        | 0 -> failwith "arrayRandom requires array to have length at least 1"
         | _ ->
             let choice = random.Next(0,length-1)
-            Seq.item choice s
+            Array.item choice s
 
     let removeSpecialCharacters (str:string) = 
         let sb = new System.Text.StringBuilder()
@@ -76,19 +76,19 @@ module Twitter =
             else ()
         sb.ToString()
 
-    let removeFirstAndLast (x : seq<'a>) =
-        if Seq.length x >= 2 then 
+    let removeFirstAndLast (x : 'a array) =
+        if Array.length x >= 2 then 
             x
-            |> Seq.take (Seq.length x - 1)
-            |> Seq.skip 1
+            |> Array.take (Array.length x - 1)
+            |> Array.skip 1
         else
-            Seq.empty<'a>
+            Array.empty<'a>
 
-    let groupAndMap (x: seq<'a*'b>) =
+    let groupAndMap (x: ('a*'b) array) =
         x
-        |> Seq.groupBy fst
-        |> Seq.map (fun (key,s) -> (key,Seq.map (fun (key, value) -> value) s))
-        |> Map.ofSeq
+        |> Array.groupBy fst
+        |> Array.map (fun (key,s) -> (key,Array.map (fun (key, value) -> value) s))
+        |> Map.ofArray
 
     let userToSmallUser (u:Models.IUser) : SmallUser option =
         try 
@@ -173,23 +173,22 @@ module Twitter =
                 | exn -> None
         let getTweetWordMaps (tweets:Map<int64,string>) =
             tweets
-            |> Map.toSeq
-            |> Seq.map (fun (num,tweet) ->
+            |> Map.toArray
+            |> Array.map (fun (num,tweet) ->
                 tweet.Split(' ')
-                |> Seq.ofArray
-                |> (fun words -> Seq.mapFold (fun (startIdx:int) (word:string) -> ((startIdx+1,word),startIdx+word.Length+1)) (-1) words)
+                |> (fun words -> Array.mapFold (fun (startIdx:int) (word:string) -> ((startIdx+1,word),startIdx+word.Length+1)) (-1) words)
                 |> fst
-                |> (fun words -> Seq.mapFoldBack (fun (startIdx:int,word:string) (endIdx:int) -> 
+                |> (fun words -> Array.mapFoldBack (fun (startIdx:int,word:string) (endIdx:int) -> 
                     ((word,{TweetWordData.Tweet = num; 
                         TweetWordData.CharactersBeforeWord = startIdx;
                         TweetWordData.Word = word;
                         TweetWordData.CharactersAfterWord = endIdx+1})),endIdx+word.Length+1) words (-1))
                 |> fst
-                |> Seq.map (fun (word,wordInfo) -> (removeSpecialCharacters (word.ToLowerInvariant()),wordInfo))
-                |> Seq.filter (fun (word,_) -> word.Length > 0)
+                |> Array.map (fun (word,wordInfo) -> (removeSpecialCharacters (word.ToLowerInvariant()),wordInfo))
+                |> Array.filter (fun (word,_) -> word.Length > 0)
                 |> removeFirstAndLast
                 )
-            |> Seq.concat
+            |> Array.concat
             |> groupAndMap
         let getTweets username = 
             let tweetMap = getTweetMap username
@@ -257,30 +256,30 @@ module Twitter =
                 [words user1TweetsInfo; words user2TweetsInfo]
                 |> Set.intersectMany
             wordsInBoth
-            |> Set.toSeq
-            |> Seq.map (fun (word:string) ->
+            |> Set.toArray
+            |> Array.map (fun (word:string) ->
                             (word, Map.find word user1TweetsInfo.WordLookup, Map.find word user2TweetsInfo.WordLookup))
-            |> Seq.map 
+            |> Array.map 
                 (fun (word, user1Words, user2Words) ->
-                    let getMins (userWords: TweetWordData seq) = 
-                        let minUserBefore = userWords |> Seq.map (fun x -> x.CharactersBeforeWord)  |> Seq.min
-                        let minUserAfter = userWords |> Seq.map (fun x -> x.CharactersAfterWord)  |> Seq.min
+                    let getMins (userWords: TweetWordData array) = 
+                        let minUserBefore = userWords |> Array.map (fun x -> x.CharactersBeforeWord)  |> Array.min
+                        let minUserAfter = userWords |> Array.map (fun x -> x.CharactersAfterWord)  |> Array.min
                         (minUserBefore,minUserAfter)
                     let user1Mins = getMins user1Words
                     let user2Mins = getMins user2Words
                     (word, 
-                        user1Words |> Seq.filter (canMakeTweet word maxTweetLength user2Mins),
-                        user2Words |> Seq.filter (canMakeTweet word maxTweetLength user1Mins))
+                        user1Words |> Array.filter (canMakeTweet word maxTweetLength user2Mins),
+                        user2Words |> Array.filter (canMakeTweet word maxTweetLength user1Mins))
                     )
-            |> Seq.filter (fun (word, user1words, user2words) -> not (Seq.isEmpty user1words || Seq.isEmpty user2words))
+            |> Array.filter (fun (word, user1words, user2words) -> not (Array.isEmpty user1words || Array.isEmpty user2words))
 
         let combineTwoWordSets (user1TweetsInfo: UserTweetsInfo) (user2TweetsInfo: UserTweetsInfo) (word, user1Words, user2Words) =
             let chooseWords word userAWords userBWords =
-                let userAWord = seqRandom userAWords
+                let userAWord = arrayRandom userAWords
                 let userBWord = 
                     userBWords
-                    |> Seq.filter (canMakeTweet word maxTweetLength (userAWord.CharactersBeforeWord, userAWord.CharactersAfterWord))
-                    |> seqRandom
+                    |> Array.filter (canMakeTweet word maxTweetLength (userAWord.CharactersBeforeWord, userAWord.CharactersAfterWord))
+                    |> arrayRandom
                 let aBeforeBAllowed = (userAWord.CharactersBeforeWord + userAWord.Word.Length + userBWord.CharactersAfterWord) <= maxTweetLength
                 let bBeforeAAllowed = (userBWord.CharactersBeforeWord + userBWord.Word.Length + userAWord.CharactersAfterWord) <= maxTweetLength
                 let isABeforeB =
@@ -311,11 +310,11 @@ module Twitter =
                     (Map.find user1Word.Tweet user1TweetsInfo.Tweets).Substring(user1Word.CharactersBeforeWord+finalWord.Length,user1Word.CharactersAfterWord)      
             leftTweet + finalWord + rightTweet                     
 
-        match Seq.length validWordInfoJoined with
+        match Array.length validWordInfoJoined with
         | 0 -> None
         | _ ->
             validWordInfoJoined
-            |> seqRandom
+            |> arrayRandom
             |> combineTwoWordSets user1TweetsInfo user2TweetsInfo
             |> Some
         
