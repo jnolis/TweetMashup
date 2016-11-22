@@ -11,10 +11,15 @@ type SmallUser = {
     Image: string
     }
 
+type Combined =
+    {
+    Tweet: string
+    TweetWithContext: string option
+    }
+
 type Mashup =
     {
-    Combined: string
-    CombinedWithContext: string option
+    Combined: Combined array
     User1: SmallUser
     User2: SmallUser
     }
@@ -50,7 +55,7 @@ module Twitter =
         Auth.CreateCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
 
     let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
-    let random = new System.Random()
+    
 
     let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
@@ -60,13 +65,22 @@ module Twitter =
         | 1 -> Array.exactlyOne s
         | _ -> Array.fold (fun x y -> x + " " + y) (Array.head s) (Array.skip 1 s)
 
-    let arrayRandom (s: 'a array) : 'a =
+    let arrayRandom (random: Random) (s: 'a array) : 'a =
         let length = Array.length s
         match length with
         | 0 -> failwith "arrayRandom requires array to have length at least 1"
         | _ ->
             let choice = random.Next(0,length-1)
             Array.item choice s
+
+    let arrayRandomMultiple (random: Random) (amountToReturn: int) (s: 'a array) : 'a array =
+        let length = Array.length s
+        match length with
+        | 0 -> failwith "arrayRandom requires array to have length at least 1"
+        | _ ->
+            [|1..amountToReturn|] 
+            |> Array.map (fun x -> random.Next(0,length-1))
+            |> Array.map (fun choice -> Array.item choice s)
 
     let removeSpecialCharacters (str:string) = 
         let sb = new System.Text.StringBuilder()
@@ -244,7 +258,8 @@ module Twitter =
         userWord.CharactersBeforeWord + (snd otherUserMins) + word.Length <= maxTweetLength ||
         userWord.CharactersAfterWord + (fst otherUserMins) + word.Length <= maxTweetLength
 
-    let generateCombinedTweet (user1TweetsInfo: UserTweetsInfo) (user2TweetsInfo: UserTweetsInfo) =
+    let generateCombinedTweet (tweetsToGenerate: int) (user1TweetsInfo: UserTweetsInfo) (user2TweetsInfo: UserTweetsInfo) =
+        let random = new System.Random()
         let maxTweetLength = getMaxTweetLength user1TweetsInfo.User.Username user2TweetsInfo.User.Username
         let validWordInfoJoined =
             let wordsInBoth = 
@@ -275,11 +290,11 @@ module Twitter =
 
         let combineTwoWordSets (user1TweetsInfo: UserTweetsInfo) (user2TweetsInfo: UserTweetsInfo) (word, user1Words, user2Words) =
             let chooseWords word userAWords userBWords =
-                let userAWord = arrayRandom userAWords
+                let userAWord = arrayRandom random userAWords
                 let userBWord = 
                     userBWords
                     |> Array.filter (canMakeTweet word maxTweetLength (userAWord.CharactersBeforeWord, userAWord.CharactersAfterWord))
-                    |> arrayRandom
+                    |> (arrayRandom random)
                 let aBeforeBAllowed = (userAWord.CharactersBeforeWord + userAWord.Word.Length + userBWord.CharactersAfterWord) <= maxTweetLength
                 let bBeforeAAllowed = (userBWord.CharactersBeforeWord + userBWord.Word.Length + userAWord.CharactersAfterWord) <= maxTweetLength
                 let isABeforeB =
@@ -314,12 +329,12 @@ module Twitter =
         | 0 -> None
         | _ ->
             validWordInfoJoined
-            |> arrayRandom
-            |> combineTwoWordSets user1TweetsInfo user2TweetsInfo
+            |> arrayRandomMultiple random tweetsToGenerate
+            |> Array.map (combineTwoWordSets user1TweetsInfo user2TweetsInfo)
             |> Some
         
 
-    let mashup (username1unfiltered: string) (username2unfiltered: string) =
+    let mashup (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
         let username1 = username1unfiltered.ToLower().Replace("@","")
         let username2 = username2unfiltered.ToLower().Replace("@","")
         let (user1InfoOption,user2InfoOption) =             
@@ -335,16 +350,20 @@ module Twitter =
 
         match (user1InfoOption,user2InfoOption) with
         | (Some user1TweetsInfo, Some user2TweetsInfo) -> 
-            match generateCombinedTweet user1TweetsInfo user2TweetsInfo with
-            | Some tweet ->
+            match generateCombinedTweet tweetsToGenerate user1TweetsInfo user2TweetsInfo with
+            | Some tweets ->
+                let tweetsWithContext =
+                    tweets
+                    |> Array.map (fun tweet ->
+                        let combinedWithContext =
+                            tweet
+                            |> tweetWithContext user1TweetsInfo.User.Username user2TweetsInfo.User.Username
+                            |> fst
+                            |> System.Web.HttpUtility.UrlEncode
+                            |> Some
+                        {Tweet=tweet;TweetWithContext=combinedWithContext})
                 Some {
-                    Combined = tweet;
-                    CombinedWithContext = 
-                        tweet
-                        |> tweetWithContext user1TweetsInfo.User.Username user2TweetsInfo.User.Username
-                        |> fst
-                        |> System.Web.HttpUtility.UrlEncode
-                        |> Some;
+                    Combined = tweetsWithContext;
                     User1 = user1TweetsInfo.User;
                     User2 = user2TweetsInfo.User;
                 }

@@ -37,8 +37,8 @@ module Site =
         |> Seq.map
             (fun (x,y) -> 
                 async {
-                    return match (Backend.Twitter.getUser x,Backend.Twitter.getUser y) with
-                            | (Some ux, Some uy) -> Some (ux, uy)
+                    return match (Backend.Twitter.getTweetsAndUserInfo x,Backend.Twitter.getTweetsAndUserInfo y) with
+                            | (Some ux, Some uy) -> Some (ux.User, uy.User)
                             | _ -> None
                     }
             )
@@ -55,7 +55,11 @@ module Site =
                 Div [
                     Div [
                         Div [
-                            Div [H3 [Text "Tweet mashup!"]; H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                            Div [
+                                H3 [Text "Tweet mashup!"]; 
+                                H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
+                                H5 [Text "By "; A [Text "Jonathan Adler"] -< [Attr.HRef "https://twitter.com/skyetetra"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "https://twitter.com/jesseddy" ]]
+                                ] -< [Attr.Class "text-center"]
                             ] -< [Attr.Class "container"]
                         UL [
                             LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
@@ -84,7 +88,10 @@ module Site =
         Templating.main ctx [
             Section [
                 Div [
-                    Div [H1 [Text "Tweet mashup!"]; H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]] -< [Attr.Class "text-center"]
+                    Div [
+                        H1 [Text "Tweet mashup!"]; 
+                        H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
+                        ] -< [Attr.Class "text-center"]
                     UL [
                         LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 
                                                     Html.NewAttr "aria-controls" "tryit"; 

@@ -1,16 +1,15 @@
 namespace Website
-
 open WebSharper
 open WebSharper.JavaScript
 open WebSharper.Html.Client
 open WebSharper.Piglets
-
 
 type OutputUIWeb =
     {
     TweetText: Element;
     User1Image: Element;
     User2Image: Element;
+    Presents: Element;
     User1Name: Element;
     User2Name: Element;
     TweetThisButton: Element;
@@ -20,6 +19,7 @@ type OutputUIMobile =
     TweetText: Element;
     User1Image: Element;
     User2Image: Element;
+    Presents: Element;
     Usernames: Element
     TweetThisButton: Element;
     }
@@ -32,10 +32,12 @@ module Client =
         let tweetThisButton = A [I [Attr.Class "fa fa-twitter wow bounceIn"];
                                     Span [Text "Tweet this!"] -< [Attr.Class "label"]
                                     ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
+        let presents = H3 [Attr.Class "text-center"]
         let user1Name = H4 [Attr.Style "display: none;"]
         let user2Name = H4 [Attr.Style "display: none;"]
-        {TweetText= output; User1Image = user1Image; User2Image = user2Image; User1Name = user1Name; User2Name = user2Name; TweetThisButton = tweetThisButton}
+        {Presents = presents;TweetText= output; User1Image = user1Image; User2Image = user2Image; User1Name = user1Name; User2Name = user2Name; TweetThisButton = tweetThisButton}
     let buildOutputUIMobile () =
+        let presents = H6 [Attr.Class "text-center"]
         let output = H5 [] -< [Attr.Class "text-center tweet-text-mobile"]
         let user1Image = Img [Attr.Class "img-circle img-left-small"; Attr.Width "96"; Attr.Height "96"]
         let user2Image = Img [Attr.Class "img-circle img-right-small"; Attr.Width "96"; Attr.Height "96"]
@@ -43,7 +45,7 @@ module Client =
                                     Span [Text "Tweet this!"] -< [Attr.Class "label"]
                                     ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
         let usernames = H6 [Attr.Style "display: none;"]
-        {TweetText = output; User1Image = user1Image; User2Image = user2Image; Usernames = usernames; TweetThisButton = tweetThisButton}
+        {Presents = presents;TweetText = output; User1Image = user1Image; User2Image = user2Image; Usernames = usernames; TweetThisButton = tweetThisButton}
     let processUserName (userNameOption: string option) (userName: Element) = 
         match userNameOption with
             | Some userNameText -> 
@@ -64,6 +66,7 @@ module Client =
         match userImageURLOption with 
             | Some userImageURL -> userImage.SetAttribute("src",userImageURL) 
             | None -> userImage.RemoveAttribute("src")
+
     let processTweetTextForLink (tweetTextForLink : string option) (tweetThisButton: Element) =
         match tweetTextForLink with
         | Some linkURL ->
@@ -72,11 +75,12 @@ module Client =
             do tweetThisButton.SetAttribute("href","https://twitter.com/intent/tweet?text="+linkURL)
         | None -> 
             do tweetThisButton.SetAttribute("disabled","")
-    let processTweetText (tweetText:string) (e:Element) = 
+    let processTweetText (tweetText:string) (presents:Element) (e:Element) = 
+        do presents.Text <- "TweetMashup.com presents:"
         do e.Text <- tweetText
     let processSuccessWeb (outputUI: OutputUIWeb) resultValues =
         let (tweetText, tweetTextForLink, user1NameOption, user1ImageURLOption, user2NameOption, user2ImageURLOption) = resultValues
-        do processTweetText tweetText outputUI.TweetText
+        do processTweetText tweetText outputUI.Presents outputUI.TweetText
         do processTweetTextForLink tweetTextForLink outputUI.TweetThisButton
         do processUserName user1NameOption outputUI.User1Name
         do processUserName user2NameOption outputUI.User2Name
@@ -87,7 +91,7 @@ module Client =
     let processSuccessMobile (outputUI: OutputUIMobile) resultValues =
         do outputUI.TweetThisButton.SetAttribute("style","")
         let (tweetText,tweetTextForLink,user1NameOption,user1ImageURLOption,user2NameOption,user2ImageURLOption) = resultValues
-        do processTweetText tweetText outputUI.TweetText
+        do processTweetText tweetText outputUI.Presents outputUI.TweetText
         do processTweetTextForLink tweetTextForLink outputUI.TweetThisButton
         do processUserNames user1NameOption user2NameOption outputUI.Usernames
         do processUserImage user1ImageURLOption outputUI.User1Image
@@ -149,6 +153,9 @@ module Client =
                 Div [outputUI.User2Name] -< [Attr.Class "col-md-4 col-lg-4 right-name hidden-sm hidden-xs"]
             ] -< [Attr.Class "row"]
             Div [
+                outputUI.Presents
+                ] -< [Attr.Class "row"]
+            Div [
                 outputUI.TweetText
                 ] -< [Attr.Class "row"]
             Div [
@@ -166,6 +173,9 @@ module Client =
                 Div [outputUI.Usernames] -< [Attr.Class "text-center"]
             ] -< [Attr.Class "col-xs-12"]
             Div [
+                outputUI.Presents
+                ] -< [Attr.Class "col-xs-12"]
+            Div [
                 outputUI.TweetText
                 ] -< [Attr.Class "col-xs-12"]
             Div [
@@ -174,7 +184,10 @@ module Client =
             ]
     let tryIt () =
         let outputUI = buildOutputUIWeb ()
-
+        let mutable usernamePairCache = ("","")
+        let mutable tweetCache = Array.empty<string*(string option)>
+        let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
+        let mutable tweetCacheChoice = 0
         let userInputUI =
             Piglet.Return (fun x y -> (x, y))
             <*> Piglet.Yield ""
@@ -182,12 +195,32 @@ module Client =
             |> Piglet.WithSubmit
             |> Piglet.Run (fun (x, y) ->
                 async {
-                    let! mashup =  Server.makeMashup x y
-                    match mashup with
-                    | Website.Reponse.Success d ->
-                        processSuccessWeb outputUI d
-                    | Website.Reponse.Failure d ->
-                        processFailureWeb outputUI d
+                    if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
+                        usernamePairCache <- (x,y)
+                        let! mashup =  Server.makeMashup x y
+                        match mashup with
+                        | Reponse.Success d ->
+                            tweetCache <- (fun (x,_,_,_,_) -> x) d
+                            tweetCacheD <- d
+                            tweetCacheChoice <- 0
+                            let newD = (fun (a,b,c,x,e) -> 
+                                let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                (z,a,b,c,x,e)) tweetCacheD
+                            tweetCacheChoice <- tweetCacheChoice + 1
+                            processSuccessWeb outputUI newD
+                        | Reponse.Failure d ->
+                            tweetCache <- Array.empty<string*(string option)>
+                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                            tweetCacheChoice <- 0
+                            usernamePairCache <- ("","")
+                            processFailureWeb outputUI d
+                    else
+                        usernamePairCache <- (x,y)
+                        let newD = (fun (a,b,c,x,e) -> 
+                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                            (z,a,b,c,x,e)) tweetCacheD
+                        tweetCacheChoice <- tweetCacheChoice + 1
+                        processSuccessWeb outputUI newD                
                 }
                 |> Async.Start)
             |> Piglet.Render (fun x y submit ->
@@ -211,18 +244,42 @@ module Client =
 
     let preset (userPairs: (Backend.SmallUser*Backend.SmallUser) []) = 
         let outputUI = buildOutputUIWeb ()
+        let mutable tweetCache = Array.empty<string*(string option)>
+        let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
+        let mutable tweetCacheChoice = 0
+        let mutable usernamePairCache = ("","")
         let pairUI (userPair:Backend.SmallUser*Backend.SmallUser) =
             let (user1,user2) = userPair
             Piglet.Return ()
             |> Piglet.WithSubmit
             |> Piglet.Run (fun () ->
                 async {
-                    let! mashup = Server.makeMashup user1.Username user2.Username
-                    match mashup with
-                    | Website.Reponse.Success d ->
-                        processSuccessWeb outputUI d
-                    | Website.Reponse.Failure d ->
-                        processFailureWeb outputUI d
+                    if tweetCacheChoice >= Array.length tweetCache || (user1.Username,user2.Username) <> usernamePairCache then
+                        usernamePairCache <- (user1.Username,user2.Username)
+                        let! mashup =  Server.makeMashup user1.Username user2.Username
+                        match mashup with
+                        | Reponse.Success d ->
+                            tweetCache <- (fun (x,_,_,_,_) -> x) d
+                            tweetCacheD <- d
+                            tweetCacheChoice <- 0
+                            let newD = (fun (a,b,c,x,e) -> 
+                                let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                (z,a,b,c,x,e)) tweetCacheD
+                            tweetCacheChoice <- tweetCacheChoice + 1
+                            processSuccessWeb outputUI newD
+                        | Reponse.Failure d ->
+                            tweetCache <- Array.empty<string*(string option)>
+                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                            tweetCacheChoice <- 0
+                            usernamePairCache <- ("","")
+                            processFailureWeb outputUI d
+                    else
+                        usernamePairCache <- (user1.Username,user2.Username)
+                        let newD = (fun (a,b,c,x,e) -> 
+                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                            (z,a,b,c,x,e)) tweetCacheD
+                        tweetCacheChoice <- tweetCacheChoice + 1
+                        processSuccessWeb outputUI newD                
                 }
                 |> Async.Start)
             |> Piglet.Render (fun submit ->
@@ -250,18 +307,42 @@ module Client =
             
     let presetMobile (userPairs: (Backend.SmallUser*Backend.SmallUser) []) =   
         let outputUI = buildOutputUIMobile ()
+        let mutable tweetCache = Array.empty<string*(string option)>
+        let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
+        let mutable tweetCacheChoice = 0
+        let mutable usernamePairCache = ("","")
         let pairUI (userPair:Backend.SmallUser*Backend.SmallUser) =
             let (user1,user2) = userPair
             Piglet.Return ()
             |> Piglet.WithSubmit
             |> Piglet.Run (fun () ->
                 async {
-                    let! mashup = Server.makeMashup user1.Username user2.Username
-                    match mashup with
-                    | Website.Reponse.Success d ->
-                        processSuccessMobile outputUI d
-                    | Website.Reponse.Failure d ->
-                        processFailureMobile outputUI d
+                    if tweetCacheChoice >= Array.length tweetCache || (user1.Username,user2.Username) <> usernamePairCache then
+                        usernamePairCache <- (user1.Username,user2.Username)
+                        let! mashup =  Server.makeMashup user1.Username user2.Username
+                        match mashup with
+                        | Reponse.Success d ->
+                            tweetCache <- (fun (x,_,_,_,_) -> x) d
+                            tweetCacheD <- d
+                            tweetCacheChoice <- 0
+                            let newD = (fun (a,b,c,x,e) -> 
+                                let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                (z,a,b,c,x,e)) tweetCacheD
+                            tweetCacheChoice <- tweetCacheChoice + 1
+                            processSuccessMobile outputUI newD
+                        | Reponse.Failure d ->
+                            tweetCache <- Array.empty<string*(string option)>
+                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                            tweetCacheChoice <- 0
+                            usernamePairCache <- ("","")
+                            processFailureMobile outputUI d
+                    else
+                        usernamePairCache <- (user1.Username,user2.Username)
+                        let newD = (fun (a,b,c,x,e) -> 
+                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                            (z,a,b,c,x,e)) tweetCacheD
+                        tweetCacheChoice <- tweetCacheChoice + 1
+                        processSuccessMobile outputUI newD                
                 }
                 |> Async.Start)
             |> Piglet.Render (fun submit ->
@@ -280,6 +361,10 @@ module Client =
 
     let tryItMobile () = 
         let outputUI = buildOutputUIMobile()
+        let mutable tweetCache = Array.empty<string*(string option)>
+        let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
+        let mutable tweetCacheChoice = 0
+        let mutable usernamePairCache = ("","")
         let userInputUI =
             Piglet.Return (fun x y -> (x, y))
             <*> Piglet.Yield ""
@@ -287,12 +372,33 @@ module Client =
             |> Piglet.WithSubmit
             |> Piglet.Run (fun (x, y) ->
                 async {
-                    let! mashup =  Server.makeMashup x y
-                    match mashup with
-                    | Website.Reponse.Success d ->
-                        processSuccessMobile outputUI d
-                    | Website.Reponse.Failure d ->
-                        processFailureMobile outputUI d
+                    if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
+                        usernamePairCache <- (x,y)
+                        let! mashup =  Server.makeMashup x y
+                        match mashup with
+                        | Reponse.Success d ->
+                            tweetCache <- (fun (x,_,_,_,_) -> x) d
+                            tweetCacheD <- d
+                            tweetCacheChoice <- 0
+                            let newD = (fun (a,b,c,x,e) -> 
+                                let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                (z,a,b,c,x,e)) tweetCacheD
+                            tweetCacheChoice <- tweetCacheChoice + 1
+                            processSuccessMobile outputUI newD
+                        | Reponse.Failure d ->
+                            tweetCache <- Array.empty<string*(string option)>
+                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                            tweetCacheChoice <- 0
+                            usernamePairCache <- ("","")
+                            processFailureMobile outputUI d
+
+                    else
+                        usernamePairCache <- (x,y)
+                        let newD = (fun (a,b,c,x,e) -> 
+                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                            (z,a,b,c,x,e)) tweetCacheD
+                        tweetCacheChoice <- tweetCacheChoice + 1
+                        processSuccessMobile outputUI newD                
                 }
                 |> Async.Start)
             |> Piglet.Render (fun x y submit ->

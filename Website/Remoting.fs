@@ -1,5 +1,4 @@
 namespace Website
-
 open WebSharper
 open Backend.Twitter
 open Tweetinvi
@@ -16,8 +15,9 @@ module Server =
 
         async {
             let mashupResults = 
-                match mashup username1 username2 with
-                | Some m -> Success (m.Combined, m.CombinedWithContext, stringToOption m.User1.FullName, stringToOption m.User1.Image, stringToOption m.User2.FullName, stringToOption m.User2.Image)
-                | None -> Failure "Mashup didn't work :("
+                match mashup 10 username1 username2 with
+                | Some m -> 
+                    Success (m.Combined |> Array.map (fun x -> (x.Tweet,x.TweetWithContext)), stringToOption m.User1.FullName, stringToOption m.User1.Image, stringToOption m.User2.FullName, stringToOption m.User2.Image)
+                | None -> Failure "Mashup didn't work :( [the poor site may be overloaded]"
             return mashupResults
         }
