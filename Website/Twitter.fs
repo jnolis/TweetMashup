@@ -3,6 +3,7 @@ namespace Backend
 open Tweetinvi
 open System
 open System.Text.RegularExpressions
+open Newtonsoft.Json
 
 type SmallUser = {
     Username: string;
@@ -37,41 +38,21 @@ type AsyncReturnInfo =
     | TweetInfo of (Map<int64,string>*Map<string,seq<TweetWordData>>) option
     | UserInfo of SmallUser option
 
-type Cache<'a,'b> =
-    {
-    mutable Data: System.Collections.Generic.Dictionary<'a,CacheSet<'b>>
-    mutable LastCleaned: System.DateTime
-    }
+
 module Twitter =
     let mutable lastClean = System.DateTime.Now
     let daysBetweenClean = 1
     let getCredentials () = 
         let consumerKey = System.Configuration.ConfigurationManager.AppSettings.["consumerKey"]
-        System.Console.WriteLine ("CONSUMER KEY: " + consumerKey)
         let consumerSecret = System.Configuration.ConfigurationManager.AppSettings.["consumerSecret"]
         let accessToken = System.Configuration.ConfigurationManager.AppSettings.["accessToken"]
         let accessTokenSecret = System.Configuration.ConfigurationManager.AppSettings.["accessTokenSecret"]
         Auth.CreateCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
 
-
+    let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
     let random = new System.Random()
 
-    let createCache<'a,'b when 'a: equality> () =
-        {
-            Data = new System.Collections.Generic.Dictionary<'a,CacheSet<'b>>();
-            LastCleaned = System.DateTime.Now;
-        }
-
-    let userTweetCache = createCache<string,UserTweetsInfo>()
-
-    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 3
-
-    let cleanCache (cache: Cache<'a,'b>) =
-        cache.LastCleaned <- System.DateTime.Now
-        for x in cache.Data do
-            if tooOld x.Value.DateTime then
-                cache.Data.Remove x.Key
-                |> ignore
+    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
     let concatenate (s: string seq) =
         match Seq.length s with
@@ -130,15 +111,18 @@ module Twitter =
         |> (fun y -> y.Trim(' ').TrimEnd(' '))
 
 
-    let getFromCache (cache: Cache<'a,'b>) (getValue: 'a -> 'b option) (key: 'a) =
+    let getFromCache (cacheLocation: string) (getValue: 'a -> 'b option) (key: 'a) =
+        let location = (cacheLocation + "/" + key.ToString())
         let value =
             try
                 let storedValue =
-                    if cache.Data.ContainsKey key then
-                        let value = cache.Data.Item key
+                    if System.IO.File.Exists location then
+                        let value = 
+                            location
+                            |> System.IO.File.ReadAllText
+                            |> (fun x -> JsonConvert.DeserializeObject<CacheSet<'b>>(x))
                         if tooOld value.DateTime then
-                            cache.Data.Remove key
-                            |> ignore
+                            System.IO.File.Delete location
                             None
                         else
                             Some value
@@ -150,13 +134,14 @@ module Twitter =
                         let newValue = getValue key
                         match newValue with
                         | Some nv -> 
-                            do cache.Data.Add((key,{DateTime = dateTime; Value = nv}))
+                            {DateTime = dateTime; Value = nv}
+                            |> JsonConvert.SerializeObject
+                            |> (fun x -> System.IO.File.WriteAllText(location,x))
+
                             Some nv
                         | None -> None
             with
               | _ -> None
-        if System.DateTime.Now.Subtract(lastClean).Days > daysBetweenClean then 
-            cleanCache cache
         value
 
     let getUser (username) =
@@ -237,7 +222,7 @@ module Twitter =
                                 }
                         | _ -> None
                         )
-        getFromCache userTweetCache getCombinedInfo username
+        getFromCache userTweetCacheLocation getCombinedInfo username
 
 
 
@@ -335,7 +320,9 @@ module Twitter =
             |> Some
         
 
-    let mashup (username1: string) (username2: string) =
+    let mashup (username1unfiltered: string) (username2unfiltered: string) =
+        let username1 = username1unfiltered.ToLower().Replace("@","")
+        let username2 = username2unfiltered.ToLower().Replace("@","")
         let (user1InfoOption,user2InfoOption) =             
             seq [username1;username2]
             |> Seq.map (fun user ->
