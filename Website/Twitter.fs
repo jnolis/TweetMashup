@@ -56,6 +56,12 @@ module Twitter =
 
     let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
     
+    let isAtRateLimit () =
+        let credentials = Tweetinvi.Auth.ApplicationCredentials
+        let rateLimits = RateLimit.GetCredentialsRateLimits(credentials,true)
+        let userRateLimit = rateLimits.UsersLookupLimit
+        let timelineRateLimit = rateLimits.StatusesUserTimelineLimit
+        timelineRateLimit.Limit = timelineRateLimit.Remaining || userRateLimit.Limit = userRateLimit.Remaining
 
     let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
@@ -159,6 +165,7 @@ module Twitter =
         value
 
     let getUser (username) =
+        if isAtRateLimit () then None else
         try 
             TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
             User.GetUserFromScreenName username
@@ -170,6 +177,7 @@ module Twitter =
 
     let getTweetsAndUserInfo (username:string) = 
         let getTweetMap (username:string) = 
+                if isAtRateLimit () then None else
                 let parameters = 
                     let temp = new Parameters.UserTimelineParameters()
                     temp.IncludeRTS <- false
@@ -238,7 +246,7 @@ module Twitter =
         getFromCache userTweetCacheLocation getCombinedInfo username
 
 
-
+        
 
     let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
         let url =

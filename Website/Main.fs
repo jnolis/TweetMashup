@@ -58,6 +58,7 @@ module Site =
                             Div [
                                 H3 [Text "Tweet mashup!"]; 
                                 H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
+                                H4 [Text "(I'm working on server fixes as you read this!)"] -< [Attr.Class "text-danger"]
                                 H5 [Text "By "; A [Text "Jonathan Adler"] -< [Attr.HRef "https://twitter.com/skyetetra"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "https://twitter.com/jesseddy" ]]
                                 ] -< [Attr.Class "text-center"]
                             ] -< [Attr.Class "container"]
@@ -91,6 +92,7 @@ module Site =
                     Div [
                         H1 [Text "Tweet mashup!"]; 
                         H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
+                        H2 [Text "(I'm working on server fixes as you read this!)"] -< [Attr.Class "text-danger"]
                         ] -< [Attr.Class "text-center"]
                     UL [
                         LI [A[Text "Try it!"] -< [Attr.HRef "#tryit"; 

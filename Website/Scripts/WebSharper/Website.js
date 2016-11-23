@@ -1,8 +1,8 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,List,Html,Client,Attr,Tags,Operators,T,Website2,Client1,Piglets,Piglet,Concurrency,Unchecked,Remoting,AjaxRemotingProvider,Arrays,Controls,Seq,Pervasives,String;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,List,Html,Client,Attr,Tags,Operators,T,Website,Client1,Piglets,Piglet,Concurrency,Unchecked,Remoting,AjaxRemotingProvider,Arrays,Controls,Seq,Pervasives,String;
  Runtime.Define(Global,{
-  Website2:{
+  Website:{
    Client:{
     buildOutputUIMobile:function()
     {
@@ -813,8 +813,8 @@
   Tags=Runtime.Safe(Client.Tags);
   Operators=Runtime.Safe(Client.Operators);
   T=Runtime.Safe(List.T);
-  Website2=Runtime.Safe(Global.Website2);
-  Client1=Runtime.Safe(Website2.Client);
+  Website=Runtime.Safe(Global.Website);
+  Client1=Runtime.Safe(Website.Client);
   Piglets=Runtime.Safe(Global.WebSharper.Piglets);
   Piglet=Runtime.Safe(Piglets.Piglet);
   Concurrency=Runtime.Safe(Global.WebSharper.Concurrency);

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Website2", "Website\Website2.fsproj", "{A398F157-9B1C-4EA9-8F83-DE6C2E65A9EA}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Website", "Website\Website.fsproj", "{A398F157-9B1C-4EA9-8F83-DE6C2E65A9EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FED95701-17DA-4992-8C9C-01531B56B7C4}"
 	ProjectSection(SolutionItems) = preProject
