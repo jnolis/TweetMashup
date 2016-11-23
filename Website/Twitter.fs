@@ -43,25 +43,67 @@ type AsyncReturnInfo =
     | TweetInfo of (Map<int64,string>*Map<string,TweetWordData array>) option
     | UserInfo of SmallUser option
 
+type SimpleCredentials = {
+    ConsumerKey: string
+    ConsumerSecret: string
+    AccessToken: string
+    AccessTokenSecret: string
+    }
 
 module Twitter =
+    let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
+    let credentialCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["credentialLocation"]
+    let partialCredentialCache = new System.Collections.Concurrent.ConcurrentDictionary<string,Models.IAuthenticationContext>()
+
+    let simpleCredentialsToCredentials (c:SimpleCredentials) = 
+        Auth.CreateCredentials(c.ConsumerKey,c.ConsumerSecret,c.AccessToken,c.AccessTokenSecret)
+    let initAuthentication (login) =
+        
+        let context = Tweetinvi.AuthFlow.InitAuthentication(Tweetinvi.Auth.ApplicationCredentials,System.Web.HttpContext.Current.Request.Url.AbsoluteUri + "/Login")
+        if partialCredentialCache.ContainsKey login then
+            partialCredentialCache.TryRemove(login) |> ignore
+        partialCredentialCache.TryAdd(login, context) |> ignore
+        context.AuthorizationURL  
+
+    let finishAuthentication (verifierCode:string) (login) =
+        let location = credentialCacheLocation + "/" + login
+        let contextOption =
+            if partialCredentialCache.ContainsKey login then
+                Some (partialCredentialCache.Item login)
+            else None
+        match contextOption with
+        | Some context ->
+            let credentials = AuthFlow.CreateCredentialsFromVerifierCode(verifierCode, context)
+            if System.IO.File.Exists location then System.IO.File.Delete location
+            credentials
+            |> (fun c -> {ConsumerKey= c.ConsumerKey; ConsumerSecret= c.ConsumerSecret; AccessToken = c.AccessToken; AccessTokenSecret = c.AccessTokenSecret})
+            |> JsonConvert.SerializeObject
+            |> (fun x -> System.IO.File.WriteAllText(location,x))
+
+            partialCredentialCache.TryRemove(login) |> ignore
+            Some credentials
+        | None -> None
+
+    let getCredentials (login) = 
+        try
+            let location = credentialCacheLocation + "/" + login
+            if System.IO.File.Exists location then
+                location
+                |> System.IO.File.ReadAllText
+                |> (fun x -> JsonConvert.DeserializeObject<SimpleCredentials>(x))
+                |> Some
+            else None
+        with 
+        | _ -> None
+
     let mutable lastClean = System.DateTime.Now
     let daysBetweenClean = 1
-    let getCredentials () = 
+    let getAppCredentials () = 
         let consumerKey = System.Configuration.ConfigurationManager.AppSettings.["consumerKey"]
         let consumerSecret = System.Configuration.ConfigurationManager.AppSettings.["consumerSecret"]
         let accessToken = System.Configuration.ConfigurationManager.AppSettings.["accessToken"]
         let accessTokenSecret = System.Configuration.ConfigurationManager.AppSettings.["accessTokenSecret"]
         Auth.CreateCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
-
-    let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
-    
-    let isAtRateLimit () =
-        let credentials = Tweetinvi.Auth.ApplicationCredentials
-        let rateLimits = RateLimit.GetCredentialsRateLimits(credentials,true)
-        let userRateLimit = rateLimits.UsersLookupLimit
-        let timelineRateLimit = rateLimits.StatusesUserTimelineLimit
-        timelineRateLimit.Limit = timelineRateLimit.Remaining || userRateLimit.Limit = userRateLimit.Remaining
 
     let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
@@ -164,20 +206,29 @@ module Twitter =
               | _ -> None
         value
 
-    let getUser (username) =
-        if isAtRateLimit () then None else
+    let getUser (credentials: Models.ITwitterCredentials option) (username) =
         try 
+            match credentials with
+            | Some c ->
+                Tweetinvi.Auth.SetCredentials c
+            | None ->
+                Tweetinvi.Auth.SetCredentials Tweetinvi.Auth.ApplicationCredentials
             TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
-            User.GetUserFromScreenName username
-            |> userToSmallUser
+            let fullUser = User.GetUserFromScreenName username
+            if fullUser <> null && not fullUser.Protected then  userToSmallUser fullUser else None
+
         with 
         | exn -> 
             do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
             None
 
-    let getTweetsAndUserInfo (username:string) = 
+    let getTweetsAndUserInfo (credentials: Models.ITwitterCredentials option) (username:string) = 
         let getTweetMap (username:string) = 
-                if isAtRateLimit () then None else
+                match credentials with
+                | Some c ->
+                    Tweetinvi.Auth.SetCredentials c
+                | None ->
+                    Tweetinvi.Auth.SetCredentials Tweetinvi.Auth.ApplicationCredentials
                 let parameters = 
                     let temp = new Parameters.UserTimelineParameters()
                     temp.IncludeRTS <- false
@@ -218,7 +269,7 @@ module Twitter =
                 | Some x -> Some (x, getTweetWordMaps x)
                 | None -> None
         let getCombinedInfo (username) =
-            seq [(fun x -> AsyncReturnInfo.UserInfo (getUser x));
+            seq [(fun x -> AsyncReturnInfo.UserInfo (getUser credentials x));
                 (fun x -> AsyncReturnInfo.TweetInfo (getTweets x))]
                 |> Seq.map (fun getFunction ->
                     async {
@@ -342,14 +393,23 @@ module Twitter =
             |> Some
         
 
-    let mashup (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
+    let mashup (credentialsInput: SimpleCredentials option) (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
+        let credentials = 
+            match credentialsInput with
+            | Some c ->
+                let credentials = 
+                    c
+                    |> simpleCredentialsToCredentials
+                Tweetinvi.Auth.SetCredentials credentials
+                Some credentials
+            | None -> None
         let username1 = username1unfiltered.ToLower().Replace("@","")
         let username2 = username2unfiltered.ToLower().Replace("@","")
         let (user1InfoOption,user2InfoOption) =             
             seq [username1;username2]
             |> Seq.map (fun user ->
                 async {
-                    return getTweetsAndUserInfo user
+                    return getTweetsAndUserInfo credentials user
                     }
                 )
             |> Async.Parallel

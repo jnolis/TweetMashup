@@ -23,6 +23,7 @@ type OutputUIMobile =
     Usernames: Element
     TweetThisButton: Element;
     }
+
 [<JavaScript>]
 module Client =
     let buildOutputUIWeb ()  =
@@ -31,7 +32,7 @@ module Client =
         let user2Image = Img [Attr.Class "img-circle img-right"; Attr.Width "128"; Attr.Height "128"]
         let tweetThisButton = A [I [Attr.Class "fa fa-twitter wow bounceIn"];
                                     Span [Text "Tweet this!"] -< [Attr.Class "label"]
-                                    ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
+                                    ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://twitter.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
         let presents = H3 [Attr.Class "text-center"]
         let user1Name = H4 [Attr.Style "display: none;"]
         let user2Name = H4 [Attr.Style "display: none;"]
@@ -43,7 +44,7 @@ module Client =
         let user2Image = Img [Attr.Class "img-circle img-right-small"; Attr.Width "96"; Attr.Height "96"]
         let tweetThisButton = A [I [Attr.Class "fa fa-twitter wow bounceIn"];
                                     Span [Text "Tweet this!"] -< [Attr.Class "label"]
-                                    ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://www.google.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
+                                    ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef "http://twitter.com"; Attr.Style "display: none;"; Attr.Target "_blank"]
         let usernames = H6 [Attr.Style "display: none;"]
         {Presents = presents;TweetText = output; User1Image = user1Image; User2Image = user2Image; Usernames = usernames; TweetThisButton = tweetThisButton}
     let processUserName (userNameOption: string option) (userName: Element) = 
@@ -128,6 +129,22 @@ module Client =
                             Attr.NewAttr "aria-describedby" ("username" + i.ToString()) ]
                     ]
                 ] -< [Attr.Class "form-group"]
+
+    let dummyUserSelectionUIWeb (i:int) = 
+            Div [
+                Label [Text ("Username " + i.ToString())] -< [Attr.Class "sr-only"; Attr.For ("username" + i.ToString())]
+                Div [Attr.Class "input-group input-group-lg col-md-10"] -<
+                    [
+                    Span [Attr.Class "input-group-addon"; Attr.Id ("username" + i.ToString())] -< [Text "@"]
+                    Input
+                        [Attr.Value ""; 
+                            Attr.Type "text"; 
+                            Attr.Class "form-control";
+                            Attr.Disabled "";
+                            Attr.PlaceHolder "username"; 
+                            Attr.NewAttr "aria-describedby" ("username" + i.ToString()) ]
+                    ]
+                ] -< [Attr.Class "form-group"]
     let userSelectionUIMobile (i:int) (x: Stream<string>) = 
         Div [
             Label [Text ("Username " + i.ToString())] -< [Attr.Class "sr-only"; Attr.For ("username" + i.ToString())]
@@ -138,6 +155,22 @@ module Client =
                     [Attr.Value ""; 
                         Attr.Type "text"; 
                         Attr.Class "form-control"; 
+                        Attr.PlaceHolder "username"; 
+                        Attr.NewAttr "aria-describedby" ("username" + i.ToString()) ]
+                ]
+            ] -< [Attr.Class "form-group form-group-mobile"]
+
+    let dummyUserSelectionUIMobile (i:int) = 
+        Div [
+            Label [Text ("Username " + i.ToString())] -< [Attr.Class "sr-only"; Attr.For ("username" + i.ToString())]
+            Div [Attr.Class "input-group col-xs-12"] -<
+                [
+                Span [Attr.Class "input-group-addon"; Attr.Id ("username" + i.ToString())] -< [Text "@"]
+                Input
+                    [Attr.Value ""; 
+                        Attr.Type "text"; 
+                        Attr.Class "form-control"; 
+                        Attr.Disabled  "";
                         Attr.PlaceHolder "username"; 
                         Attr.NewAttr "aria-describedby" ("username" + i.ToString()) ]
                 ]
@@ -182,60 +215,72 @@ module Client =
                 outputUI.TweetThisButton
                 ] -< [Attr.Class "text-center col-xs-12"]
             ]
-    let tryIt () =
+    let tryIt (credentials : Backend.SimpleCredentials option, loginUrlOption) =
         let outputUI = buildOutputUIWeb ()
         let mutable usernamePairCache = ("","")
         let mutable tweetCache = Array.empty<string*(string option)>
         let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
         let mutable tweetCacheChoice = 0
         let userInputUI =
-            Piglet.Return (fun x y -> (x, y))
-            <*> Piglet.Yield ""
-            <*> Piglet.Yield ""
-            |> Piglet.WithSubmit
-            |> Piglet.Run (fun (x, y) ->
-                async {
-                    if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
-                        usernamePairCache <- (x,y)
-                        let! mashup =  Server.makeMashup x y
-                        match mashup with
-                        | Reponse.Success d ->
-                            tweetCache <- (fun (x,_,_,_,_) -> x) d
-                            tweetCacheD <- d
-                            tweetCacheChoice <- 0
+            match loginUrlOption with
+            | None ->
+                Piglet.Return (fun x y -> (x, y))
+                <*> Piglet.Yield ""
+                <*> Piglet.Yield ""
+                |> Piglet.WithSubmit
+                |> Piglet.Run (fun (x, y) ->
+                    async {
+                        if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
+                            usernamePairCache <- (x,y)
+                            let! mashup =  Server.makeMashup (match credentials with | Some c -> Credentials c | None -> NoCredentials) x y
+                            match mashup with
+                            | Reponse.Success d ->
+                                tweetCache <- (fun (x,_,_,_,_) -> x) d
+                                tweetCacheD <- d
+                                tweetCacheChoice <- 0
+                                let newD = (fun (a,b,c,x,e) -> 
+                                    let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                    (z,a,b,c,x,e)) tweetCacheD
+                                tweetCacheChoice <- tweetCacheChoice + 1
+                                processSuccessWeb outputUI newD
+                            | Reponse.Failure d ->
+                                tweetCache <- Array.empty<string*(string option)>
+                                tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                                tweetCacheChoice <- 0
+                                usernamePairCache <- ("","")
+                                processFailureWeb outputUI d
+                        else
+                            usernamePairCache <- (x,y)
                             let newD = (fun (a,b,c,x,e) -> 
                                 let (z,a) = (Array.item tweetCacheChoice tweetCache)
                                 (z,a,b,c,x,e)) tweetCacheD
                             tweetCacheChoice <- tweetCacheChoice + 1
-                            processSuccessWeb outputUI newD
-                        | Reponse.Failure d ->
-                            tweetCache <- Array.empty<string*(string option)>
-                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
-                            tweetCacheChoice <- 0
-                            usernamePairCache <- ("","")
-                            processFailureWeb outputUI d
-                    else
-                        usernamePairCache <- (x,y)
-                        let newD = (fun (a,b,c,x,e) -> 
-                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
-                            (z,a,b,c,x,e)) tweetCacheD
-                        tweetCacheChoice <- tweetCacheChoice + 1
-                        processSuccessWeb outputUI newD                
-                }
-                |> Async.Start)
-            |> Piglet.Render (fun x y submit ->
-                    Div [       
-                            userSelectionUIWeb 1 x
-                            Div [H1 [Text "&"] ] -< [Attr.Class "form-group"]
-                            userSelectionUIWeb 2 y
-                            Div [
+                            processSuccessWeb outputUI newD                
+                    }
+                    |> Async.Start)
+                |> Piglet.Render (fun x y submit ->
+                        Div [       
+                                userSelectionUIWeb 1 x
+                                Div [H1 [Text "&"] ] -< [Attr.Class "form-group"]
+                                userSelectionUIWeb 2 y
                                 Div [
-                                    (Controls.Submit submit) -< [Attr.Class "btn go-button btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
-                                    ] -< [Attr.Class "input-group col-md-10"]
+                                    Div [
+                                        (Controls.Submit submit) -< [Attr.Class "btn go-button btn-lg"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
+                                        ] -< [Attr.Class "input-group col-md-10"]
+                                    ] -< [Attr.Class "form-group"]
+                            ] -< [Attr.Class "form form-inline"]
+                        )
+            | Some loginUrl ->
+                    Div [       
+                        dummyUserSelectionUIWeb 1
+                        Div [H1 [Text "&"] ] -< [Attr.Class "form-group"]
+                        dummyUserSelectionUIWeb 2
+                        Div [
+                            A [I [Attr.Class "fa fa-twitter wow bounceIn"];
+                                                Span [Text "Authorize to  make your own!"] -< [Attr.Class "label"]
+                                                ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef loginUrl] 
                                 ] -< [Attr.Class "form-group"]
-                        ] -< [Attr.Class "form form-inline"]
-                    )
-
+                                    ] -< [Attr.Class "form form-inline"]
         Div [
             userInputUI;
             renderOutputUIWeb outputUI
@@ -256,7 +301,7 @@ module Client =
                 async {
                     if tweetCacheChoice >= Array.length tweetCache || (user1.Username,user2.Username) <> usernamePairCache then
                         usernamePairCache <- (user1.Username,user2.Username)
-                        let! mashup =  Server.makeMashup user1.Username user2.Username
+                        let! mashup =  Server.makeMashup NotRequired user1.Username user2.Username
                         match mashup with
                         | Reponse.Success d ->
                             tweetCache <- (fun (x,_,_,_,_) -> x) d
@@ -319,7 +364,7 @@ module Client =
                 async {
                     if tweetCacheChoice >= Array.length tweetCache || (user1.Username,user2.Username) <> usernamePairCache then
                         usernamePairCache <- (user1.Username,user2.Username)
-                        let! mashup =  Server.makeMashup user1.Username user2.Username
+                        let! mashup =  Server.makeMashup NotRequired user1.Username user2.Username
                         match mashup with
                         | Reponse.Success d ->
                             tweetCache <- (fun (x,_,_,_,_) -> x) d
@@ -359,60 +404,74 @@ module Client =
             renderOutputUIMobile outputUI;
             ]
 
-    let tryItMobile () = 
+    let tryItMobile (credentials, loginUrlOption) = 
         let outputUI = buildOutputUIMobile()
         let mutable tweetCache = Array.empty<string*(string option)>
         let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
         let mutable tweetCacheChoice = 0
         let mutable usernamePairCache = ("","")
         let userInputUI =
-            Piglet.Return (fun x y -> (x, y))
-            <*> Piglet.Yield ""
-            <*> Piglet.Yield ""
-            |> Piglet.WithSubmit
-            |> Piglet.Run (fun (x, y) ->
-                async {
-                    if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
-                        usernamePairCache <- (x,y)
-                        let! mashup =  Server.makeMashup x y
-                        match mashup with
-                        | Reponse.Success d ->
-                            tweetCache <- (fun (x,_,_,_,_) -> x) d
-                            tweetCacheD <- d
-                            tweetCacheChoice <- 0
+            match loginUrlOption with
+            | None ->
+                Piglet.Return (fun x y -> (x, y))
+                <*> Piglet.Yield ""
+                <*> Piglet.Yield ""
+                |> Piglet.WithSubmit
+                |> Piglet.Run (fun (x, y) ->
+                    async {
+                        if tweetCacheChoice >= Array.length tweetCache || (x,y) <> usernamePairCache then
+                            usernamePairCache <- (x,y)
+                            let! mashup =  Server.makeMashup (match credentials with | Some c -> Credentials c | None -> NoCredentials) x y
+                            match mashup with
+                            | Reponse.Success d ->
+                                tweetCache <- (fun (x,_,_,_,_) -> x) d
+                                tweetCacheD <- d
+                                tweetCacheChoice <- 0
+                                let newD = (fun (a,b,c,x,e) -> 
+                                    let (z,a) = (Array.item tweetCacheChoice tweetCache)
+                                    (z,a,b,c,x,e)) tweetCacheD
+                                tweetCacheChoice <- tweetCacheChoice + 1
+                                processSuccessMobile outputUI newD
+                            | Reponse.Failure d ->
+                                tweetCache <- Array.empty<string*(string option)>
+                                tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
+                                tweetCacheChoice <- 0
+                                usernamePairCache <- ("","")
+                                processFailureMobile outputUI d
+
+                        else
+                            usernamePairCache <- (x,y)
                             let newD = (fun (a,b,c,x,e) -> 
                                 let (z,a) = (Array.item tweetCacheChoice tweetCache)
                                 (z,a,b,c,x,e)) tweetCacheD
                             tweetCacheChoice <- tweetCacheChoice + 1
-                            processSuccessMobile outputUI newD
-                        | Reponse.Failure d ->
-                            tweetCache <- Array.empty<string*(string option)>
-                            tweetCacheD <- (Array.empty<string*(string option)>,None,None,None,None)
-                            tweetCacheChoice <- 0
-                            usernamePairCache <- ("","")
-                            processFailureMobile outputUI d
-
-                    else
-                        usernamePairCache <- (x,y)
-                        let newD = (fun (a,b,c,x,e) -> 
-                            let (z,a) = (Array.item tweetCacheChoice tweetCache)
-                            (z,a,b,c,x,e)) tweetCacheD
-                        tweetCacheChoice <- tweetCacheChoice + 1
-                        processSuccessMobile outputUI newD                
-                }
-                |> Async.Start)
-            |> Piglet.Render (fun x y submit ->
-                    Div [       
-                            userSelectionUIMobile 1 x
-                            userSelectionUIMobile 2 y
-                            Div [
+                            processSuccessMobile outputUI newD                
+                    }
+                    |> Async.Start)
+                |> Piglet.Render (fun x y submit ->
+                        Div [       
+                                userSelectionUIMobile 1 x
+                                userSelectionUIMobile 2 y
                                 Div [
-                                    (Controls.Submit submit) -< [Attr.Class "btn go-button col-xs-12"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
-                                    ] -< [Attr.Class "input-group col-xs-12"]
-                                ] -< [Attr.Class "form-group form-group-mobile"]
-                        ] -< [Attr.Class "form form-horizontal form-mobile"]
-                    )
-
+                                    Div [
+                                        (Controls.Submit submit) -< [Attr.Class "btn go-button col-xs-12"; Attr.NewAttr "Value" "Go!"; Attr.Id "go-button"]
+                                        ] -< [Attr.Class "input-group col-xs-12"]
+                                    ] -< [Attr.Class "form-group form-group-mobile"]
+                            ] -< [Attr.Class "form form-horizontal form-mobile"]
+                        )
+            | Some loginUrl ->
+                Div [       
+                        dummyUserSelectionUIMobile 1
+                        dummyUserSelectionUIMobile 2
+                        Div [
+                            Div [
+                                A [I [Attr.Class "fa fa-twitter wow bounceIn"];
+                                            Span [Text "Authorize first!"] -< [Attr.Class "label"]
+                                            ] -< [Attr.Class "btn btn-lg twitter-button"; Attr.HRef loginUrl]
+                                ] -< [Attr.Class "input-group col-xs-12"]
+                            ] -< [Attr.Class "form-group form-group-mobile"]
+                    ] -< [Attr.Class "form form-horizontal form-mobile"]
+                            
         Div [
             userInputUI
             renderOutputUIMobile outputUI
