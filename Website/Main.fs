@@ -6,6 +6,7 @@ open Tweetinvi
 
 type EndPoint =
     | [<EndPoint "/">] Home
+    | [<EndPoint "/about">] About
     | [<Query("authorization_id", "oauth_token","oauth_verifier")>] Login of authorization_id : string * oauth_token : string * oauth_verifier : string
 
 module Templating =
@@ -27,6 +28,7 @@ module Templating =
             Content.Template<Page>("~/Main.html").With("body", fun x -> x.Body)
         Content.WithTemplate template
             {Body = body}
+
 
 module Site =
     open WebSharper.Html.Server
