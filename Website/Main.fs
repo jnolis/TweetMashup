@@ -68,7 +68,7 @@ module Site =
                             Div [
                                 H3 [Text "Tweet mashup!"]; 
                                 H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
-                                H5 [A[Text "(or help me buy a server)"] -< [Attr.HRef "http://paypal.me/jonathanadler"]]
+                                H5 [A[Text "(Now open-source!)"] -< [Attr.HRef "https://github.com/jonadler/TweetMashup"]]
                                 H5 [Text "By "; A [Text "Jonathan Adler"] -< [Attr.HRef "https://twitter.com/skyetetra"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "https://twitter.com/jesseddy" ]]
                                 ] -< [Attr.Class "text-center"]
                             ] -< [Attr.Class "container"]
@@ -110,7 +110,7 @@ module Site =
                     Div [
                         H1 [Text "Tweet mashup!"]; 
                         H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
-                        H4 [A[Text "(or help me buy a server)"] -< [Attr.HRef "http://paypal.me/jonathanadler"]]
+                        H4 [A[Text "(now open-source!)"] -< [Attr.HRef "https://github.com/jonadler/TweetMashup"]]
                         ] -< [Attr.Class "text-center"]
                     UL [
                         LI [A [Text "Pick from popular combinations"] -< [Attr.HRef "#preset"; 
