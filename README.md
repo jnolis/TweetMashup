@@ -20,3 +20,22 @@ The code behind the website tweetmashup.com. Written in F#, using [Tweetinvi](ht
    <add key="accessTokenSecret" value="YOUR_ACCESS_TOKEN_SECRET" />
 </appSettings>
 ```
+
+## How it makes a mashed up tweet
+
+Suppose we have two tweets we want to mash up. One tweet says: "I don't like to worry about spiders" while the other says "Sometimes I worry that I am a ghost." We can mash the two tweets together by combining them from the word "worry." We take the words to the left of the word "worry" in the first tweet ("I don't like to") and the the words to the right of "worry" in the second tweet ("that I am a ghost") and combine them "I dont like to worry that I am a ghost". Tweet Mashup works by doing this in an efficient manner. In more detail:
+
+  1. For two users do the following:
+    1. Download a set their tweets
+    2. For each tweet, take each word in the tweet and store how many characters into the tweet it is.
+    3. Create a dictionary that has, for each unique word, an array of the tweets and positions the word falls in.
+  2. Take the two tweet-word dictionary, and find the words that are in both of them.
+  3. Randomly pick a word from the set of words in both dictionaries.
+  4. Randomly choose an instance that word shows up in a tweet from each user, and randomly choose which user will be the beginning half of the mashed-up tweet, and which will be the ending half.
+  5. Combined these together to make one tweet.
+  
+I do a little extra work to make sure the combined tweet is at most 140 characters (including the usernames and link to tweetmashup.com). I also do some caching so that each tweet set doesn't have to be downloaded from the Twitter API every time someone wants to mashup a new tweet.
+
+## Why F#
+
+I think that F# is a great functional programming language, and the fact that it uses .NET means you can use popular packages with it (specifically in this case Tweetinvi). Websharper is a great F# package for creating both the front and back end of a website all in F#.
