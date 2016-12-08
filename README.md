@@ -36,6 +36,6 @@ Suppose we have two tweets we want to mash up. One tweet says: "I don't like to 
   
 I do a little extra work to make sure the combined tweet is at most 140 characters (including the usernames and link to tweetmashup.com). I also do some caching so that each tweet set doesn't have to be downloaded from the Twitter API every time someone wants to mashup a new tweet.
 
-## Why F#
+## Why F&#35;
 
 I think that F# is a great functional programming language, and the fact that it uses .NET means you can use popular packages with it (specifically in this case Tweetinvi). Websharper is a great F# package for creating both the front and back end of a website all in F#.
