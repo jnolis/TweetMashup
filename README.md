@@ -9,6 +9,8 @@ The code behind the website tweetmashup.com. Written in F#, using [Tweetinvi](ht
   2. In the `Website` folder of the repository, create an xml file called `AppSettingsSecrets.config` which will contain the credentials you created in the previous step (see template below)  
   4. Open the project in Visual Studio, build and run it.
   
+### Template for AppSettingsSecrets.config
+
 ```
 <appSettings>  
     <!-- Twitter--> 
