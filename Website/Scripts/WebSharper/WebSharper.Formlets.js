@@ -637,7 +637,7 @@
        if(matchValue.$==0)
         {
          formlet=this.formletBase.ApplyLayout(this);
-         form=formlet.Build();
+         form=formlet.BuildI();
          value=Util.subscribeTo(form.State,function(res)
          {
           var value1;
@@ -752,7 +752,7 @@
       var f2;
       f2=Formlet1.New(function()
       {
-       return formlet.Build();
+       return formlet.BuildI();
       },formlet.get_Layout(),Data.BaseFormlet(),Data.UtilsProvider());
       return Data.PropagateRenderFrom(formlet,f2);
      },
@@ -1847,7 +1847,7 @@
       f1=function()
       {
        var form,notify;
-       form=formlet.Build();
+       form=formlet.BuildI();
        notify=function(o)
        {
         return f(null)?form.Notify.call(null,o):null;

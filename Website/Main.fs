@@ -76,12 +76,12 @@ module Site =
                     Text " and the web server capability from ";
                     A [Text "WebSharper"] -< [Attr.HRef "http://websharper.com/"; Attr.Target "_blank"];
                     Text ". The code is open-source and available on "
-                    A[Text "GitHub"] -< [Attr.HRef "https://github.com/jonadler/TweetMashup"]
+                    A[Text "GitHub"] -< [Attr.HRef "https://github.com/jnolis/TweetMashup"]
                     Text "."
                     ]
                 H3 [Text "About us"]
                 P [
-                    A [Text "Jonathan Adler"] -< [Attr.HRef "http://jadler.info"; Attr.Target "_blank"];
+                    A [Text "Jonathan Nolis"] -< [Attr.HRef "http://jnolis.com"; Attr.Target "_blank"];
                     Text " is an advanced analytics expert and amateur software developer. "
                     A [Text "Jess Eddy"] -< [Attr.HRef "http://jesseddy.com"; Attr.Target "_blank"];
                     Text " is a user experience consultant and digital product designer.";
@@ -105,7 +105,7 @@ module Site =
                             Div [
                                 H3 [Text "Tweet mashup!"]; 
                                 H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
-                                H5 [Text "By "; A [Text "Jonathan Adler"] -< [Attr.HRef "https://twitter.com/skyetetra"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "https://twitter.com/jesseddy" ]]
+                                H5 [Text "By "; A [Text "Jonathan Nolis"] -< [Attr.HRef "http://jnolis.com"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "http://jesseddy.com/" ]]
                                 ] -< [Attr.Class "text-center"]
                             ] -< [Attr.Class "container"]
                         UL [

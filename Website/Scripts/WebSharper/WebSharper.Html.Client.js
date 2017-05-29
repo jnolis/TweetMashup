@@ -267,14 +267,14 @@
       JQueryEventSupport:Runtime.Class({
        OnBlur:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("blur",function(ev)
+        return jQuery(el.get_Body()).on("blur",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnChange:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("change",function(ev)
+        return jQuery(el.get_Body()).on("change",function(ev)
         {
          return(f(el))(ev);
         });
@@ -289,28 +289,28 @@
        },
        OnError:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("error",function(ev)
+        return jQuery(el.get_Body()).on("error",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnEvent:function(ev,f,el)
        {
-        return jQuery(el.get_Body()).bind(ev,function(ev1)
+        return jQuery(el.get_Body()).on(ev,function(ev1)
         {
          return(f(el))(ev1);
         });
        },
        OnFocus:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("focus",function(ev)
+        return jQuery(el.get_Body()).on("focus",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnKeyDown:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("keydown",function(ev)
+        return jQuery(el.get_Body()).on("keydown",function(ev)
         {
          return(f(el))({
           KeyCode:ev.keyCode,
@@ -330,7 +330,7 @@
        },
        OnKeyUp:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("keyup",function(ev)
+        return jQuery(el.get_Body()).on("keyup",function(ev)
         {
          return(f(el))({
           KeyCode:ev.keyCode,
@@ -340,14 +340,14 @@
        },
        OnLoad:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("load",function(ev)
+        return jQuery(el.get_Body()).on("load",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnMouse:function(name,f,el)
        {
-        return jQuery(el.get_Body()).bind(name,function(ev)
+        return jQuery(el.get_Body()).on(name,function(ev)
         {
          return(f(el))({
           X:ev.pageX,
@@ -382,35 +382,35 @@
        },
        OnResize:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("resize",function(ev)
+        return jQuery(el.get_Body()).on("resize",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnScroll:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("scroll",function(ev)
+        return jQuery(el.get_Body()).on("scroll",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnSelect:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("select",function(ev)
+        return jQuery(el.get_Body()).on("select",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnSubmit:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("submit",function(ev)
+        return jQuery(el.get_Body()).on("submit",function(ev)
         {
          return(f(el))(ev);
         });
        },
        OnUnLoad:function(f,el)
        {
-        return jQuery(el.get_Body()).bind("unload",function(ev)
+        return jQuery(el.get_Body()).on("unload",function(ev)
         {
          return(f(el))(ev);
         });
@@ -503,11 +503,17 @@
        },
        OnDocumentReady:function(f)
        {
-        return jQuery(document).ready(f);
+        return jQuery(document).ready(function()
+        {
+         return f(null);
+        });
        },
        OnLoad:function(node,f)
        {
-        return jQuery(node).ready(f);
+        return jQuery(node).ready(function()
+        {
+         return f(null);
+        });
        },
        Remove:function(node)
        {

@@ -158,7 +158,7 @@
        arg00=function()
        {
         var form,matchValue,body,_,body1;
-        form=formlet.Build();
+        form=formlet.BuildI();
         matchValue=formlet.get_Layout().Apply.call(null,form.Body);
         if(matchValue.$==0)
          {
@@ -193,7 +193,7 @@
        {
         var formlet1,form,objectArg,arg001,arg10,left,objectArg1,arg002,arg101,right,matchValue,combB,_,_1,bLeft,bRight,objectArg2,value,arg003;
         formlet1=_this.Bind(formlet,f);
-        form=formlet1.Build();
+        form=formlet1.BuildI();
         objectArg=_this.U.Reactive;
         arg001=form.Body;
         arg10=function(edit)
@@ -243,7 +243,7 @@
       BuildForm:function(formlet)
       {
        var form,matchValue,_,d,body;
-       form=formlet.Build();
+       form=formlet.BuildI();
        matchValue=formlet.get_Layout().Apply.call(null,form.Body);
        if(matchValue.$==1)
         {
@@ -369,7 +369,7 @@
        arg00=function()
        {
         var form,objectArg,arg001,arg10,body;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg001=form.Body;
         arg10=function(edit)
@@ -412,7 +412,7 @@
        arg00=function()
        {
         var form,objectArg,arg001,arg10,state;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg001=_this.U.Reactive.Return(Runtime.New(Result,{
          $:0,
@@ -437,7 +437,7 @@
        arg00=function()
        {
         var form,objectArg,arg001,arg10,state;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg001=_this.U.Reactive.Return(Runtime.New(Result,{
          $:1,
@@ -609,7 +609,7 @@
        Build=function()
        {
         var form,objectArg,arg00,arg10,state;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg00=form.State;
         arg10=function(x)
@@ -672,7 +672,7 @@
        arg00=function()
        {
         var form,objectArg,arg001,state,objectArg1,arg002,state1;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg001=form.State;
         state=objectArg.Drop(arg001,1);
@@ -1007,7 +1007,7 @@
         Layout:layout,
         Build1:function()
         {
-         return formlet.Build();
+         return formlet.BuildI();
         },
         Utils:this.U
        });
@@ -1050,7 +1050,7 @@
        arg00=function()
        {
         var form,objectArg,arg001,arg002,arg10,state,Body,Notify;
-        form=formlet.Build();
+        form=formlet.BuildI();
         objectArg=_this.U.Reactive;
         arg001=form.State;
         arg002=function(v)
@@ -1941,7 +1941,7 @@
       Validate:function(f,msg,flet)
       {
        var value;
-       value=flet.MapResult(function(res)
+       value=flet.MapResultI(function(res)
        {
         var _,fs,v;
         if(res.$==1)
