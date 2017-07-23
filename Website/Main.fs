@@ -142,6 +142,7 @@ module Site =
                     ] -< [Attr.Class "tab-content"]
                 ] 
         ]
+        |> Content.WithHeader "Cache-Control" "max-age=3600, must-revalidate"
     let homePage (ctx:Context<EndPoint>) =
         let localPairCombos = getPairCombos()
         let (credentials,loginUrl) =
@@ -185,6 +186,7 @@ module Site =
                 aboutText  -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "about"]
                 ] -< [Attr.Class "tab-content"]
         ]
+        |> Content.WithHeader "Cache-Control" "max-age=3600, must-revalidate"
 
     let aboutPage (isMobile:bool) (ctx:Context<EndPoint>) =
         let template = if isMobile then Templating.mobile else Templating.main
