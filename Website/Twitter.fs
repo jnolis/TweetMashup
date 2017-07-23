@@ -5,6 +5,16 @@ open System
 open System.Text.RegularExpressions
 open Newtonsoft.Json
 
+type Credit = {
+    User: string;
+    Link: string;
+}
+type Pair = {
+    Item1: string;
+    Item2: string;
+    Credit: Credit option;
+}
+
 ///The information that stores a twitter user
 type SmallUser = {
     ///The username of the twitter user

@@ -4,6 +4,8 @@ open WebSharper
 open WebSharper.Sitelets
 open Tweetinvi
 
+
+
 type EndPoint =
     | [<EndPoint "/">] Home
     | [<Query("authorization_id", "oauth_token","oauth_verifier")>] Login of authorization_id : string * oauth_token : string * oauth_verifier : string
@@ -32,15 +34,17 @@ module Templating =
 module Site =
     open WebSharper.Html.Server
     Tweetinvi.Auth.ApplicationCredentials <- Backend.Twitter.getAppCredentials()
-    let pairCombos = 
+    let getPairCombos() = 
         System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
         |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(Backend.Pair) seq> (x))
         |> Seq.map
-            (fun (x,y) -> 
+            (fun pair -> 
                 async {
-                    return match (Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) x,Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) y) with
-                            | (Some ux, Some uy) -> Some (ux.User, uy.User)
+                    return match (
+                                    Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) pair.Item1,
+                                    Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) pair.Item2) with
+                            | (Some ux, Some uy) -> Some (pair, ux.User, uy.User)
                             | _ -> None
                     }
             )
@@ -76,7 +80,7 @@ module Site =
                     Text " and the web server capability from ";
                     A [Text "WebSharper"] -< [Attr.HRef "http://websharper.com/"; Attr.Target "_blank"];
                     Text ". The code is open-source and available on "
-                    A[Text "GitHub"] -< [Attr.HRef "https://github.com/jnolis/TweetMashup"]
+                    A[Text "GitHub"] -< [Attr.HRef "https://github.com/jnolis/TweetMashup"; Attr.Target "_blank"]
                     Text "."
                     ]
                 H3 [Text "About us"]
@@ -89,7 +93,7 @@ module Site =
                 ] -< [Attr.Class "container"]
                 ]
     let mobilePage (ctx:Context<EndPoint>) =
-        let localPairCombos = pairCombos
+        let localPairCombos = getPairCombos()
         let (credentials,loginUrl) =
             match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
             | Some login -> 
@@ -127,7 +131,7 @@ module Site =
 
                                 ]-< [Html.NewAttr "role" "presentation"] 
             
-                            ] -< [Attr.Class "nav nav-tabs"; Html.NewAttr "role" "tablist"]
+                            ] -< [Attr.Class "nav nav-tabs nav-tabs-mobile"; Html.NewAttr "role" "tablist"]
                         ] -< [Attr.Class "container"]
                     ] -< [Attr.Class "bg-primary"]
 
@@ -139,7 +143,7 @@ module Site =
                 ] 
         ]
     let homePage (ctx:Context<EndPoint>) =
-        let localPairCombos = pairCombos
+        let localPairCombos = getPairCombos()
         let (credentials,loginUrl) =
             match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
             | Some login -> 

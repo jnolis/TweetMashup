@@ -287,14 +287,14 @@ module Client =
         ] -< [Attr.Class "container"]
 
 
-    let preset (userPairs: (Backend.SmallUser*Backend.SmallUser) []) = 
+    let preset (userPairs: (Backend.Pair*Backend.SmallUser*Backend.SmallUser) []) = 
         let outputUI = buildOutputUIWeb ()
         let mutable tweetCache = Array.empty<string*(string option)>
         let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
         let mutable tweetCacheChoice = 0
         let mutable usernamePairCache = ("","")
-        let pairUI (userPair:Backend.SmallUser*Backend.SmallUser) =
-            let (user1,user2) = userPair
+        let pairUI (userPair:Backend.Pair*Backend.SmallUser*Backend.SmallUser) =
+            let (pair,user1,user2) = userPair
             Piglet.Return ()
             |> Piglet.WithSubmit
             |> Piglet.Run (fun () ->
@@ -328,6 +328,16 @@ module Client =
                 }
                 |> Async.Start)
             |> Piglet.Render (fun submit ->
+                    let label = 
+                        match pair.Credit with
+                        | Some c -> 
+                            Div [H4 [Text (user1.FullName + " & " + user2.FullName)]; 
+                                 H5 [Text "(Credit: "; 
+                                     (A [Text ("@" + c.User)] -< [Attr.HRef c.Link; Attr.Target "_blank"]) :> Pagelet;
+                                     Text ")";
+                                     ]]
+                        | None ->
+                            Div [H4 [Text (user1.FullName + " & " + user2.FullName)]]
                     Div [                            
                             Div [
                                 Div [
@@ -342,7 +352,7 @@ module Client =
                                         ] -< [Attr.Class "form-group"]
                                     ] -< [Attr.Class "form form-inline col-xs-6 col-md-4"]
                                 ] -< [Attr.Class "row"]
-                            Div [H4 [Text (user1.FullName + " & " + user2.FullName)]] -< [Attr.Class "row text-center"]
+                            label -< [Attr.Class "row text-center"]
                         ] -< [Attr.Class "col-sm-6 col-md-4"]
                     )
         Div [Attr.Class "container"] -<
@@ -350,14 +360,14 @@ module Client =
             renderOutputUIWeb outputUI;
             ]
             
-    let presetMobile (userPairs: (Backend.SmallUser*Backend.SmallUser) []) =   
+    let presetMobile (userPairs: (Backend.Pair*Backend.SmallUser*Backend.SmallUser) []) =   
         let outputUI = buildOutputUIMobile ()
         let mutable tweetCache = Array.empty<string*(string option)>
         let mutable tweetCacheD = (Array.empty<string*(string option)>,None,None,None,None)
         let mutable tweetCacheChoice = 0
         let mutable usernamePairCache = ("","")
-        let pairUI (userPair:Backend.SmallUser*Backend.SmallUser) =
-            let (user1,user2) = userPair
+        let pairUI (userPair:Backend.Pair*Backend.SmallUser*Backend.SmallUser) =
+            let (pair,user1,user2) = userPair
             Piglet.Return ()
             |> Piglet.WithSubmit
             |> Piglet.Run (fun () ->
@@ -391,13 +401,33 @@ module Client =
                 }
                 |> Async.Start)
             |> Piglet.Render (fun submit ->
-                        Div [       
-                            Div [
+                        let buttonLabel =
+                            user1.FullName + " & " + user2.FullName
+                                //match pair.Credit with
+                                //| Some c -> " (credit: @" + c.User + ")"
+                                //| _ -> ""
+                        let button = 
+                            Div [       
                                 Div [
-                                    (Controls.Submit submit) -< [Attr.Class "btn go-button col-xs-12"; Attr.NewAttr "Value" (user1.FullName + " & " + user2.FullName); Attr.Id "go-button"]
-                                    ] -< [Attr.Class "input-group col-xs-12"]
-                                ] -< [Attr.Class "form-group form-group-mobile"]
-                        ] -< [Attr.Class "form form-horizontal form-mobile"]
+                                    Div [
+                                        (Controls.Submit submit) -< 
+                                            [ 
+                                                Attr.Class "btn go-button col-xs-12"; 
+                                                Attr.NewAttr "Value" buttonLabel; Attr.Id "go-button"]
+                                        ] -< [Attr.Class "input-group col-xs-12"]
+                                    ] -< [Attr.Class "form-group form-group-mobile"];                                  
+                            ] -< [Attr.Class "form form-horizontal form-mobile"]
+                        match pair.Credit with
+                            | None -> button
+                            | Some c -> 
+                                Div [
+                                    button;
+                                    P [
+                                        Text "(Credit: "; 
+                                        (A [Text ("@" + c.User)] -< [Attr.HRef c.Link; Attr.Target "_blank"]) :> Pagelet;
+                                        Text ")";
+                                        ] -< [Attr.Class "text-center credit-mobile-ui"]
+                                    ] 
                     )
         Div [Attr.Class "container tweet-mobile-ui"] -<
             [Div (userPairs |> Seq.map pairUI |> List.ofSeq); 

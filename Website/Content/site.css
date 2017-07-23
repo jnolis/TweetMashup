@@ -271,7 +271,7 @@ float: right!important;
 
 .form-mobile {
     margin: 0px 0px 0px 0px;
-    padding: 5px 0px 5px 0px;
+    padding: 2px 0px 2px 0px;
 }
 
 .tweet-mobile-ui {
@@ -292,4 +292,9 @@ float: right!important;
         display: block;
         padding: 10px 5px;
     }
+}
+
+.credit-mobile-ui {
+    font-size: 80%;
+	margin: 0px 0px 2px 0px;
 }
