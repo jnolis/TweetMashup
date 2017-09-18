@@ -1,945 +1,398 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,List,Html,Client,Attr,Tags,Operators,T,String,Website,Client1,Piglets,Piglet,Concurrency,Unchecked,Remoting,AjaxRemotingProvider,Arrays,Controls,Seq,Pervasives;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,Website,Client,List,T,UI,Next,Doc,AttrProxy,Arrays,Var,Remoting,AjaxRemotingProvider,Var1,View1,AttrModule,String;
  Runtime.Define(Global,{
   Website:{
    Client:{
-    buildOutputUIMobile:function()
+    buildOutputUI:function(isMobile,r)
     {
-     var x,presents,output,arg10,x1,user1Image,x2,user2Image,tweetThisButton,arg101,arg102,arg103,arg104,usernames;
-     x=List.ofArray([Attr.Attr().NewAttr("class","text-center")]);
-     presents=Tags.Tags().NewTag("h6",x);
-     arg10=Runtime.New(T,{
-      $:0
-     });
-     output=Operators.add(Tags.Tags().NewTag("h5",arg10),List.ofArray([Attr.Attr().NewAttr("class","text-center tweet-text-mobile")]));
-     x1=List.ofArray([Attr.Attr().NewAttr("class","img-circle img-left-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-     user1Image=Tags.Tags().NewTag("img",x1);
-     x2=List.ofArray([Attr.Attr().NewAttr("class","img-circle img-right-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-     user2Image=Tags.Tags().NewTag("img",x2);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","fa fa-twitter wow bounceIn")]);
-     arg103=List.ofArray([Tags.Tags().text("Tweet this!")]);
-     arg101=List.ofArray([Tags.Tags().NewTag("i",arg102),Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Attr.Attr().NewAttr("class","label")]))]);
-     tweetThisButton=Operators.add(Tags.Tags().NewTag("a",arg101),List.ofArray([Attr.Attr().NewAttr("class","btn btn-lg twitter-button"),Attr.Attr().NewAttr("href","http://twitter.com"),Attr.Attr().NewAttr("style","display: none;"),Attr.Attr().NewAttr("target","_blank")]));
-     arg104=List.ofArray([Attr.Attr().NewAttr("style","display: none;")]);
-     usernames=Tags.Tags().NewTag("h6",arg104);
-     return{
-      TweetText:output,
-      User1Image:user1Image,
-      User2Image:user2Image,
-      Presents:presents,
-      Usernames:usernames,
-      TweetThisButton:tweetThisButton
-     };
-    },
-    buildOutputUIWeb:function()
-    {
-     var output,arg10,x,user1Image,x1,user2Image,tweetThisButton,arg101,arg102,arg103,x2,presents,arg104,user1Name,arg105,user2Name;
-     arg10=Runtime.New(T,{
-      $:0
-     });
-     output=Operators.add(Tags.Tags().NewTag("p",arg10),List.ofArray([Attr.Attr().NewAttr("class","tweet-text text-center")]));
-     x=List.ofArray([Attr.Attr().NewAttr("class","img-circle img-left"),Attr.Attr().NewAttr("width","128"),Attr.Attr().NewAttr("height","128")]);
-     user1Image=Tags.Tags().NewTag("img",x);
-     x1=List.ofArray([Attr.Attr().NewAttr("class","img-circle img-right"),Attr.Attr().NewAttr("width","128"),Attr.Attr().NewAttr("height","128")]);
-     user2Image=Tags.Tags().NewTag("img",x1);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","fa fa-twitter wow bounceIn")]);
-     arg103=List.ofArray([Tags.Tags().text("Tweet this!")]);
-     arg101=List.ofArray([Tags.Tags().NewTag("i",arg102),Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Attr.Attr().NewAttr("class","label")]))]);
-     tweetThisButton=Operators.add(Tags.Tags().NewTag("a",arg101),List.ofArray([Attr.Attr().NewAttr("class","btn btn-lg twitter-button"),Attr.Attr().NewAttr("href","http://twitter.com"),Attr.Attr().NewAttr("style","display: none;"),Attr.Attr().NewAttr("target","_blank")]));
-     x2=List.ofArray([Attr.Attr().NewAttr("class","text-center")]);
-     presents=Tags.Tags().NewTag("h3",x2);
-     arg104=List.ofArray([Attr.Attr().NewAttr("style","display: none;")]);
-     user1Name=Tags.Tags().NewTag("h4",arg104);
-     arg105=List.ofArray([Attr.Attr().NewAttr("style","display: none;")]);
-     user2Name=Tags.Tags().NewTag("h4",arg105);
-     return{
-      TweetText:output,
-      User1Image:user1Image,
-      User2Image:user2Image,
-      Presents:presents,
-      User1Name:user1Name,
-      User2Name:user2Name,
-      TweetThisButton:tweetThisButton
-     };
-    },
-    dummyUserSelectionUIMobile:function(i)
-    {
-     var arg10,arg101,x,arg102,arg103,arg104,arg105;
-     x="Username "+String(i);
-     arg101=List.ofArray([Tags.Tags().text(x)]);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-12")]);
-     arg103=List.ofArray([Attr.Attr().NewAttr("class","input-group-addon"),Attr.Attr().NewAttr("id","username"+String(i))]);
-     arg105="username"+String(i);
-     arg104=List.ofArray([Attr.Attr().NewAttr("value",""),Attr.Attr().NewAttr("type","text"),Attr.Attr().NewAttr("class","form-control"),Attr.Attr().NewAttr("disabled",""),Attr.Attr().NewAttr("placeholder","username"),Attr.Attr().NewAttr("aria-describedby",arg105)]);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("label",arg101),List.ofArray([Attr.Attr().NewAttr("class","sr-only"),Attr.Attr().NewAttr("for","username"+String(i))])),Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Tags.Tags().text("@")])),Tags.Tags().NewTag("input",arg104)]))]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form-group form-group-mobile")]));
-    },
-    dummyUserSelectionUIWeb:function(i)
-    {
-     var arg10,arg101,x,arg102,arg103,arg104,arg105;
-     x="Username "+String(i);
-     arg101=List.ofArray([Tags.Tags().text(x)]);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","input-group input-group-lg col-md-10")]);
-     arg103=List.ofArray([Attr.Attr().NewAttr("class","input-group-addon"),Attr.Attr().NewAttr("id","username"+String(i))]);
-     arg105="username"+String(i);
-     arg104=List.ofArray([Attr.Attr().NewAttr("value",""),Attr.Attr().NewAttr("type","text"),Attr.Attr().NewAttr("class","form-control"),Attr.Attr().NewAttr("disabled",""),Attr.Attr().NewAttr("placeholder","username"),Attr.Attr().NewAttr("aria-describedby",arg105)]);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("label",arg101),List.ofArray([Attr.Attr().NewAttr("class","sr-only"),Attr.Attr().NewAttr("for","username"+String(i))])),Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Tags.Tags().text("@")])),Tags.Tags().NewTag("input",arg104)]))]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form-group")]));
-    },
-    preset:function(userPairs)
-    {
-     var outputUI,tweetCache,tweetCacheD,tweetCacheChoice,usernamePairCache,pairUI,arg1011,source,x6;
-     outputUI=Client1.buildOutputUIWeb();
-     tweetCache=[[]];
-     tweetCacheD=[[[],{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     }]];
-     tweetCacheChoice=[0];
-     usernamePairCache=[["",""]];
-     pairUI=function(userPair)
-     {
-      var user2,user1,pair,_arg00_,x,action,x5,_arg00_1;
-      user2=userPair[2];
-      user1=userPair[1];
-      pair=userPair[0];
-      _arg00_=Piglet.Return(null);
-      x=Piglet.WithSubmit(_arg00_);
-      action=function()
-      {
-       var arg00;
-       arg00=Concurrency.Delay(function()
-       {
-        var _,x1,tupledArg1,a2,b1,c1,x4,e1,index1,patternInput1,z1,a3,newD1,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1;
-        if(tweetCacheChoice[0]>=tweetCache[0].length?true:!Unchecked.Equals([user1.Username,user2.Username],usernamePairCache[0]))
-         {
-          usernamePairCache[0]=[user1.Username,user2.Username];
-          x1=AjaxRemotingProvider.Async("Website:0",[{
-           $:2
-          },user1.Username,user2.Username]);
-          _=Concurrency.Bind(x1,function(_arg1)
-          {
-           var _1,d,d1,x2,tupledArg,a,b,c,x3,e,index,patternInput,z,a1,newD,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_;
-           if(_arg1.$==1)
-            {
-             d=_arg1.$0;
-             tweetCache[0]=[];
-             tweetCacheD[0]=[[],{
-              $:0
-             },{
-              $:0
-             },{
-              $:0
-             },{
-              $:0
-             }];
-             tweetCacheChoice[0]=0;
-             usernamePairCache[0]=["",""];
-             Client1.processFailureWeb(outputUI,d);
-             _1=Concurrency.Return(null);
-            }
-           else
-            {
-             d1=_arg1.$0;
-             x2=d1[0];
-             d1[1];
-             d1[2];
-             d1[3];
-             d1[4];
-             tweetCache[0]=x2;
-             tweetCacheD[0]=d1;
-             tweetCacheChoice[0]=0;
-             tupledArg=tweetCacheD[0];
-             a=tupledArg[0];
-             b=tupledArg[1];
-             c=tupledArg[2];
-             x3=tupledArg[3];
-             e=tupledArg[4];
-             index=tweetCacheChoice[0];
-             patternInput=Arrays.get(tweetCache[0],index);
-             z=patternInput[0];
-             a1=patternInput[1];
-             newD=[z,a1,b,c,x3,e];
-             tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-             _arg10_=newD[0];
-             _arg11_=newD[1];
-             _arg12_=newD[2];
-             _arg13_=newD[3];
-             _arg14_=newD[4];
-             _arg15_=newD[5];
-             Client1.processSuccessWeb(outputUI,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_);
-             _1=Concurrency.Return(null);
-            }
-           return _1;
-          });
-         }
-        else
-         {
-          usernamePairCache[0]=[user1.Username,user2.Username];
-          tupledArg1=tweetCacheD[0];
-          a2=tupledArg1[0];
-          b1=tupledArg1[1];
-          c1=tupledArg1[2];
-          x4=tupledArg1[3];
-          e1=tupledArg1[4];
-          index1=tweetCacheChoice[0];
-          patternInput1=Arrays.get(tweetCache[0],index1);
-          z1=patternInput1[0];
-          a3=patternInput1[1];
-          newD1=[z1,a3,b1,c1,x4,e1];
-          tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-          _arg10_1=newD1[0];
-          _arg11_1=newD1[1];
-          _arg12_1=newD1[2];
-          _arg13_1=newD1[3];
-          _arg14_1=newD1[4];
-          _arg15_1=newD1[5];
-          Client1.processSuccessWeb(outputUI,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1);
-          _=Concurrency.Return(null);
-         }
-        return _;
-       });
-       return Concurrency.Start(arg00,{
-        $:0
-       });
-      };
-      x5=Piglet.Run(action,x);
-      _arg00_1=function(submit)
-      {
-       var matchValue,label,_,arg10,arg101,x1,c,arg102,arg103,x2,arg104,arg105,x3,arg106,arg107,arg108,arg109,arg10a,arg10b,arg10c,arg10d,arg10e,arg10f,arg1010;
-       matchValue=pair.Credit;
-       if(matchValue.$==0)
-        {
-         x1=user1.FullName+" & "+user2.FullName;
-         arg101=List.ofArray([Tags.Tags().text(x1)]);
-         arg10=List.ofArray([Tags.Tags().NewTag("h4",arg101)]);
-         _=Tags.Tags().NewTag("div",arg10);
-        }
-       else
-        {
-         c=matchValue.$0;
-         x2=user1.FullName+" & "+user2.FullName;
-         arg103=List.ofArray([Tags.Tags().text(x2)]);
-         x3="@"+c.User;
-         arg105=List.ofArray([Tags.Tags().text(x3)]);
-         arg106=c.Link;
-         arg104=List.ofArray([Tags.Tags().text("(Credit: "),Operators.add(Tags.Tags().NewTag("a",arg105),List.ofArray([Attr.Attr().NewAttr("href",arg106),Attr.Attr().NewAttr("target","_blank")])),Tags.Tags().text(")")]);
-         arg102=List.ofArray([Tags.Tags().NewTag("h4",arg103),Tags.Tags().NewTag("h5",arg104)]);
-         _=Tags.Tags().NewTag("div",arg102);
-        }
-       label=_;
-       arg10b=user1.Image;
-       arg10a=List.ofArray([Attr.Attr().NewAttr("src",arg10b),Attr.Attr().NewAttr("class","img-circle img-left-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-       arg10d=user2.Image;
-       arg10c=List.ofArray([Attr.Attr().NewAttr("src",arg10d),Attr.Attr().NewAttr("class","img-circle img-right-small"),Attr.Attr().NewAttr("width","96"),Attr.Attr().NewAttr("height","96")]);
-       arg109=List.ofArray([Tags.Tags().NewTag("img",arg10a),Tags.Tags().NewTag("img",arg10c)]);
-       arg1010=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
-       arg10f=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg1010),List.ofArray([Attr.Attr().NewAttr("class","input-group")]))]);
-       arg10e=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10f),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
-       arg108=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small col-xs-6 col-md-8")])),Operators.add(Tags.Tags().NewTag("div",arg10e),List.ofArray([Attr.Attr().NewAttr("class","form form-inline col-xs-6 col-md-4")]))]);
-       arg107=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(label,List.ofArray([Attr.Attr().NewAttr("class","row text-center")]))]);
-       return Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","col-sm-6 col-md-4")]));
-      };
-      return Piglet.Render(_arg00_1,x5);
-     };
-     arg1011=List.ofArray([Attr.Attr().NewAttr("class","container")]);
-     source=Seq.map(pairUI,userPairs);
-     x6=List.ofSeq(source);
-     return Operators.add(Tags.Tags().NewTag("div",arg1011),List.ofArray([Operators.add(Tags.Tags().NewTag("div",x6),List.ofArray([Attr.Attr().NewAttr("class","row")])),Client1.renderOutputUIWeb(outputUI)]));
-    },
-    presetMobile:function(userPairs)
-    {
-     var outputUI,tweetCache,tweetCacheD,tweetCacheChoice,usernamePairCache,pairUI,arg107,source,x6;
-     outputUI=Client1.buildOutputUIMobile();
-     tweetCache=[[]];
-     tweetCacheD=[[[],{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     }]];
-     tweetCacheChoice=[0];
-     usernamePairCache=[["",""]];
-     pairUI=function(userPair)
-     {
-      var user2,user1,pair,_arg00_,x,action,x5,_arg00_1;
-      user2=userPair[2];
-      user1=userPair[1];
-      pair=userPair[0];
-      _arg00_=Piglet.Return(null);
-      x=Piglet.WithSubmit(_arg00_);
-      action=function()
-      {
-       var arg00;
-       arg00=Concurrency.Delay(function()
-       {
-        var _,x1,tupledArg1,a2,b1,c1,x4,e1,index1,patternInput1,z1,a3,newD1,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1;
-        if(tweetCacheChoice[0]>=tweetCache[0].length?true:!Unchecked.Equals([user1.Username,user2.Username],usernamePairCache[0]))
-         {
-          usernamePairCache[0]=[user1.Username,user2.Username];
-          x1=AjaxRemotingProvider.Async("Website:0",[{
-           $:2
-          },user1.Username,user2.Username]);
-          _=Concurrency.Bind(x1,function(_arg1)
-          {
-           var _1,d,d1,x2,tupledArg,a,b,c,x3,e,index,patternInput,z,a1,newD,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_;
-           if(_arg1.$==1)
-            {
-             d=_arg1.$0;
-             tweetCache[0]=[];
-             tweetCacheD[0]=[[],{
-              $:0
-             },{
-              $:0
-             },{
-              $:0
-             },{
-              $:0
-             }];
-             tweetCacheChoice[0]=0;
-             usernamePairCache[0]=["",""];
-             Client1.processFailureMobile(outputUI,d);
-             _1=Concurrency.Return(null);
-            }
-           else
-            {
-             d1=_arg1.$0;
-             x2=d1[0];
-             d1[1];
-             d1[2];
-             d1[3];
-             d1[4];
-             tweetCache[0]=x2;
-             tweetCacheD[0]=d1;
-             tweetCacheChoice[0]=0;
-             tupledArg=tweetCacheD[0];
-             a=tupledArg[0];
-             b=tupledArg[1];
-             c=tupledArg[2];
-             x3=tupledArg[3];
-             e=tupledArg[4];
-             index=tweetCacheChoice[0];
-             patternInput=Arrays.get(tweetCache[0],index);
-             z=patternInput[0];
-             a1=patternInput[1];
-             newD=[z,a1,b,c,x3,e];
-             tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-             _arg10_=newD[0];
-             _arg11_=newD[1];
-             _arg12_=newD[2];
-             _arg13_=newD[3];
-             _arg14_=newD[4];
-             _arg15_=newD[5];
-             Client1.processSuccessMobile(outputUI,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_);
-             _1=Concurrency.Return(null);
-            }
-           return _1;
-          });
-         }
-        else
-         {
-          usernamePairCache[0]=[user1.Username,user2.Username];
-          tupledArg1=tweetCacheD[0];
-          a2=tupledArg1[0];
-          b1=tupledArg1[1];
-          c1=tupledArg1[2];
-          x4=tupledArg1[3];
-          e1=tupledArg1[4];
-          index1=tweetCacheChoice[0];
-          patternInput1=Arrays.get(tweetCache[0],index1);
-          z1=patternInput1[0];
-          a3=patternInput1[1];
-          newD1=[z1,a3,b1,c1,x4,e1];
-          tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-          _arg10_1=newD1[0];
-          _arg11_1=newD1[1];
-          _arg12_1=newD1[2];
-          _arg13_1=newD1[3];
-          _arg14_1=newD1[4];
-          _arg15_1=newD1[5];
-          Client1.processSuccessMobile(outputUI,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1);
-          _=Concurrency.Return(null);
-         }
-        return _;
-       });
-       return Concurrency.Start(arg00,{
-        $:0
-       });
-      };
-      x5=Piglet.Run(action,x);
-      _arg00_1=function(submit)
-      {
-       var buttonLabel,button,arg10,arg101,arg102,matchValue,_,c,arg103,arg104,arg105,x1,arg106;
-       buttonLabel=user1.FullName+" & "+user2.FullName;
-       arg102=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button col-xs-12"),Attr.Attr().NewAttr("Value",buttonLabel),Attr.Attr().NewAttr("id","go-button")]))]);
-       arg101=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-12")]))]);
-       arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","form-group form-group-mobile")]))]);
-       button=Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form form-horizontal form-mobile")]));
-       matchValue=pair.Credit;
-       if(matchValue.$==1)
-        {
-         c=matchValue.$0;
-         x1="@"+c.User;
-         arg105=List.ofArray([Tags.Tags().text(x1)]);
-         arg106=c.Link;
-         arg104=List.ofArray([Tags.Tags().text("(Credit: "),Operators.add(Tags.Tags().NewTag("a",arg105),List.ofArray([Attr.Attr().NewAttr("href",arg106),Attr.Attr().NewAttr("target","_blank")])),Tags.Tags().text(")")]);
-         arg103=List.ofArray([button,Operators.add(Tags.Tags().NewTag("p",arg104),List.ofArray([Attr.Attr().NewAttr("class","text-center credit-mobile-ui")]))]);
-         _=Tags.Tags().NewTag("div",arg103);
-        }
-       else
-        {
-         _=button;
-        }
-       return _;
-      };
-      return Piglet.Render(_arg00_1,x5);
-     };
-     arg107=List.ofArray([Attr.Attr().NewAttr("class","container tweet-mobile-ui")]);
-     source=Seq.map(pairUI,userPairs);
-     x6=List.ofSeq(source);
-     return Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Tags.Tags().NewTag("div",x6),Client1.renderOutputUIMobile(outputUI)]));
-    },
-    processFailureMobile:function(outputUI,failureText)
-    {
-     var _this,_this1,_this2,_this3,_this4;
-     _this=outputUI.TweetThisButton;
-     _this["HtmlProvider@33"].SetAttribute(_this.get_Body(),"style","");
-     outputUI.TweetText.set_Text(failureText);
-     _this1=outputUI.User1Image;
-     _this1["HtmlProvider@33"].RemoveAttribute(_this1.get_Body(),"src");
-     _this2=outputUI.User2Image;
-     _this2["HtmlProvider@33"].RemoveAttribute(_this2.get_Body(),"src");
-     _this3=outputUI.Usernames;
-     _this3["HtmlProvider@33"].SetAttribute(_this3.get_Body(),"style","display: none;");
-     _this4=outputUI.TweetThisButton;
-     return _this4["HtmlProvider@33"].SetAttribute(_this4.get_Body(),"style","display: none;");
-    },
-    processFailureWeb:function(outputUI,failureText)
-    {
-     var _this,_this1,_this2,_this3,_this4,_this5;
-     _this=outputUI.TweetThisButton;
-     _this["HtmlProvider@33"].SetAttribute(_this.get_Body(),"style","");
-     outputUI.TweetText.set_Text(failureText);
-     _this1=outputUI.User1Image;
-     _this1["HtmlProvider@33"].RemoveAttribute(_this1.get_Body(),"src");
-     _this2=outputUI.User1Name;
-     _this2["HtmlProvider@33"].SetAttribute(_this2.get_Body(),"style","display: none;");
-     _this3=outputUI.User2Image;
-     _this3["HtmlProvider@33"].RemoveAttribute(_this3.get_Body(),"src");
-     _this4=outputUI.User2Name;
-     _this4["HtmlProvider@33"].SetAttribute(_this4.get_Body(),"style","display: none;");
-     _this5=outputUI.TweetThisButton;
-     return _this5["HtmlProvider@33"].SetAttribute(_this5.get_Body(),"style","display: none;");
-    },
-    processSuccessMobile:function(_,_1,_2,_3,_4,_5,_6)
-    {
-     var resultValues,_this,user2NameOption,user2ImageURLOption,user1NameOption,user1ImageURLOption,tweetTextForLink,tweetText;
-     resultValues=[_1,_2,_3,_4,_5,_6];
-     _this=_.TweetThisButton;
-     _this["HtmlProvider@33"].SetAttribute(_this.get_Body(),"style","");
-     user2NameOption=resultValues[4];
-     user2ImageURLOption=resultValues[5];
-     user1NameOption=resultValues[2];
-     user1ImageURLOption=resultValues[3];
-     tweetTextForLink=resultValues[1];
-     tweetText=resultValues[0];
-     Client1.processTweetText(tweetText,_.Presents,_.TweetText);
-     Client1.processTweetTextForLink(tweetTextForLink,_.TweetThisButton);
-     Client1.processUserNames(user1NameOption,user2NameOption,_.Usernames);
-     Client1.processUserImage(user1ImageURLOption,_.User1Image);
-     return Client1.processUserImage(user2ImageURLOption,_.User2Image);
-    },
-    processSuccessWeb:function(_,_1,_2,_3,_4,_5,_6)
-    {
-     var resultValues,user2NameOption,user2ImageURLOption,user1NameOption,user1ImageURLOption,tweetTextForLink,tweetText;
-     resultValues=[_1,_2,_3,_4,_5,_6];
-     user2NameOption=resultValues[4];
-     user2ImageURLOption=resultValues[5];
-     user1NameOption=resultValues[2];
-     user1ImageURLOption=resultValues[3];
-     tweetTextForLink=resultValues[1];
-     tweetText=resultValues[0];
-     Client1.processTweetText(tweetText,_.Presents,_.TweetText);
-     Client1.processTweetTextForLink(tweetTextForLink,_.TweetThisButton);
-     Client1.processUserName(user1NameOption,_.User1Name);
-     Client1.processUserName(user2NameOption,_.User2Name);
-     Client1.processUserImage(user1ImageURLOption,_.User1Image);
-     return Client1.processUserImage(user2ImageURLOption,_.User2Image);
-    },
-    processTweetText:function(tweetText,presents,e)
-    {
-     presents.set_Text("TweetMashup.com presents:");
-     return e.set_Text(tweetText);
-    },
-    processTweetTextForLink:function(tweetTextForLink,tweetThisButton)
-    {
-     var _,linkURL,arg20;
-     if(tweetTextForLink.$==0)
-      {
-       _=tweetThisButton["HtmlProvider@33"].SetAttribute(tweetThisButton.get_Body(),"disabled","");
-      }
-     else
-      {
-       linkURL=tweetTextForLink.$0;
-       tweetThisButton["HtmlProvider@33"].RemoveAttribute(tweetThisButton.get_Body(),"disabled");
-       tweetThisButton["HtmlProvider@33"].RemoveAttribute(tweetThisButton.get_Body(),"style");
-       arg20="https://twitter.com/intent/tweet?text="+linkURL;
-       _=tweetThisButton["HtmlProvider@33"].SetAttribute(tweetThisButton.get_Body(),"href",arg20);
-      }
-     return _;
-    },
-    processUserImage:function(userImageURLOption,userImage)
-    {
-     var _,userImageURL;
-     if(userImageURLOption.$==0)
-      {
-       _=userImage["HtmlProvider@33"].RemoveAttribute(userImage.get_Body(),"src");
-      }
-     else
-      {
-       userImageURL=userImageURLOption.$0;
-       _=userImage["HtmlProvider@33"].SetAttribute(userImage.get_Body(),"src",userImageURL);
-      }
-     return _;
-    },
-    processUserName:function(userNameOption,userName)
-    {
-     var _,userNameText;
-     if(userNameOption.$==0)
-      {
-       _=userName["HtmlProvider@33"].SetAttribute(userName.get_Body(),"style","display: none;");
-      }
-     else
-      {
-       userNameText=userNameOption.$0;
-       userName.set_Text(userNameText);
-       _=userName["HtmlProvider@33"].RemoveAttribute(userName.get_Body(),"style");
-      }
-     return _;
-    },
-    processUserNames:function(user1NameOption,user2NameOption,usernames)
-    {
-     var matchValue,_,_1,user1NameText,user2NameText;
-     matchValue=[user1NameOption,user2NameOption];
-     if(matchValue[0].$==1)
+     var matchValue,_,_1,m,arg20,r1,_2,m1,arg201,r2;
+     matchValue=[isMobile,r];
+     if(matchValue[0])
       {
        if(matchValue[1].$==1)
         {
-         user1NameText=matchValue[0].$0;
-         user2NameText=matchValue[1].$0;
-         usernames.set_Text(user1NameText+" & "+user2NameText);
-         _1=usernames["HtmlProvider@33"].RemoveAttribute(usernames.get_Body(),"style");
+         m=matchValue[1].$0;
+         _1=Client.buildOutputUIFailureMobile(m);
         }
        else
         {
-         _1=usernames["HtmlProvider@33"].SetAttribute(usernames.get_Body(),"style","display: none;");
+         if(matchValue[1].$==2)
+          {
+           arg20=Runtime.New(T,{
+            $:0
+           });
+           _1=Doc.Element("div",[],arg20);
+          }
+         else
+          {
+           r1=matchValue[1].$0;
+           _1=Client.buildOutputUIMobile(r1);
+          }
         }
        _=_1;
       }
      else
       {
-       _=usernames["HtmlProvider@33"].SetAttribute(usernames.get_Body(),"style","display: none;");
+       if(matchValue[1].$==1)
+        {
+         m1=matchValue[1].$0;
+         _2=Client.buildOutputUIFailureWeb(m1);
+        }
+       else
+        {
+         if(matchValue[1].$==2)
+          {
+           arg201=Runtime.New(T,{
+            $:0
+           });
+           _2=Doc.Element("div",[],arg201);
+          }
+         else
+          {
+           r2=matchValue[1].$0;
+           _2=Client.buildOutputUIWeb(r2);
+          }
+        }
+       _=_2;
       }
      return _;
     },
-    renderOutputUIMobile:function(outputUI)
+    buildOutputUIFailureMobile:function(message)
     {
-     var arg10,arg101,arg102,arg103,arg104,arg105,arg106;
-     arg102=List.ofArray([outputUI.User1Image,outputUI.User2Image]);
-     arg103=List.ofArray([outputUI.Usernames]);
-     arg101=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images-small")])),Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","text-center")]))]);
-     arg104=List.ofArray([outputUI.Presents]);
-     arg105=List.ofArray([outputUI.TweetText]);
-     arg106=List.ofArray([outputUI.TweetThisButton]);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","col-xs-12")])),Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","col-xs-12")])),Operators.add(Tags.Tags().NewTag("div",arg105),List.ofArray([Attr.Attr().NewAttr("class","col-xs-12")])),Operators.add(Tags.Tags().NewTag("div",arg106),List.ofArray([Attr.Attr().NewAttr("class","text-center col-xs-12")]))]);
-     return Tags.Tags().NewTag("div",arg10);
+     var Text,attrs;
+     Text=List.ofArray([Doc.TextNode(message)]);
+     attrs=[];
+     return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h5",[AttrProxy.Create("class","text-center tweet-text-mobile")],Arrays.ofSeq(Text)),Doc.TextNode("\u0009\u0009\n\u0009")]),Doc.TextNode("\n")])]);
     },
-    renderOutputUIWeb:function(outputUI)
+    buildOutputUIFailureWeb:function(message)
     {
-     var arg10,arg101,arg102,arg103,arg104,arg105,arg106,arg107;
-     arg102=List.ofArray([outputUI.User1Name]);
-     arg103=List.ofArray([outputUI.User1Image,outputUI.User2Image]);
-     arg104=List.ofArray([outputUI.User2Name]);
-     arg101=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")])),Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","overlapping-images col-md-4 col-lg-4")])),Operators.add(Tags.Tags().NewTag("div",arg104),List.ofArray([Attr.Attr().NewAttr("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")]))]);
-     arg105=List.ofArray([outputUI.Presents]);
-     arg106=List.ofArray([outputUI.TweetText]);
-     arg107=List.ofArray([outputUI.TweetThisButton]);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg105),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg106),List.ofArray([Attr.Attr().NewAttr("class","row")])),Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","text-center row")]))]);
-     return Tags.Tags().NewTag("div",arg10);
+     var Text,attrs;
+     Text=List.ofArray([Doc.TextNode(message)]);
+     attrs=[];
+     return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("p",[AttrProxy.Create("class","tweet-text text-center")],Arrays.ofSeq(Text)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n")])]);
     },
-    tryIt:function(credentials,loginUrlOption)
+    buildOutputUIMobile:function(result)
     {
-     var outputUI,usernamePairCache,tweetCache,tweetCacheD,tweetCacheChoice,userInputUI,_,loginUrl,arg10,arg101,arg102,arg103,arg104,arg105,arg106,_arg00_,x1,action,x6,_arg00_1,arg10c;
-     outputUI=Client1.buildOutputUIWeb();
-     usernamePairCache=[["",""]];
+     var Images,Usernames,Text,Link,attrs,attrs1;
+     Images=List.ofArray([Doc.Element("img",List.ofArray([AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User1.Image)]),Runtime.New(T,{
+      $:0
+     })),Doc.Element("img",List.ofArray([AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User2.Image)]),Runtime.New(T,{
+      $:0
+     }))]);
+     Usernames=List.ofArray([Doc.TextNode(result.User1.FullName+" & "+result.User2.FullName)]);
+     Text=List.ofArray([Doc.TextNode(result.Combined.Tweet)]);
+     Link=List.ofArray([Doc.Element("a",List.ofArray([AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")]),List.ofArray([Doc.Element("i",List.ofArray([AttrProxy.Create("class","fa fa-twitter wow bounceIn")]),Runtime.New(T,{
+      $:0
+     })),Doc.Element("span",List.ofArray([AttrProxy.Create("class","label")]),List.ofArray([Doc.TextNode("Tweet this!")]))]))]);
+     attrs=[];
+     attrs1=[AttrProxy.Create("class","col-xs-12")];
+     return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",attrs1,[Doc.TextNode("\n        "),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n                        "),Doc.Element("div",[AttrProxy.Create("class","overlapping-images-small")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n        "),Doc.Element("div",[AttrProxy.Create("class","text-center")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h6",[AttrProxy.Create("class","text-center")],Arrays.ofSeq(Usernames)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n    ")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h6",[AttrProxy.Create("class","text-center")],[Doc.TextNode("TweetMashup.com Presents:")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h5",[AttrProxy.Create("class","text-center tweet-text-mobile")],Arrays.ofSeq(Text)),Doc.TextNode("\u0009\u0009\u0009\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","text-center col-xs-12")],Arrays.ofSeq(Link)),Doc.TextNode("\n")])]);
+    },
+    buildOutputUIWeb:function(result)
+    {
+     var User1FullName,User1Username,Images,User2FullName,User2Username,Text,Link,attrs,attrs1;
+     User1FullName=List.ofArray([Doc.TextNode(result.User1.FullName)]);
+     User1Username=List.ofArray([Doc.TextNode("@"+result.User1.Username)]);
+     Images=List.ofArray([Doc.Element("img",List.ofArray([AttrProxy.Create("class","img-circle img-left"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User1.Image)]),Runtime.New(T,{
+      $:0
+     })),Doc.Element("img",List.ofArray([AttrProxy.Create("class","img-circle img-right"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User2.Image)]),Runtime.New(T,{
+      $:0
+     }))]);
+     User2FullName=List.ofArray([Doc.TextNode(result.User2.FullName)]);
+     User2Username=List.ofArray([Doc.TextNode("@"+result.User2.Username)]);
+     Text=List.ofArray([Doc.TextNode(result.Combined.Tweet)]);
+     Link=List.ofArray([Doc.Element("a",List.ofArray([AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")]),List.ofArray([Doc.Element("i",List.ofArray([AttrProxy.Create("class","fa fa-twitter wow bounceIn")]),Runtime.New(T,{
+      $:0
+     })),Doc.Element("span",List.ofArray([AttrProxy.Create("class","label")]),List.ofArray([Doc.TextNode("Tweet this!")]))]))]);
+     attrs=[];
+     attrs1=[AttrProxy.Create("class","row")];
+     return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",attrs1,[Doc.TextNode(" \n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User1FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User1Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","overlapping-images col-md-4 col-lg-4")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User2FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User2Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h3",[AttrProxy.Create("class","text-center")],[Doc.TextNode(" TweetMashup.com presents:")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("p",[AttrProxy.Create("class","tweet-text text-center")],Arrays.ofSeq(Text)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","text-center row")],Arrays.ofSeq(Link)),Doc.TextNode("\n")])]);
+    },
+    preset:function(isMobile,userPairs)
+    {
+     var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,pairUI,outputUIView;
      tweetCache=[[]];
-     tweetCacheD=[[[],{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     }]];
+     tweetCacheUser1=[{
+      Username:"",
+      FullName:"",
+      Image:""
+     }];
+     tweetCacheUser2=[{
+      Username:"",
+      FullName:"",
+      Image:""
+     }];
      tweetCacheChoice=[0];
-     if(loginUrlOption.$==1)
+     outputUIData=Var.Create({
+      $:2
+     });
+     pairUI=function(_arg1)
+     {
+      var user2,user1,onSubmit,GoButton,Images,GoButton1,Usernames,attrs,attrs1;
+      user2=_arg1[1];
+      user1=_arg1[0];
+      onSubmit=function()
       {
-       loginUrl=loginUrlOption.$0;
-       arg102=List.ofArray([Tags.Tags().text("&")]);
-       arg101=List.ofArray([Tags.Tags().NewTag("h1",arg102)]);
-       arg105=List.ofArray([Attr.Attr().NewAttr("class","fa fa-twitter wow bounceIn")]);
-       arg106=List.ofArray([Tags.Tags().text("Authorize to  make your own!")]);
-       arg104=List.ofArray([Tags.Tags().NewTag("i",arg105),Operators.add(Tags.Tags().NewTag("span",arg106),List.ofArray([Attr.Attr().NewAttr("class","label")]))]);
-       arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("a",arg104),List.ofArray([Attr.Attr().NewAttr("class","btn btn-lg twitter-button"),Attr.Attr().NewAttr("href",loginUrl)]))]);
-       arg10=List.ofArray([Client1.dummyUserSelectionUIWeb(1),Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","form-group")])),Client1.dummyUserSelectionUIWeb(2),Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
-       _=Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form form-inline")]));
-      }
-     else
-      {
-       _arg00_=Pervasives.op_LessMultiplyGreater(Pervasives.op_LessMultiplyGreater(Piglet.Return(function(x)
-       {
-        return function(y)
+       var mashup,d,d1,resultValue,index,resultValue1,index1;
+       if((tweetCacheChoice[0]>=tweetCache[0].length?true:user1.Username!==tweetCacheUser1[0].Username)?true:user2.Username!==tweetCacheUser2[0].Username)
         {
-         return[x,y];
-        };
-       }),Piglet.Yield("")),Piglet.Yield(""));
-       x1=Piglet.WithSubmit(_arg00_);
-       action=function(tupledArg)
-       {
-        var x,y,arg00;
-        x=tupledArg[0];
-        y=tupledArg[1];
-        arg00=Concurrency.Delay(function()
-        {
-         var _1,x2,_2,c,tupledArg2,a2,b1,c2,x5,e1,index1,patternInput1,z1,a3,newD1,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1;
-         if(tweetCacheChoice[0]>=tweetCache[0].length?true:!Unchecked.Equals([x,y],usernamePairCache[0]))
+         mashup=AjaxRemotingProvider.Sync("Website:0",[{
+          $:2
+         },user1.Username,user2.Username]);
+         if(mashup.$==1)
           {
-           usernamePairCache[0]=[x,y];
-           if(credentials.$==0)
-            {
-             _2={
-              $:1
-             };
-            }
-           else
-            {
-             c=credentials.$0;
-             _2={
-              $:0,
-              $0:c
-             };
-            }
-           x2=AjaxRemotingProvider.Async("Website:0",[_2,x,y]);
-           _1=Concurrency.Bind(x2,function(_arg1)
-           {
-            var _3,d,d1,x3,tupledArg1,a,b,c1,x4,e,index,patternInput,z,a1,newD,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_;
-            if(_arg1.$==1)
-             {
-              d=_arg1.$0;
-              tweetCache[0]=[];
-              tweetCacheD[0]=[[],{
-               $:0
-              },{
-               $:0
-              },{
-               $:0
-              },{
-               $:0
-              }];
-              tweetCacheChoice[0]=0;
-              usernamePairCache[0]=["",""];
-              Client1.processFailureWeb(outputUI,d);
-              _3=Concurrency.Return(null);
-             }
-            else
-             {
-              d1=_arg1.$0;
-              x3=d1[0];
-              d1[1];
-              d1[2];
-              d1[3];
-              d1[4];
-              tweetCache[0]=x3;
-              tweetCacheD[0]=d1;
-              tweetCacheChoice[0]=0;
-              tupledArg1=tweetCacheD[0];
-              a=tupledArg1[0];
-              b=tupledArg1[1];
-              c1=tupledArg1[2];
-              x4=tupledArg1[3];
-              e=tupledArg1[4];
-              index=tweetCacheChoice[0];
-              patternInput=Arrays.get(tweetCache[0],index);
-              z=patternInput[0];
-              a1=patternInput[1];
-              newD=[z,a1,b,c1,x4,e];
-              tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-              _arg10_=newD[0];
-              _arg11_=newD[1];
-              _arg12_=newD[2];
-              _arg13_=newD[3];
-              _arg14_=newD[4];
-              _arg15_=newD[5];
-              Client1.processSuccessWeb(outputUI,_arg10_,_arg11_,_arg12_,_arg13_,_arg14_,_arg15_);
-              _3=Concurrency.Return(null);
-             }
-            return _3;
+           d=mashup.$0;
+           tweetCache[0]=[];
+           tweetCacheUser1[0]={
+            Username:"",
+            FullName:"",
+            Image:""
+           };
+           tweetCacheUser2[0]={
+            Username:"",
+            FullName:"",
+            Image:""
+           };
+           return Var1.Set(outputUIData,{
+            $:1,
+            $0:d
            });
           }
          else
           {
-           usernamePairCache[0]=[x,y];
-           tupledArg2=tweetCacheD[0];
-           a2=tupledArg2[0];
-           b1=tupledArg2[1];
-           c2=tupledArg2[2];
-           x5=tupledArg2[3];
-           e1=tupledArg2[4];
-           index1=tweetCacheChoice[0];
-           patternInput1=Arrays.get(tweetCache[0],index1);
-           z1=patternInput1[0];
-           a3=patternInput1[1];
-           newD1=[z1,a3,b1,c2,x5,e1];
+           d1=mashup.$0;
+           tweetCache[0]=d1.Combined;
+           tweetCacheUser1[0]=d1.User1;
+           tweetCacheUser2[0]=d1.User2;
+           tweetCacheChoice[0]=0;
+           index=tweetCacheChoice[0];
+           resultValue={
+            Combined:Arrays.get(tweetCache[0],index),
+            User1:user1,
+            User2:user2
+           };
            tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-           _arg10_1=newD1[0];
-           _arg11_1=newD1[1];
-           _arg12_1=newD1[2];
-           _arg13_1=newD1[3];
-           _arg14_1=newD1[4];
-           _arg15_1=newD1[5];
-           Client1.processSuccessWeb(outputUI,_arg10_1,_arg11_1,_arg12_1,_arg13_1,_arg14_1,_arg15_1);
-           _1=Concurrency.Return(null);
-          }
-         return _1;
-        });
-        return Concurrency.Start(arg00,{
-         $:0
-        });
-       };
-       x6=Piglet.Run(action,x1);
-       _arg00_1=function(x)
-       {
-        return function(y)
-        {
-         return function(submit)
-         {
-          var arg107,arg108,arg109,arg10a,arg10b;
-          arg109=List.ofArray([Tags.Tags().text("&")]);
-          arg108=List.ofArray([Tags.Tags().NewTag("h1",arg109)]);
-          arg10b=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button btn-lg"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
-          arg10a=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg10b),List.ofArray([Attr.Attr().NewAttr("class","input-group col-md-10")]))]);
-          arg107=List.ofArray([Client1.userSelectionUIWeb(1,x),Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","form-group")])),Client1.userSelectionUIWeb(2,y),Operators.add(Tags.Tags().NewTag("div",arg10a),List.ofArray([Attr.Attr().NewAttr("class","form-group")]))]);
-          return Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","form form-inline")]));
-         };
-        };
-       };
-       _=Piglet.Render(_arg00_1,x6);
-      }
-     userInputUI=_;
-     arg10c=List.ofArray([userInputUI,Client1.renderOutputUIWeb(outputUI)]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10c),List.ofArray([Attr.Attr().NewAttr("class","container")]));
-    },
-    tryItMobile:function(credentials,loginUrlOption)
-    {
-     var outputUI,tweetCache,tweetCacheD,tweetCacheChoice,usernamePairCache,arg10,_,loginUrl,arg101,arg102,arg103,arg104,arg105,arg106,_arg00_,x1,x2;
-     outputUI=Client1.buildOutputUIMobile();
-     tweetCache=[[]];
-     tweetCacheD=[[[],{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     },{
-      $:0
-     }]];
-     tweetCacheChoice=[0];
-     usernamePairCache=[["",""]];
-     if(loginUrlOption.$==1)
-      {
-       loginUrl=loginUrlOption.$0;
-       arg105=List.ofArray([Attr.Attr().NewAttr("class","fa fa-twitter wow bounceIn")]);
-       arg106=List.ofArray([Tags.Tags().text("Authorize first!")]);
-       arg104=List.ofArray([Tags.Tags().NewTag("i",arg105),Operators.add(Tags.Tags().NewTag("span",arg106),List.ofArray([Attr.Attr().NewAttr("class","label")]))]);
-       arg103=List.ofArray([Operators.add(Tags.Tags().NewTag("a",arg104),List.ofArray([Attr.Attr().NewAttr("class","btn btn-lg twitter-button"),Attr.Attr().NewAttr("href",loginUrl)]))]);
-       arg102=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg103),List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-12")]))]);
-       arg101=List.ofArray([Client1.dummyUserSelectionUIMobile(1),Client1.dummyUserSelectionUIMobile(2),Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Attr.Attr().NewAttr("class","form-group form-group-mobile")]))]);
-       _=Operators.add(Tags.Tags().NewTag("div",arg101),List.ofArray([Attr.Attr().NewAttr("class","form form-horizontal form-mobile")]));
-      }
-     else
-      {
-       _arg00_=Pervasives.op_LessMultiplyGreater(Pervasives.op_LessMultiplyGreater(Piglet.Return(function(x)
-       {
-        return function(y)
-        {
-         return[x,y];
-        };
-       }),Piglet.Yield("")),Piglet.Yield(""));
-       x1=Piglet.WithSubmit(_arg00_);
-       x2=Piglet.Run(function(tupledArg)
-       {
-        var x,y;
-        x=tupledArg[0];
-        y=tupledArg[1];
-        return Concurrency.Start(Concurrency.Delay(function()
-        {
-         var x3,tupledArg2,b1,c1,x5,e1,index1,patternInput1,newD1;
-         if(tweetCacheChoice[0]>=tweetCache[0].length?true:!Unchecked.Equals([x,y],usernamePairCache[0]))
-          {
-           usernamePairCache[0]=[x,y];
-           x3=AjaxRemotingProvider.Async("Website:0",[credentials.$==0?{
-            $:1
-           }:{
+           return Var1.Set(outputUIData,{
             $:0,
-            $0:credentials.$0
-           },x,y]);
-           return Concurrency.Bind(x3,function(_arg1)
+            $0:resultValue
+           });
+          }
+        }
+       else
+        {
+         index1=tweetCacheChoice[0];
+         resultValue1={
+          Combined:Arrays.get(tweetCache[0],index1),
+          User1:tweetCacheUser1[0],
+          User2:tweetCacheUser2[0]
+         };
+         tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+         return Var1.Set(outputUIData,{
+          $:0,
+          $0:resultValue1
+         });
+        }
+      };
+      if(isMobile)
+       {
+        GoButton=List.ofArray([Doc.ButtonView(user1.FullName+" & "+user2.FullName,List.ofArray([AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]);
+        return Doc.Concat([Doc.Element("div",[AttrProxy.Create("class","form form-horizontal form-mobile preset-container")],[Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","form-group form-group-mobile")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","input-group col-xs-12")],Arrays.ofSeq(GoButton)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n")])]);
+       }
+      else
+       {
+        Images=List.ofArray([Doc.Element("img",List.ofArray([AttrProxy.Create("src",user1.Image),AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")]),Runtime.New(T,{
+         $:0
+        })),Doc.Element("img",List.ofArray([AttrProxy.Create("src",user2.Image),AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")]),Runtime.New(T,{
+         $:0
+        }))]);
+        GoButton1=List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]);
+        Usernames=List.ofArray([Doc.TextNode(user1.FullName+" & "+user2.FullName)]);
+        attrs=[AttrProxy.Create("class","col-sm-6 col-md-4 preset-container")];
+        attrs1=[AttrProxy.Create("class","row")];
+        return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n    "),Doc.Element("div",attrs1,[Doc.TextNode("                           \n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","overlapping-images-small col-xs-6 col-md-8")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","form form-inline col-xs-6 col-md-4")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.TextNode("\n\u0009\u0009\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","input-group")],Arrays.ofSeq(GoButton1)),Doc.TextNode("\n\u0009\u0009\u0009")]),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row text-center")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(Usernames)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n")])]);
+       }
+     };
+     outputUIView=outputUIData.get_View();
+     return Doc.Element("div",List.ofArray([AttrProxy.Create("class",isMobile?"container tweet-mobile-ui":"container")]),List.ofArray([Doc.Element("div",isMobile?Runtime.New(T,{
+      $:0
+     }):List.ofArray([AttrProxy.Create("class","row")]),Arrays.map(pairUI,userPairs)),Doc.BindView(function(r)
+     {
+      return Client.buildOutputUI(isMobile,r);
+     },outputUIView)]));
+    },
+    tryIt:function(isMobile,credentialSet)
+    {
+     var _,arg20,arg201,credentials,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,user1Input,user2Input,onSubmit,inputUI,_3,ats,arg202,ats1,outputUIView,l;
+     if(credentialSet.$==2)
+      {
+       arg201=List.ofArray([Doc.TextNode("Error with credentials, try refreshing browser")]);
+       arg20=List.ofArray([Doc.Element("h5",[],arg201)]);
+       _=Doc.Element("div",[],arg20);
+      }
+     else
+      {
+       if(credentialSet.$==0)
+        {
+         credentials=credentialSet.$0;
+         tweetCache=[[]];
+         tweetCacheUser1=[{
+          Username:"",
+          FullName:"",
+          Image:""
+         }];
+         tweetCacheUser2=[{
+          Username:"",
+          FullName:"",
+          Image:""
+         }];
+         tweetCacheChoice=[0];
+         outputUIData=Var.Create({
+          $:2
+         });
+         user1=Var.Create("");
+         user2=Var.Create("");
+         user1Input=Client.userSelectionUI(isMobile,1,user1);
+         user2Input=Client.userSelectionUI(isMobile,1,user2);
+         onSubmit=function()
+         {
+          var _1,mashup,_2,d,d1,resultValue,index,resultValue1,index1;
+          if((tweetCacheChoice[0]>=tweetCache[0].length?true:Var.Get(user1)!==tweetCacheUser1[0].Username)?true:Var.Get(user2)!==tweetCacheUser2[0].Username)
            {
-            var d,d1,tupledArg1,b,c,x4,e,index,patternInput,newD;
-            if(_arg1.$==1)
+            mashup=AjaxRemotingProvider.Sync("Website:0",[{
+             $:2
+            },Var.Get(user1),Var.Get(user2)]);
+            if(mashup.$==1)
              {
-              d=_arg1.$0;
+              d=mashup.$0;
               tweetCache[0]=[];
-              tweetCacheD[0]=[[],{
-               $:0
-              },{
-               $:0
-              },{
-               $:0
-              },{
-               $:0
-              }];
-              tweetCacheChoice[0]=0;
-              usernamePairCache[0]=["",""];
-              Client1.processFailureMobile(outputUI,d);
-              return Concurrency.Return(null);
+              tweetCacheUser1[0]={
+               Username:"",
+               FullName:"",
+               Image:""
+              };
+              tweetCacheUser2[0]={
+               Username:"",
+               FullName:"",
+               Image:""
+              };
+              _2=Var1.Set(outputUIData,{
+               $:1,
+               $0:d
+              });
              }
             else
              {
-              d1=_arg1.$0;
-              tweetCache[0]=d1[0];
-              tweetCacheD[0]=d1;
+              d1=mashup.$0;
+              tweetCache[0]=d1.Combined;
+              tweetCacheUser1[0]=d1.User1;
+              tweetCacheUser2[0]=d1.User2;
               tweetCacheChoice[0]=0;
-              tupledArg1=tweetCacheD[0];
-              b=tupledArg1[1];
-              c=tupledArg1[2];
-              x4=tupledArg1[3];
-              e=tupledArg1[4];
               index=tweetCacheChoice[0];
-              patternInput=Arrays.get(tweetCache[0],index);
-              newD=[patternInput[0],patternInput[1],b,c,x4,e];
+              resultValue={
+               Combined:Arrays.get(tweetCache[0],index),
+               User1:d1.User1,
+               User2:d1.User2
+              };
               tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-              Client1.processSuccessMobile(outputUI,newD[0],newD[1],newD[2],newD[3],newD[4],newD[5]);
-              return Concurrency.Return(null);
+              _2=Var1.Set(outputUIData,{
+               $:0,
+               $0:resultValue
+              });
              }
-           });
+            _1=_2;
+           }
+          else
+           {
+            index1=tweetCacheChoice[0];
+            resultValue1={
+             Combined:Arrays.get(tweetCache[0],index1),
+             User1:tweetCacheUser1[0],
+             User2:tweetCacheUser2[0]
+            };
+            tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+            _1=Var1.Set(outputUIData,{
+             $:0,
+             $0:resultValue1
+            });
+           }
+          return _1;
+         };
+         if(!isMobile)
+          {
+           ats=List.ofArray([AttrProxy.Create("class","form form-inline")]);
+           arg202=List.ofArray([Doc.TextNode("&")]);
+           _3=Doc.Element("div",ats,List.ofArray([Client.userSelectionUI(false,1,user1),Doc.Element("div",List.ofArray([AttrModule.Class("form-group")]),List.ofArray([Doc.Element("h1",[],arg202)])),Client.userSelectionUI(false,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-md-10")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
           }
          else
           {
-           usernamePairCache[0]=[x,y];
-           tupledArg2=tweetCacheD[0];
-           b1=tupledArg2[1];
-           c1=tupledArg2[2];
-           x5=tupledArg2[3];
-           e1=tupledArg2[4];
-           index1=tweetCacheChoice[0];
-           patternInput1=Arrays.get(tweetCache[0],index1);
-           newD1=[patternInput1[0],patternInput1[1],b1,c1,x5,e1];
-           tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-           Client1.processSuccessMobile(outputUI,newD1[0],newD1[1],newD1[2],newD1[3],newD1[4],newD1[5]);
-           return Concurrency.Return(null);
+           ats1=List.ofArray([AttrProxy.Create("class","form form-horizontal form-mobile")]);
+           _3=Doc.Element("div",ats1,List.ofArray([Client.userSelectionUI(true,1,user1),Client.userSelectionUI(true,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group form-group-mobile")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-xs-12")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
           }
-        }),{
-         $:0
-        });
-       },x1);
-       _=Piglet.Render(function(x)
-       {
-        return function(y)
-        {
-         return function(submit)
+         inputUI=_3;
+         outputUIView=outputUIData.get_View();
+         _=Doc.Element("div",List.ofArray([AttrProxy.Create("class",isMobile?"container tweet-mobile-ui preset-container":"container preset-container")]),List.ofArray([inputUI,Doc.BindView(function(r)
          {
-          var arg107,arg108,arg109;
-          arg109=List.ofArray([Operators.add(Controls.Submit(submit),List.ofArray([Attr.Attr().NewAttr("class","btn go-button col-xs-12"),Attr.Attr().NewAttr("Value","Go!"),Attr.Attr().NewAttr("id","go-button")]))]);
-          arg108=List.ofArray([Operators.add(Tags.Tags().NewTag("div",arg109),List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-12")]))]);
-          arg107=List.ofArray([Client1.userSelectionUIMobile(1,x),Client1.userSelectionUIMobile(2,y),Operators.add(Tags.Tags().NewTag("div",arg108),List.ofArray([Attr.Attr().NewAttr("class","form-group form-group-mobile")]))]);
-          return Operators.add(Tags.Tags().NewTag("div",arg107),List.ofArray([Attr.Attr().NewAttr("class","form form-horizontal form-mobile")]));
-         };
-        };
-       },x2);
+          return Client.buildOutputUI(isMobile,r);
+         },outputUIView)]));
+        }
+       else
+        {
+         l=credentialSet.$0;
+         _=Client.tryItDummyUI(isMobile,l);
+        }
       }
-     arg10=List.ofArray([_,Client1.renderOutputUIMobile(outputUI)]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","container tweet-mobile-ui")]));
+     return _;
     },
-    userSelectionUIMobile:function(i,x)
+    tryItDummyUI:function(isMobile,loginUrl)
     {
-     var arg10,arg101,x1,arg102,arg103,arg104;
-     x1="Username "+String(i);
-     arg101=List.ofArray([Tags.Tags().text(x1)]);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","input-group col-xs-12")]);
-     arg103=List.ofArray([Attr.Attr().NewAttr("class","input-group-addon"),Attr.Attr().NewAttr("id","username"+String(i))]);
-     arg104="username"+String(i);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("label",arg101),List.ofArray([Attr.Attr().NewAttr("class","sr-only"),Attr.Attr().NewAttr("for","username"+String(i))])),Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Tags.Tags().text("@")])),Operators.add(Controls.input("text",function(x2)
+     var dummyUserSelectionUI,ats2,arg20,ats3;
+     dummyUserSelectionUI=function(isMobile1,i)
      {
-      return x2;
-     },function(x2)
-     {
-      return x2;
-     },x),List.ofArray([Attr.Attr().NewAttr("value",""),Attr.Attr().NewAttr("type","text"),Attr.Attr().NewAttr("class","form-control"),Attr.Attr().NewAttr("placeholder","username"),Attr.Attr().NewAttr("aria-describedby",arg104)]))]))]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form-group form-group-mobile")]));
+      var ats,ats1,arg10;
+      ats=List.ofArray([AttrProxy.Create("class",!isMobile1?"form-group":"form-group form-group-mobile")]);
+      ats1=List.ofArray([AttrProxy.Create("class",!isMobile1?"input-group input-group-lg col-md-10":"input-group col-xs-12")]);
+      arg10="username"+String(i);
+      return Doc.Element("div",ats,List.ofArray([Doc.Element("label",List.ofArray([AttrProxy.Create("class","sr-only"),AttrProxy.Create("for","username"+String(i))]),List.ofArray([Doc.TextNode("Username "+String(i))])),Doc.Element("div",ats1,List.ofArray([Doc.Element("span",List.ofArray([AttrProxy.Create("class","input-group-addon"),AttrProxy.Create("id","username"+String(i))]),List.ofArray([Doc.TextNode("@")])),Doc.Element("input",List.ofArray([AttrProxy.Create("value",""),AttrProxy.Create("type","text"),AttrProxy.Create("class","form-control"),AttrProxy.Create("disabled",""),AttrProxy.Create("placeholder","username"),AttrProxy.Create("aria-describedby",arg10)]),Runtime.New(T,{
+       $:0
+      }))]))]));
+     };
+     ats2=List.ofArray([AttrProxy.Create("class","form form-inline")]);
+     arg20=List.ofArray([Doc.TextNode("&")]);
+     ats3=List.ofArray([AttrProxy.Create("class","form-group")]);
+     return Doc.Element("div",ats2,List.ofArray([dummyUserSelectionUI(isMobile,1),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group")]),List.ofArray([Doc.Element("h1",[],arg20)])),dummyUserSelectionUI(isMobile,2),Doc.Element("div",ats3,List.ofArray([Doc.Element("a",List.ofArray([AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href",loginUrl)]),List.ofArray([Doc.Element("i",List.ofArray([AttrProxy.Create("class","fa fa-twitter wow bounceIn")]),Runtime.New(T,{
+      $:0
+     })),Doc.Element("span",List.ofArray([AttrProxy.Create("class","label")]),List.ofArray([Doc.TextNode("Authorize to  make your own!")]))]))]))]));
     },
-    userSelectionUIWeb:function(i,x)
+    userSelectionUI:function(isMobile,i,x)
     {
-     var arg10,arg101,x1,arg102,arg103,arg104;
-     x1="Username "+String(i);
-     arg101=List.ofArray([Tags.Tags().text(x1)]);
-     arg102=List.ofArray([Attr.Attr().NewAttr("class","input-group input-group-lg col-md-10")]);
-     arg103=List.ofArray([Attr.Attr().NewAttr("class","input-group-addon"),Attr.Attr().NewAttr("id","username"+String(i))]);
-     arg104="username"+String(i);
-     arg10=List.ofArray([Operators.add(Tags.Tags().NewTag("label",arg101),List.ofArray([Attr.Attr().NewAttr("class","sr-only"),Attr.Attr().NewAttr("for","username"+String(i))])),Operators.add(Tags.Tags().NewTag("div",arg102),List.ofArray([Operators.add(Tags.Tags().NewTag("span",arg103),List.ofArray([Tags.Tags().text("@")])),Operators.add(Controls.input("text",function(x2)
-     {
-      return x2;
-     },function(x2)
-     {
-      return x2;
-     },x),List.ofArray([Attr.Attr().NewAttr("value",""),Attr.Attr().NewAttr("type","text"),Attr.Attr().NewAttr("class","form-control"),Attr.Attr().NewAttr("placeholder","username"),Attr.Attr().NewAttr("aria-describedby",arg104)]))]))]);
-     return Operators.add(Tags.Tags().NewTag("div",arg10),List.ofArray([Attr.Attr().NewAttr("class","form-group")]));
+     var ats,ats1,arg10;
+     ats=List.ofArray([AttrProxy.Create("class","form-group form-group-mobile")]);
+     ats1=List.ofArray([AttrProxy.Create("class",!isMobile?"input-group input-group-lg col-md-10":"input-group col-xs-12")]);
+     arg10="username"+String(i);
+     return Doc.Element("div",ats,List.ofArray([Doc.Element("label",List.ofArray([AttrProxy.Create("class","sr-only"),AttrProxy.Create("for","username"+String(i))]),List.ofArray([Doc.TextNode("Username "+String(i))])),Doc.Element("div",ats1,List.ofArray([Doc.Element("span",List.ofArray([AttrProxy.Create("class","input-group-addon"),AttrProxy.Create("id","username"+String(i))]),List.ofArray([Doc.TextNode("@")])),Doc.Input(List.ofArray([AttrProxy.Create("value",""),AttrProxy.Create("type","text"),AttrProxy.Create("class","form-control"),AttrProxy.Create("placeholder","username"),AttrProxy.Create("aria-describedby",arg10)]),x)]))]));
     }
    }
   }
  });
  Runtime.OnInit(function()
  {
-  List=Runtime.Safe(Global.WebSharper.List);
-  Html=Runtime.Safe(Global.WebSharper.Html);
-  Client=Runtime.Safe(Html.Client);
-  Attr=Runtime.Safe(Client.Attr);
-  Tags=Runtime.Safe(Client.Tags);
-  Operators=Runtime.Safe(Client.Operators);
-  T=Runtime.Safe(List.T);
-  String=Runtime.Safe(Global.String);
   Website=Runtime.Safe(Global.Website);
-  Client1=Runtime.Safe(Website.Client);
-  Piglets=Runtime.Safe(Global.WebSharper.Piglets);
-  Piglet=Runtime.Safe(Piglets.Piglet);
-  Concurrency=Runtime.Safe(Global.WebSharper.Concurrency);
-  Unchecked=Runtime.Safe(Global.WebSharper.Unchecked);
+  Client=Runtime.Safe(Website.Client);
+  List=Runtime.Safe(Global.WebSharper.List);
+  T=Runtime.Safe(List.T);
+  UI=Runtime.Safe(Global.WebSharper.UI);
+  Next=Runtime.Safe(UI.Next);
+  Doc=Runtime.Safe(Next.Doc);
+  AttrProxy=Runtime.Safe(Next.AttrProxy);
+  Arrays=Runtime.Safe(Global.WebSharper.Arrays);
+  Var=Runtime.Safe(Next.Var);
   Remoting=Runtime.Safe(Global.WebSharper.Remoting);
   AjaxRemotingProvider=Runtime.Safe(Remoting.AjaxRemotingProvider);
-  Arrays=Runtime.Safe(Global.WebSharper.Arrays);
-  Controls=Runtime.Safe(Piglets.Controls);
-  Seq=Runtime.Safe(Global.WebSharper.Seq);
-  return Pervasives=Runtime.Safe(Piglets.Pervasives);
+  Var1=Runtime.Safe(Next.Var1);
+  View1=Runtime.Safe(Next.View1);
+  AttrModule=Runtime.Safe(Next.AttrModule);
+  return String=Runtime.Safe(Global.String);
  });
  Runtime.OnLoad(function()
  {

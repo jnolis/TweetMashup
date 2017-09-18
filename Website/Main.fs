@@ -3,48 +3,51 @@ namespace Website
 open WebSharper
 open WebSharper.Sitelets
 open Tweetinvi
-
-
+open WebSharper.UI.Next
+open WebSharper.UI.Next.Server
+open WebSharper.UI.Next.Templating
+open WebSharper.UI.Next.Html
+open Twitter
 
 type EndPoint =
     | [<EndPoint "/">] Home
     | [<Query("authorization_id", "oauth_token","oauth_verifier")>] Login of authorization_id : string * oauth_token : string * oauth_verifier : string
 
+type SiteContent = {
+    Tabs: Doc seq
+    TabContents: Doc seq
+}
+
+
+
 module Templating =
-    open WebSharper.Html.Server
 
-    type Page =
-        {
-            Body : list<Element>
-        }
+    type MainPage = Template<"Main.html">
+    type MobilePage = Template<"Mobile.html">
+    type AboutPage = Template<"About.html">
+    let mobilePage ctx siteContent : Async<Content<EndPoint>> =
+        MobilePage.Doc(Tabs = siteContent.Tabs, TabContents = siteContent.TabContents)
+        |> Content.Page
 
-    let mobile ctx body : Async<Content<EndPoint>> =
-        let template =
-            Content.Template<Page>("~/Mobile.html").With("body", fun x -> x.Body)
-        Content.WithTemplate template
-            {Body = body}
+    let desktopPage ctx siteContent : Async<Content<EndPoint>> =
+        MainPage.Doc(Tabs = siteContent.Tabs, TabContents = siteContent.TabContents)
+        |> Content.Page
 
-    let main ctx body : Async<Content<EndPoint>> =
-        let template =
-            Content.Template<Page>("~/Main.html").With("body", fun x -> x.Body)
-        Content.WithTemplate template
-            {Body = body}
 
 
 module Site =
-    open WebSharper.Html.Server
-    Tweetinvi.Auth.ApplicationCredentials <- Backend.Twitter.getAppCredentials()
+    Tweetinvi.Auth.ApplicationCredentials <- getAppCredentials()
     let getPairCombos() = 
         System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
         |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(Backend.Pair) seq> (x))
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
         |> Seq.map
             (fun pair -> 
                 async {
                     return match (
-                                    Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) pair.Item1,
-                                    Backend.Twitter.getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) pair.Item2) with
-                            | (Some ux, Some uy) -> Some (pair, ux.User, uy.User)
+                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (fst pair),
+                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (snd pair)) with
+                            | (Some ux, Some uy) -> Some (ux.User, uy.User)
                             | _ -> None
                     }
             )
@@ -52,155 +55,70 @@ module Site =
         |> Async.RunSynchronously
         |> Seq.ofArray
         |> Seq.choose id
-        |> Seq.toArray
+        |> Array.ofSeq
 
-    let aboutText = 
-        Div[
-            Div [
-                H3 [Text "How it works"]
-                P [
-                    Text "Suppose we have two tweets we want to mash up. One tweet says: \"I don't like to worry about spiders\" while the other says \"Sometimes I worry that I am a ghost.\" We can mash the two tweets together by combining them from the word \"worry.\" We take the words to the left of the word \"worry\" in the first tweet (\"I don't like to\") and the the words to the right of \"worry\" in the second tweet (\"that I am a ghost\") and combine them \"I dont like to worry that I am a ghost\". Tweet Mashup works by doing this in an efficient manner. In more detail:";
-                    OL [
-                        LI [ Text "For two users do the following:"];
-                        OL [         
-                            LI [ Text "Download a set of their tweets"]
-                            LI [ Text "For each tweet, take each word in the tweet and store how many characters it is into the tweet."];
-                            LI [ Text "Create a dictionary that has, for each unique word, an array of the tweets and positions the word falls in."];]
-                        LI [ Text "Take the two tweet-word dictionary, and find the words that are in both of them."]
-                        LI [ Text "Randomly pick a word from the set of words in both dictionaries."]
-                        LI [ Text "Randomly choose an instance that word shows up in a tweet from each user, and randomly choose which user will be the beginning half of the mashed-up tweet, and which will be the ending half."]
-                        LI [ Text "Combined these together to make one tweet."]
-                        ]]
-                H3 [Text "How it was programmed"]
-                P [
-                    Text "It was programmed using the functional ";
-                    A [Text "programming language F#"] -< [Attr.HRef "http://www.tryfsharp.org/"; Attr.Target "_blank"];
-                    Text ". The tweet API functionality was from ";
-                    A [Text "Tweetinvi"] -< [Attr.HRef "https://github.com/linvi/tweetinvi"; Attr.Target "_blank"];
-                    Text " and the web server capability from ";
-                    A [Text "WebSharper"] -< [Attr.HRef "http://websharper.com/"; Attr.Target "_blank"];
-                    Text ". The code is open-source and available on "
-                    A[Text "GitHub"] -< [Attr.HRef "https://github.com/jnolis/TweetMashup"; Attr.Target "_blank"]
-                    Text "."
+    let makeTabs presetName tryItName aboutName (isAuthenticated: bool) =
+        seq [
+            liAttr [Attr.Create "role" "presentation"; attr.``class`` (if not isAuthenticated then "active" else "")]
+                    [aAttr [attr.href "#preset"; Attr.Create "aria-controls" "preset"; Attr.Create "role" "tab"; Attr.Create "data-toggle" "tab"]
+                            [text presetName]]
+            liAttr [Attr.Create "role" "presentation"; attr.``class`` (if isAuthenticated then "active" else "")]
+                    [aAttr [attr.href "#tryit"; Attr.Create "aria-controls" "preset"; Attr.Create "role" "tab"; Attr.Create "data-toggle" "tab"]
+                            [text tryItName]]
+            liAttr [Attr.Create "role" "presentation"]
+                    [aAttr [attr.href "#about"; Attr.Create "aria-controls" "preset"; Attr.Create "role" "tab"; Attr.Create "data-toggle" "tab"]
+                            [text aboutName]]
+            ]
+            |> Seq.map (fun x -> x :> Doc)
+
+    let makeTabContents preset tryIt (isAuthenticated: bool)=
+        seq [
+            divAttr [attr.``class`` "tab-content"]
+                    [
+                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if not isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "preset"]
+                            preset
+                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "tryit"]
+                            tryIt
+                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` "tab-pane"; attr.id "about"]
+                            [(Templating.AboutPage.Doc())]
                     ]
-                H3 [Text "About us"]
-                P [
-                    A [Text "Jonathan Nolis"] -< [Attr.HRef "http://jnolis.com"; Attr.Target "_blank"];
-                    Text " is an advanced analytics expert and amateur software developer. "
-                    A [Text "Jess Eddy"] -< [Attr.HRef "http://jesseddy.com"; Attr.Target "_blank"];
-                    Text " is a user experience consultant and digital product designer.";
-                    ] 
-                ] -< [Attr.Class "container"]
-                ]
-    let mobilePage (ctx:Context<EndPoint>) =
+               ]
+            |> Seq.map (fun x -> x :> Doc)
+
+    
+    let tabs isMobile isAuthenticated = 
+        if isMobile then
+            makeTabs "Popular combos" "Try your own"  "About" isAuthenticated
+        else
+            makeTabs "Pick from popular combinations" "Or make your own!"  "About Tweet mashup!" isAuthenticated
+
+    let tabContents (isMobile: bool) (cs:CredentialSet)  = 
         let localPairCombos = getPairCombos()
-        let (credentials,loginUrl) =
+        let isAuthenticated = match cs with | CredentialSet.Credentials c -> true | _ -> false
+        makeTabContents 
+            [client <@ Client.preset isMobile localPairCombos @>]
+            [client <@ Client.tryIt isMobile cs @>] 
+            isAuthenticated
+
+    
+    let ctxToCredentialSet (ctx:Context<EndPoint>) =
             match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
             | Some login -> 
-                match Backend.Twitter.getCredentials login with
-                | Some credentials -> (Some credentials, None)
-                | _ ->  (None, Some (Backend.Twitter.initAuthentication login))
-            | None -> (None,None)
-        Templating.mobile ctx [
-            Div [
-                Div [
-                    Div [
-                        Div [
-                            Div [
-                                H3 [Text "Tweet mashup!"]; 
-                                H5 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
-                                H5 [Text "By "; A [Text "Jonathan Nolis"] -< [Attr.HRef "http://jnolis.com"]; Text " with help from ";  A [Text "Jess Eddy"] -< [Attr.HRef "http://jesseddy.com/" ]]
-                                ] -< [Attr.Class "text-center"]
-                            ] -< [Attr.Class "container"]
-                        UL [
-                            LI [A [Text "Popular combos"] -< [Attr.HRef "#preset"; 
-                                                                                Html.NewAttr "aria-controls" "preset";
-                                                                                Html.NewAttr "role" "tab";
-                                                                                Html.NewAttr "data-toggle" "tab"]
-                                ]-< [Html.NewAttr "role" "presentation"; Attr.Class (if not credentials.IsSome then "active" else "")];
-                            LI [A[Text "Try your own"] -< [Attr.HRef "#tryit"; 
-                                                                Html.NewAttr "aria-controls" "tryit"; 
-                                                                Html.NewAttr "role" "tab"; 
-                                                                Html.NewAttr "data-toggle" "tab"]
+                match getCredentials login with
+                | Some credentials -> CredentialSet.Credentials credentials
+                | _ ->  CredentialSet.LoginUrl (initAuthentication login)
+            | None -> CredentialError
 
-                                ]-< [Html.NewAttr "role" "presentation"; Attr.Class (if credentials.IsSome then "active" else "")] 
-                            LI [A[Text "About"] -< [Attr.HRef "#about"; 
-                                                                Html.NewAttr "aria-controls" "about"; 
-                                                                Html.NewAttr "role" "tab"; 
-                                                                Html.NewAttr "data-toggle" "tab"]
-
-                                ]-< [Html.NewAttr "role" "presentation"] 
-            
-                            ] -< [Attr.Class "nav nav-tabs nav-tabs-mobile"; Html.NewAttr "role" "tablist"]
-                        ] -< [Attr.Class "container"]
-                    ] -< [Attr.Class "bg-primary"]
-
-                Div [
-                    Div [ClientSide <@ Client.presetMobile localPairCombos @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class (if not credentials.IsSome then "tab-pane active" else "tab-pane"); Attr.Id "preset"]
-                    Div [ClientSide <@ Client.tryItMobile(credentials,loginUrl) @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class (if credentials.IsSome then "tab-pane active" else "tab-pane"); Attr.Id "tryit"]
-                    aboutText  -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "about"]
-                    ] -< [Attr.Class "tab-content"]
-                ] 
-        ]
-        |> Content.WithHeader "Cache-Control" "max-age=3600, must-revalidate"
-    let homePage (ctx:Context<EndPoint>) =
+    let homePage (isMobile:bool) (ctx:Context<EndPoint>) =
         let localPairCombos = getPairCombos()
-        let (credentials,loginUrl) =
-            match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
-            | Some login -> 
-                match Backend.Twitter.getCredentials login with
-                | Some credentials -> (Some credentials, None)
-                | _ ->  (None, Some (Backend.Twitter.initAuthentication login))
-            | None -> (None,None)
-        Templating.main ctx [
-            Section [
-                Div [
-                    Div [
-                        H1 [Text "Tweet mashup!"]; 
-                        H3 [Text "Combine tweets from two Twitter accounts for one awesome tweet!"]
-                        ] -< [Attr.Class "text-center"]
-                    UL [
-                        LI [A [Text "Pick from popular combinations"] -< [Attr.HRef "#preset"; 
-                                                                            Html.NewAttr "aria-controls" "preset";
-                                                                            Html.NewAttr "role" "tab";
-                                                                            Html.NewAttr "data-toggle" "tab"]
-                            ]-< [Html.NewAttr "role" "presentation"; Attr.Class (if not credentials.IsSome then "active" else "")] 
-                        LI [A[Text "Or make your own!"] -< [Attr.HRef "#tryit"; 
-                                                    Html.NewAttr "aria-controls" "tryit"; 
-                                                    Html.NewAttr "role" "tab"; 
-                                                    Html.NewAttr "data-toggle" "tab"]
-                            ]-< [Html.NewAttr "role" "presentation"; Attr.Class (if credentials.IsSome then "active" else "")] 
-                        LI [A[Text "About Tweet mashup!"] -< [Attr.HRef "#about"; 
-                                                                Html.NewAttr "aria-controls" "about"; 
-                                                                Html.NewAttr "role" "tab"; 
-                                                                Html.NewAttr "data-toggle" "tab"]
+        let cs = ctxToCredentialSet ctx
+        let isAuthenticated = match cs with | CredentialSet.Credentials c -> true | _ -> false
+        Templating.desktopPage ctx {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile cs}
 
-                                ]-< [Html.NewAttr "role" "presentation"] 
-            
-                        ] -< [Attr.Class "nav nav-tabs"; Html.NewAttr "role" "tablist"]
-                    ] -< [Attr.Class "container"]
-                ] -< [Attr.Class "bg-primary"]
-            Div [
-                Div [ClientSide <@ Client.preset localPairCombos @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class (if not credentials.IsSome then "tab-pane active" else "tab-pane"); Attr.Id "preset"]
-                Div [ClientSide <@ Client.tryIt (credentials,loginUrl) @>] -< [Html.NewAttr "role" "tabpanel"; Attr.Class (if credentials.IsSome then "tab-pane active" else "tab-pane"); Attr.Id "tryit"]
-                aboutText  -< [Html.NewAttr "role" "tabpanel"; Attr.Class "tab-pane"; Attr.Id "about"]
-                ] -< [Attr.Class "tab-content"]
-        ]
-        |> Content.WithHeader "Cache-Control" "max-age=3600, must-revalidate"
 
-    let aboutPage (isMobile:bool) (ctx:Context<EndPoint>) =
-        let template = if isMobile then Templating.mobile else Templating.main
-        template ctx [
-            Section [
-                Div [
-                    Div [
-                        H1 [Text "About Tweet mashup!"]; 
-                        A [Text "Go back to mashing tweets"] -< [Attr.HRef (ctx.Link Home)]
-                        ] -< [Attr.Class "text-center"]
-                    ] -< [Attr.Class "container"]
-                ] -< [Attr.Class "bg-primary"]
-            aboutText -< [Attr.Class "container"]
-        ]
+        
+        
+
 
     [<Website>]
     let Main =
@@ -208,14 +126,15 @@ module Site =
             let context = ctx.Environment.["HttpContext"] :?> System.Web.HttpContextWrapper
             match endpoint with
             | EndPoint.Home -> 
+                let isMobile = context.Request.Browser.IsMobileDevice
                 match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
                 | Some login -> ()
                 | None -> ctx.UserSession.LoginUser (System.Guid.NewGuid().ToString(),true) |> Async.RunSynchronously
-                if context.Request.Browser.IsMobileDevice then mobilePage ctx else homePage ctx
+                homePage isMobile ctx
             | EndPoint.Login (authorization_id, oauth_token,oauth_verifier) -> 
                 match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
                 | Some login ->
-                    Backend.Twitter.finishAuthentication oauth_verifier login
+                    finishAuthentication oauth_verifier login
                     |> ignore
                 | None -> ()
                 Content.RedirectPermanentToUrl (ctx.Link EndPoint.Home)

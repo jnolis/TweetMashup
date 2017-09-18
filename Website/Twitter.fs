@@ -1,19 +1,10 @@
-namespace Backend
+namespace Website
 
 open Tweetinvi
 open System
 open System.Text.RegularExpressions
 open Newtonsoft.Json
 
-type Credit = {
-    User: string;
-    Link: string;
-}
-type Pair = {
-    Item1: string;
-    Item2: string;
-    Credit: Credit option;
-}
 
 ///The information that stores a twitter user
 type SmallUser = {
@@ -31,7 +22,7 @@ type Combined =
     ///The text of the mashed up tweet
     Tweet: string
     ///The text to use for the "tweet this button." It has the added usernames and url, as well as being in the proper HTTP format.
-    TweetWithContext: string option
+    TweetWithContext: string
     }
 
 ///A set of data that gets returned when the system asks for some mashups
@@ -83,6 +74,11 @@ type SimpleCredentials = {
     AccessToken: string
     AccessTokenSecret: string
     }
+
+type CredentialSet =
+    | Credentials of SimpleCredentials
+    | LoginUrl of string
+    | CredentialError
 
 ///<summary>This module does the work involved with generating a tweet and interfacing with the tweetinvi API.</summary>
 module Twitter =
@@ -490,7 +486,6 @@ module Twitter =
                             |> tweetWithContext user1TweetsInfo.User.Username user2TweetsInfo.User.Username
                             |> fst
                             |> System.Web.HttpUtility.UrlEncode
-                            |> Some
                         {Tweet=tweet;TweetWithContext=combinedWithContext})
                 Some {
                     Combined = tweetsWithContext;

@@ -1,0 +1,24 @@
+<div class="container">
+    <h3>How it works</h3>
+    <p>Suppose we have two tweets we want to mash up. One tweet says: "I don't like to worry about spiders" while the other says "Sometimes I worry that I am a ghost." We can mash the two tweets together by combining them from the word "worry." We take the words to the left of the word "worry" in the first tweet ("I don't like to") and the the words to the right of "worry" in the second tweet ("that I am a ghost") and combine them "I dont like to worry that I am a ghost". Tweet Mashup works by doing this in an efficient manner. In more detail:</p>
+    <ol>
+        <li>For two users do the following:</li>
+        <ol>
+            <li>Download a set of their tweets</li>
+            <li>For each tweet, take each word in the tweet and store how many characters it is into the tweet.</li>
+            <li>Create a dictionary that has, for each unique word, an array of the tweets and positions the word falls in.</li>
+        </ol>
+        <li>Take the two tweet-word dictionary, and find the words that are in both of them.</li>
+        <li>Randomly pick a word from the set of words in both dictionaries.</li>
+        <li>Randomly choose an instance that word shows up in a tweet from each user, and randomly choose which user will be the beginning half of the mashed-up tweet, and which will be the ending half.</li>
+        <li>Combined these together to make one tweet.</li>
+    </ol>
+    <p>
+    </p>
+    <h3>How it was programmed</h3>
+    <p>It was programmed using the functional <a href="http://www.tryfsharp.org/" target="_blank">programming language F#</a>. The tweet API functionality was from <a href="https://github.com/linvi/tweetinvi" target="_blank">Tweetinvi</a> and the web server capability from <a href="http://websharper.com/" target="_blank">WebSharper</a>. The code is open-source and available on <a href="https://github.com/jnolis/TweetMashup">GitHub</a>.</p>
+    <h3>About us</h3>
+    <p>
+        <a href="http://jnolis.com" target="_blank">Jonathan Nolis</a> is an advanced analytics expert and amateur software developer. <a href="http://jesseddy.com" target="_blank">Jess Eddy</a> is a user experience consultant and digital product designer.
+    </p>
+</div>

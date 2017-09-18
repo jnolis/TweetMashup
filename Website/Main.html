@@ -10,32 +10,51 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
 
     <style>
-
     </style>
 </head>
 <body>
     <div class="navbar navbar-static-top" role="navigation">
         <div class="container">
             <ul class="nav navbar-nav navbar-right">
-                <li><p class="navbar-text navbar-right">Made by <a href="http://jnolis.com" class="navbar-link" target="_blank">Jonathan Nolis</a> with help from <a href="http://jesseddy.com" class="navbar-link" target="_blank">Jess Eddy</a></p></li>
+                <li>
+                    <p class="navbar-text navbar-right">
+                        Made by <a href="http://jnolis.com" class="navbar-link" target="_blank">Jonathan Nolis</a> with help from <a href="http://jesseddy.com" class="navbar-link" target="_blank">Jess Eddy</a>
+                    </p>
+                </li>
             </ul>
         </div>
     </div>
-    <div data-replace="body">
+
+    <section class="bg-primary">
+        <div class="container">
+            <div class="text-center">
+                <h1>Tweet mashup!</h1>
+                <h3>Combine tweets from two Twitter accounts for one awesome tweet!</h3>
+            </div>
+            <ul class="nav nav-tabs" role="tablist" data-hole="Tabs">
+            </ul>
+        </div>
+    </section>
+    <div class="tab-content" data-hole="TabContents">
     </div>
-    <script data-replace="scripts"></script>
-    <script type="text/javascript" src="Scripts/bootstrap.min.js"></script>
+
+    <script data-replace="scripts">
+    </script>
+    <script type="text/javascript" src="Scripts/bootstrap.min.js">
+    </script>
 
     <script type="text/javascript">
         <![CDATA[
-          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+            (function (i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                    m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-          ga('create', 'UA-87764728-1', 'auto');
-          ga('send', 'pageview');
-          ]]>
+        ga('create', 'UA-87764728-1', 'auto');
+        ga('send', 'pageview');
+        ]]>
     </script>
 
 </body>

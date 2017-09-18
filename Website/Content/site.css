@@ -205,6 +205,7 @@ aside {
     background-color: #1b95e0;
     color: #ffffff;
     border: 1px transparent;
+    margin-bottom: 20px 
 }
 
 .twitter-button:hover
@@ -297,4 +298,8 @@ float: right!important;
 .credit-mobile-ui {
     font-size: 80%;
 	margin: 0px 0px 2px 0px;
+}
+
+.preset-container {
+	margin-top:10px;
 }
