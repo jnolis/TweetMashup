@@ -4,7 +4,8 @@ open Tweetinvi
 open System
 open System.Text.RegularExpressions
 open Newtonsoft.Json
-
+open System.Data.SqlClient
+open System.Data
 
 ///The information that stores a twitter user
 type SmallUser = {
@@ -82,13 +83,15 @@ type CredentialSet =
 
 ///<summary>This module does the work involved with generating a tweet and interfacing with the tweetinvi API.</summary>
 module Twitter =
+    let createSqlConnection() =
+        let connectionString = System.Configuration.ConfigurationManager.ConnectionStrings.["TweetMashup"].ConnectionString
+        new SqlConnection(connectionString)
+        
     ///The location on the hard drive where we save the user and their tweets. (it's a single folder)
     let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
     ///The location on the hard drive where we store twitter api credentials
     let credentialCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["credentialLocation"]
 
-    ///The cache that stores the login credentials in progress
-    let partialCredentialCache = new System.Collections.Concurrent.ConcurrentDictionary<string,Models.IAuthenticationContext>()
 
     ///This function takes a set of SimpleCredentials and turns it into something Tweetinvi can use
     let simpleCredentialsToCredentials (c:SimpleCredentials) = 
@@ -100,28 +103,51 @@ module Twitter =
     ///Here, login is a GUID that gets stored in a user cookie</summary>
     let initAuthentication (login) =
         let context = Tweetinvi.AuthFlow.InitAuthentication(Tweetinvi.Auth.ApplicationCredentials,System.Web.HttpContext.Current.Request.Url.AbsoluteUri + "/Login")
-        if partialCredentialCache.ContainsKey login then
-            partialCredentialCache.TryRemove(login) |> ignore
-        partialCredentialCache.TryAdd(login, context) |> ignore
+        use connection = createSqlConnection()
+        
+        let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
+        do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+        
+        let addNew = new SqlCommand("INSERT INTO PartialLoginInfo (Login,AuthorizationId) VALUES (@login,@context)",connection)
+        do addNew.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+        do addNew.Parameters.Add(new SqlParameter("@context", SqlDbType.VarChar,Value=context.Token.AuthorizationUniqueIdentifier)) |> ignore
+        
+        do connection.Open()
+        do clearExisting.ExecuteNonQuery() |> ignore
+        do addNew.ExecuteNonQuery() |> ignore
+        do connection.Close()
+
         context.AuthorizationURL  
 
     ///This function finishes the authentication, using the verifierCode returned from the twitter site, and the cached user info from before, again using the login from the cookie
     let finishAuthentication (verifierCode:string) (login) =
         let location = credentialCacheLocation + "/" + login
-        let contextOption =
-            if partialCredentialCache.ContainsKey login then
-                Some (partialCredentialCache.Item login)
-            else None
+        use connection = createSqlConnection()
+
+        let pullExisting = new SqlCommand("Select AuthorizationId FROM PartialLoginInfo WHERE Login = @login", connection)
+        do pullExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            
+        do connection.Open()
+        let contextOption = 
+            match pullExisting.ExecuteScalar() with
+            | null -> None
+            | x -> 
+                let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
+                do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+                Some (x :?> string)
+        do connection.Close()
+
+
         match contextOption with
         | Some context ->
             let credentials = AuthFlow.CreateCredentialsFromVerifierCode(verifierCode, context)
+            
             if System.IO.File.Exists location then System.IO.File.Delete location
             credentials
             |> (fun c -> {ConsumerKey= c.ConsumerKey; ConsumerSecret= c.ConsumerSecret; AccessToken = c.AccessToken; AccessTokenSecret = c.AccessTokenSecret})
             |> JsonConvert.SerializeObject
             |> (fun x -> System.IO.File.WriteAllText(location,x))
 
-            partialCredentialCache.TryRemove(login) |> ignore
             Some credentials
         | None -> None
 
