@@ -70,6 +70,9 @@ type AsyncReturnInfo =
 
 ///A users credentials. I use this instead of the tweetinvi interfaces because records can be stored in json by Newtonsoft
 type SimpleCredentials = {
+    Login: string
+    Username: string
+    CreationDate: DateTimeOffset
     ConsumerKey: string
     ConsumerSecret: string
     AccessToken: string
@@ -108,9 +111,12 @@ module Twitter =
         let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
         do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
         
-        let addNew = new SqlCommand("INSERT INTO PartialLoginInfo (Login,AuthorizationId) VALUES (@login,@context)",connection)
+        let creationDate = System.DateTimeOffset.Now
+
+        let addNew = new SqlCommand("INSERT INTO PartialLoginInfo (Login,AuthorizationId,CreationDate) VALUES (@login,@context,@date)",connection)
         do addNew.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
         do addNew.Parameters.Add(new SqlParameter("@context", SqlDbType.VarChar,Value=context.Token.AuthorizationUniqueIdentifier)) |> ignore
+        do addNew.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
         
         do connection.Open()
         do clearExisting.ExecuteNonQuery() |> ignore
@@ -134,35 +140,66 @@ module Twitter =
             | x -> 
                 let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
                 do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+                do clearExisting.ExecuteNonQuery() |> ignore
                 Some (x :?> string)
-        do connection.Close()
-
+        
 
         match contextOption with
         | Some context ->
             let credentials = AuthFlow.CreateCredentialsFromVerifierCode(verifierCode, context)
+            let creationDate = System.DateTimeOffset.Now
+            let currentUser = User.GetAuthenticatedUser(credentials)
             
-            if System.IO.File.Exists location then System.IO.File.Delete location
-            credentials
-            |> (fun c -> {ConsumerKey= c.ConsumerKey; ConsumerSecret= c.ConsumerSecret; AccessToken = c.AccessToken; AccessTokenSecret = c.AccessTokenSecret})
-            |> JsonConvert.SerializeObject
-            |> (fun x -> System.IO.File.WriteAllText(location,x))
-
+            let clearExistingLogin = new SqlCommand("DELETE FROM LoginInfo WHERE Login = @login", connection)
+            do clearExistingLogin.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            do clearExistingLogin.ExecuteNonQuery() |> ignore
+            
+            let addNewLogin = new SqlCommand("INSERT INTO LoginInfo (Login,Username,CreationDate,ConsumerKey,ConsumerSecret,AccessToken,AccessTokenSecret) VALUES (@login,@username,@date,@ck,@cs,@at,@ats)",connection)
+            do addNewLogin.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=currentUser.ScreenName)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@ck", SqlDbType.VarChar,Value=credentials.ConsumerKey)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@cs", SqlDbType.VarChar,Value=credentials.ConsumerSecret)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@at", SqlDbType.VarChar,Value=credentials.AccessToken)) |> ignore
+            do addNewLogin.Parameters.Add(new SqlParameter("@ats", SqlDbType.VarChar,Value=credentials.AccessTokenSecret)) |> ignore
+            do addNewLogin.ExecuteNonQuery() |> ignore
+        
+            let clearExistingUser = new SqlCommand("DELETE FROM UserInfo WHERE Login = @login", connection)
+            do clearExistingUser.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            do clearExistingUser.ExecuteNonQuery() |> ignore
+            
+            let addNewUser = new SqlCommand("INSERT INTO UserInfo (Login,Username,CreationDate,FollowerCount,FollowingCount) VALUES (@login,@username,@date,@followerCount,@followingCount)",connection)
+            do addNewUser.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            do addNewUser.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=currentUser.ScreenName)) |> ignore
+            do addNewUser.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
+            do addNewUser.Parameters.Add(new SqlParameter("@followerCount", SqlDbType.Int,Value=currentUser.FollowersCount)) |> ignore
+            do addNewUser.Parameters.Add(new SqlParameter("@followingCount", SqlDbType.Int,Value=currentUser.FriendsCount)) |> ignore
+            do addNewUser.ExecuteNonQuery() |> ignore
+        
             Some credentials
         | None -> None
 
     ///Check to see if the login is already authenticated.
     let getCredentials (login) = 
-        try
-            let location = credentialCacheLocation + "/" + login
-            if System.IO.File.Exists location then
-                location
-                |> System.IO.File.ReadAllText
-                |> (fun x -> JsonConvert.DeserializeObject<SimpleCredentials>(x))
-                |> Some
-            else None
-        with 
-        | _ -> None
+        use connection = createSqlConnection()
+
+        let pullCredentials = new SqlCommand("Select Login, Username, CreationDate, ConsumerKey, ConsumerSecret, AccessToken, AccessTokenSecret FROM LoginInfo WHERE Login = @login", connection)
+        do pullCredentials.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
+            
+        do connection.Open()
+        let reader = pullCredentials.ExecuteReader()
+        if reader.Read() then
+            {
+                Login = reader.GetString(0)
+                Username = reader.GetString(1)
+                CreationDate = reader.GetDateTimeOffset(2)
+                ConsumerKey = reader.GetString(3)
+                ConsumerSecret = reader.GetString(4)
+                AccessToken = reader.GetString(5)
+                AccessTokenSecret = reader.GetString(6)
+            }
+            |> Some
+        else None
 
 
     ///Get the app credentials from the config file
