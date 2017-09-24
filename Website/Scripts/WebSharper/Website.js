@@ -62,14 +62,14 @@
     {
      var Text,attrs;
      Text=List.ofArray([Doc.TextNode(message)]);
-     attrs=[];
+     attrs=[AttrProxy.Create("class","output-ui-mobile")];
      return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h5",[AttrProxy.Create("class","text-center tweet-text-mobile")],Arrays.ofSeq(Text)),Doc.TextNode("\u0009\u0009\n\u0009")]),Doc.TextNode("\n")])]);
     },
     buildOutputUIFailureWeb:function(message)
     {
      var Text,attrs;
      Text=List.ofArray([Doc.TextNode(message)]);
-     attrs=[];
+     attrs=[AttrProxy.Create("class","output-ui")];
      return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("p",[AttrProxy.Create("class","tweet-text text-center")],Arrays.ofSeq(Text)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n")])]);
     },
     buildOutputUIMobile:function(result)
@@ -85,7 +85,7 @@
      Link=List.ofArray([Doc.Element("a",List.ofArray([AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")]),List.ofArray([Doc.Element("i",List.ofArray([AttrProxy.Create("class","fa fa-twitter wow bounceIn")]),Runtime.New(T,{
       $:0
      })),Doc.Element("span",List.ofArray([AttrProxy.Create("class","label")]),List.ofArray([Doc.TextNode("Tweet this!")]))]))]);
-     attrs=[];
+     attrs=[AttrProxy.Create("class","output-ui-mobile")];
      attrs1=[AttrProxy.Create("class","col-xs-12")];
      return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",attrs1,[Doc.TextNode("\n        "),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n                        "),Doc.Element("div",[AttrProxy.Create("class","overlapping-images-small")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n        "),Doc.Element("div",[AttrProxy.Create("class","text-center")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h6",[AttrProxy.Create("class","text-center")],Arrays.ofSeq(Usernames)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n    ")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h6",[AttrProxy.Create("class","text-center")],[Doc.TextNode("TweetMashup.com Presents:")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-xs-12")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h5",[AttrProxy.Create("class","text-center tweet-text-mobile")],Arrays.ofSeq(Text)),Doc.TextNode("\u0009\u0009\u0009\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","text-center col-xs-12")],Arrays.ofSeq(Link)),Doc.TextNode("\n")])]);
     },
@@ -105,7 +105,7 @@
      Link=List.ofArray([Doc.Element("a",List.ofArray([AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")]),List.ofArray([Doc.Element("i",List.ofArray([AttrProxy.Create("class","fa fa-twitter wow bounceIn")]),Runtime.New(T,{
       $:0
      })),Doc.Element("span",List.ofArray([AttrProxy.Create("class","label")]),List.ofArray([Doc.TextNode("Tweet this!")]))]))]);
-     attrs=[];
+     attrs=[AttrProxy.Create("class","output-ui")];
      attrs1=[AttrProxy.Create("class","row")];
      return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",attrs1,[Doc.TextNode(" \n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User1FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User1Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","overlapping-images col-md-4 col-lg-4")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User2FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User2Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h3",[AttrProxy.Create("class","text-center")],[Doc.TextNode(" TweetMashup.com presents:")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("p",[AttrProxy.Create("class","tweet-text text-center")],Arrays.ofSeq(Text)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","text-center row")],Arrays.ofSeq(Link)),Doc.TextNode("\n")])]);
     },

@@ -283,35 +283,42 @@ module Twitter =
         |> (substitute "https{0,1}://t.co/\\S*" "")
         |> (fun y -> y.Trim(' ').TrimEnd(' '))
 
-    let utiCache = 
+    let mutable utiCache = 
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
         config.Add("cacheMemoryLimitMegabytes", "1024")
         new MemoryCache("utiCache",config)
 
-    let getUserTweetInfoFromCache (getValue: string -> UserTweetsInfo option) (username:string)=
-        let newValue = new Lazy<UserTweetsInfo option>(fun () -> getValue username)
+    let mutable loginCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "256")
+        new MemoryCache("loginCache",config)
+
+    let getFromCache (cache: byref<MemoryCache>) (getValue: string -> 'V option) (username:string)=
+        let newValue = new Lazy<'V option>(fun () -> getValue username)
         let oldValueObj = 
-            utiCache.AddOrGetExisting(username, newValue, 
+            cache.AddOrGetExisting(username, newValue, 
                 new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
         try
             match oldValueObj with
             | null -> newValue.Value
             | _ -> 
                 System.Diagnostics.Debug.WriteLine("starting cast")
-                let nonLazyOldValue = (oldValueObj :?> Lazy<UserTweetsInfo option>).Value
+                let nonLazyOldValue = (oldValueObj :?> Lazy<'V option>).Value
                 System.Diagnostics.Debug.WriteLine("ending cast")
                 match nonLazyOldValue with
                 | None -> 
                     let nonLazyNewValue = newValue.Value
                     if Option.isSome nonLazyNewValue then
-                        utiCache.Set(username, nonLazyNewValue, new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
+                        cache.Set(username, nonLazyNewValue, new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
                     nonLazyNewValue
                 | x -> x
         with
         | _ ->
-            utiCache.Remove(username) |> ignore
+            cache.Remove(username) |> ignore
             None
 
     ///A function that checks if the data is stored in the database, and pulls if available and not too old. if too old, updates.
@@ -445,7 +452,7 @@ module Twitter =
                         | _ -> None
                        )
         
-        getUserTweetInfoFromCache (getUserTweetInfoFromDatabase getCombinedInfo) username
+        getFromCache &utiCache (getUserTweetInfoFromDatabase getCombinedInfo) username
         
     ///Takes a tweet and makes it good for the "tweet this!" button. (adds usernames and a link)
     let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
@@ -556,7 +563,7 @@ module Twitter =
             | Some c ->
                 let credentials = 
                     c
-                    |> getCredentials
+                    |> getFromCache &loginCache getCredentials
                     |> Option.map simpleCredentialsToCredentials
                 Option.iter Tweetinvi.Auth.SetCredentials credentials
                 credentials

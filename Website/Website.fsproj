@@ -121,13 +121,19 @@
     <Compile Include="Remoting.fs" />
     <Compile Include="Client.fs" />
     <Compile Include="Main.fs" />
-    <Content Include="Main.html" />
     <Content Include="Web.config" />
     <Content Include="Global.asax" />
     <Compile Include="Global.asax.fs" />
     <Content Include="packages.config" />
-    <Content Include="Mobile.html" />
+    <Content Include="Main.html" />
+	<Content Include="Mobile.html" />
     <Content Include="About.html" />
+	<Content Include="PresetUIWeb.html" />
+	<Content Include="PresetUIMobile.html" />
+	<Content Include="OutputUIWeb.html" />
+	<Content Include="OutputUIMobile.html" />
+	<Content Include="OutputUIFailureWeb.html" />
+	<Content Include="OutputUIFailureMobile.html" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Autofac">
