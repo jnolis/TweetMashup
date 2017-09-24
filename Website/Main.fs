@@ -94,7 +94,7 @@ module Site =
 
     let tabContents (isMobile: bool) (cs:CredentialSet)  = 
         let localPairCombos = getPairCombos()
-        let isAuthenticated = match cs with | CredentialSet.Credentials c -> true | _ -> false
+        let isAuthenticated = match cs with | CredentialSet.Login c -> true | _ -> false
         makeTabContents 
             [client <@ Client.preset isMobile localPairCombos @>]
             [client <@ Client.tryIt isMobile cs @>] 
@@ -105,14 +105,14 @@ module Site =
             match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
             | Some login -> 
                 match getCredentials login with
-                | Some credentials -> CredentialSet.Credentials credentials
+                | Some credentials -> CredentialSet.Login login
                 | _ ->  CredentialSet.LoginUrl (initAuthentication login)
             | None -> CredentialError
 
     let homePage (isMobile:bool) (ctx:Context<EndPoint>) =
         let localPairCombos = getPairCombos()
         let cs = ctxToCredentialSet ctx
-        let isAuthenticated = match cs with | CredentialSet.Credentials c -> true | _ -> false
+        let isAuthenticated = match cs with | CredentialSet.Login c -> true | _ -> false
         Templating.desktopPage ctx {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile cs}
 
 

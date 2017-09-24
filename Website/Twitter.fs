@@ -6,6 +6,7 @@ open System.Text.RegularExpressions
 open Newtonsoft.Json
 open System.Data.SqlClient
 open System.Data
+open System.Runtime.Caching
 
 ///The information that stores a twitter user
 type SmallUser = {
@@ -14,7 +15,11 @@ type SmallUser = {
     ///Their full name (used in output)
     FullName: string;
     ///The URL of their profile image
-    Image: string
+    Image: string;
+    ///Follower Count
+    FollowerCount: int;
+    ///Following count (friends)
+    FollowingCount: int;
     }
 
 ///A full tweet mashup.
@@ -36,10 +41,6 @@ type Mashup =
     ///The second user that was mashed
     User2: SmallUser
     }
-
-///<summary>Sometimes we need to cache information (for instance, when storing some partial credentials to authenticate).
-/// A cache set contains a datetime (so we could in theory delete data that was too old), and the value that is cached.</summary>
-type CacheSet<'a> = {DateTime: System.DateTime; Value: 'a}
 
 ///Data on a word that a person has used in a particular tweet
 type TweetWordData = {
@@ -80,7 +81,7 @@ type SimpleCredentials = {
     }
 
 type CredentialSet =
-    | Credentials of SimpleCredentials
+    | Login of string
     | LoginUrl of string
     | CredentialError
 
@@ -90,11 +91,6 @@ module Twitter =
         let connectionString = System.Configuration.ConfigurationManager.ConnectionStrings.["TweetMashup"].ConnectionString
         new SqlConnection(connectionString)
         
-    ///The location on the hard drive where we save the user and their tweets. (it's a single folder)
-    let userTweetCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["storeLocation"]
-    ///The location on the hard drive where we store twitter api credentials
-    let credentialCacheLocation = System.Configuration.ConfigurationManager.AppSettings.["credentialLocation"]
-
 
     ///This function takes a set of SimpleCredentials and turns it into something Tweetinvi can use
     let simpleCredentialsToCredentials (c:SimpleCredentials) = 
@@ -120,14 +116,16 @@ module Twitter =
         
         do connection.Open()
         do clearExisting.ExecuteNonQuery() |> ignore
+        try
         do addNew.ExecuteNonQuery() |> ignore
+        with
+        | _ -> ()
         do connection.Close()
 
         context.AuthorizationURL  
 
     ///This function finishes the authentication, using the verifierCode returned from the twitter site, and the cached user info from before, again using the login from the cookie
     let finishAuthentication (verifierCode:string) (login) =
-        let location = credentialCacheLocation + "/" + login
         use connection = createSqlConnection()
 
         let pullExisting = new SqlCommand("Select AuthorizationId FROM PartialLoginInfo WHERE Login = @login", connection)
@@ -162,8 +160,10 @@ module Twitter =
             do addNewLogin.Parameters.Add(new SqlParameter("@cs", SqlDbType.VarChar,Value=credentials.ConsumerSecret)) |> ignore
             do addNewLogin.Parameters.Add(new SqlParameter("@at", SqlDbType.VarChar,Value=credentials.AccessToken)) |> ignore
             do addNewLogin.Parameters.Add(new SqlParameter("@ats", SqlDbType.VarChar,Value=credentials.AccessTokenSecret)) |> ignore
+            try
             do addNewLogin.ExecuteNonQuery() |> ignore
-        
+            with
+            | _ -> ()
             let clearExistingUser = new SqlCommand("DELETE FROM UserInfo WHERE Login = @login", connection)
             do clearExistingUser.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
             do clearExistingUser.ExecuteNonQuery() |> ignore
@@ -174,8 +174,10 @@ module Twitter =
             do addNewUser.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
             do addNewUser.Parameters.Add(new SqlParameter("@followerCount", SqlDbType.Int,Value=currentUser.FollowersCount)) |> ignore
             do addNewUser.Parameters.Add(new SqlParameter("@followingCount", SqlDbType.Int,Value=currentUser.FriendsCount)) |> ignore
+            try
             do addNewUser.ExecuteNonQuery() |> ignore
-        
+            with
+            | _ -> ()
             Some credentials
         | None -> None
 
@@ -187,7 +189,7 @@ module Twitter =
         do pullCredentials.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
             
         do connection.Open()
-        let reader = pullCredentials.ExecuteReader()
+        use reader = pullCredentials.ExecuteReader()
         if reader.Read() then
             {
                 Login = reader.GetString(0)
@@ -209,9 +211,6 @@ module Twitter =
         let accessToken = System.Configuration.ConfigurationManager.AppSettings.["accessToken"]
         let accessTokenSecret = System.Configuration.ConfigurationManager.AppSettings.["accessTokenSecret"]
         Auth.CreateCredentials(consumerKey,consumerSecret,accessToken,accessTokenSecret)
-
-    ///Check to see if the cached user info is too old and needs to be refreshed 
-    let tooOld (dt:System.DateTime) = System.DateTime.Now.Subtract(dt).Days > 7
 
     ///Convenience function to take an array of strings and concatenate them with spaces
     let concatenate (s: string array) =
@@ -267,7 +266,7 @@ module Twitter =
     ///A function that takes a user from TweetInvi and converts it to a SmallUser that can be stored or sent to the client
     let userToSmallUser (u:Models.IUser) : SmallUser option =
         try 
-        Some {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400}
+        Some {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400; FollowerCount = u.FollowersCount; FollowingCount = u.FriendsCount}
         with
         | _ -> None
 
@@ -284,59 +283,96 @@ module Twitter =
         |> (substitute "https{0,1}://t.co/\\S*" "")
         |> (fun y -> y.Trim(' ').TrimEnd(' '))
 
-    ///A function that checks if the data is stored locally in a folder in JSON and if it's sufficiently fresh, otherwise will pull the data from the server.
-    let getFromCache (cacheLocation: string) (getValue: 'a -> 'b option) (key: 'a) =
-        let location = (cacheLocation + "/" + key.ToString())
-        let value =
-            try
-                let storedValue =
-                    if System.IO.File.Exists location then
-                        let value = 
-                            location
-                            |> System.IO.File.ReadAllText
-                            |> (fun x -> JsonConvert.DeserializeObject<CacheSet<'b>>(x))
-                        if tooOld value.DateTime then
-                            System.IO.File.Delete location
-                            None
-                        else
-                            Some value
-                    else None
-                match storedValue with 
-                    | Some x -> Some x.Value 
-                    | None ->
-                        let dateTime = System.DateTime.Now
-                        let newValue = getValue key
-                        match newValue with
-                        | Some nv -> 
-                            {DateTime = dateTime; Value = nv}
-                            |> JsonConvert.SerializeObject
-                            |> (fun x -> System.IO.File.WriteAllText(location,x))
+    let utiCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "1024")
+        new MemoryCache("utiCache",config)
 
-                            Some nv
-                        | None -> None
-            with
-              | _ -> None
-        value
-    
-    ///A function to get a user from the Twitter API using Tweetinvi. If no credentials are provided then the app credentials are used
-    let getUser (credentials: Models.ITwitterCredentials option) (username) =
-        try 
-            match credentials with
-            | Some c ->
-                Tweetinvi.Auth.SetCredentials c
-            | None ->
-                Tweetinvi.Auth.SetCredentials Tweetinvi.Auth.ApplicationCredentials
-            TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
-            let fullUser = User.GetUserFromScreenName username
-            if fullUser <> null && not fullUser.Protected then  userToSmallUser fullUser else None
-
-        with 
-        | exn -> 
-            do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
+    let getUserTweetInfoFromCache (getValue: string -> UserTweetsInfo option) (username:string)=
+        let newValue = new Lazy<UserTweetsInfo option>(fun () -> getValue username)
+        let oldValueObj = 
+            utiCache.AddOrGetExisting(username, newValue, 
+                new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
+        try
+            match oldValueObj with
+            | null -> newValue.Value
+            | _ -> 
+                System.Diagnostics.Debug.WriteLine("starting cast")
+                let nonLazyOldValue = (oldValueObj :?> Lazy<UserTweetsInfo option>).Value
+                System.Diagnostics.Debug.WriteLine("ending cast")
+                match nonLazyOldValue with
+                | None -> 
+                    let nonLazyNewValue = newValue.Value
+                    if Option.isSome nonLazyNewValue then
+                        utiCache.Set(username, nonLazyNewValue, new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
+                    nonLazyNewValue
+                | x -> x
+        with
+        | _ ->
+            utiCache.Remove(username) |> ignore
             None
+
+    ///A function that checks if the data is stored in the database, and pulls if available and not too old. if too old, updates.
+    let getUserTweetInfoFromDatabase (getValue: string -> UserTweetsInfo option) (username: string) =
+        let tooOld (dt:System.DateTimeOffset) = System.DateTimeOffset.Now.Subtract(dt).Days > 1
+
+        use connection = createSqlConnection()
+        let pullInfo = new SqlCommand("Select CreationDate, Value FROM UserTweetInfo WHERE Username = @username", connection)
+        do pullInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
+            
+        do connection.Open()
+        use reader = pullInfo.ExecuteReader()
+        let result =
+            if reader.Read() then 
+                Some (reader.GetDateTimeOffset(0), reader.GetString(1))
+            else None
+        reader.Close()
+        if result.IsNone || tooOld (fst result.Value) then
+            if result.IsSome then
+                let clearExistingInfo = new SqlCommand("DELETE FROM UserTweetInfo WHERE Username = @username", connection)
+                do clearExistingInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
+                do clearExistingInfo.ExecuteNonQuery() |> ignore
+
+            match getValue username with
+            | Some uti ->
+                let creationDate = System.DateTimeOffset.Now
+                let value = Newtonsoft.Json.JsonConvert.SerializeObject uti
+                let writeInfo = new SqlCommand("INSERT INTO UserTweetInfo (Username,CreationDate,Value) VALUES (@username,@date,@value)", connection)
+                do writeInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
+                do writeInfo.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
+                do writeInfo.Parameters.Add(new SqlParameter("@value", SqlDbType.VarChar,Value=value)) |> ignore
+                try
+                do writeInfo.ExecuteNonQuery() |> ignore
+                with
+                | _ -> ()
+                Some uti
+            | None ->
+                None
+        else
+            result.Value
+            |> snd
+            |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<UserTweetsInfo>(x))
+            |> Some
 
     ///A function to get a user _and their tweets_ from the Twitter API using Tweetinvi. If no credentials are provided then the app credentials are used. Also uses a cache
     let getTweetsAndUserInfo (credentials: Models.ITwitterCredentials option) (username:string) = 
+        let getUser (credentials: Models.ITwitterCredentials option) (username) =
+            try 
+                match credentials with
+                | Some c ->
+                    Tweetinvi.Auth.SetCredentials c
+                | None ->
+                    Tweetinvi.Auth.SetCredentials Tweetinvi.Auth.ApplicationCredentials
+                TweetinviEvents.QueryBeforeExecute.Add( fun a -> a.TwitterQuery.Timeout <- TimeSpan.FromSeconds(30.0))
+                let fullUser = User.GetUserFromScreenName username
+                if fullUser <> null && not fullUser.Protected then  userToSmallUser fullUser else None
+
+            with 
+            | exn -> 
+                do System.Diagnostics.Debug.WriteLine("Couldn't pull user " + (ExceptionHandler.GetLastException()).TwitterDescription) 
+                None
         let getTweetMap (username:string) = 
                 match credentials with
                 | Some c ->
@@ -407,10 +443,9 @@ module Twitter =
                                 WordLookup = snd t
                                 }
                         | _ -> None
-                        )
-        getFromCache userTweetCacheLocation getCombinedInfo username
-
-
+                       )
+        
+        getUserTweetInfoFromCache (getUserTweetInfoFromDatabase getCombinedInfo) username
         
     ///Takes a tweet and makes it good for the "tweet this!" button. (adds usernames and a link)
     let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
@@ -514,15 +549,17 @@ module Twitter =
             |> Some
         
     ///This is the function that puts the mashing up all together. Given credentials, a number of tweets to generate, and two user names, returns a set of mashups!
-    let mashup (credentialsInput: SimpleCredentials option) (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
+    let mashup (login: string option) (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
+
         let credentials = 
-            match credentialsInput with
+            match login with
             | Some c ->
                 let credentials = 
                     c
-                    |> simpleCredentialsToCredentials
-                Tweetinvi.Auth.SetCredentials credentials
-                Some credentials
+                    |> getCredentials
+                    |> Option.map simpleCredentialsToCredentials
+                Option.iter Tweetinvi.Auth.SetCredentials credentials
+                credentials
             | None -> None
         let username1 = username1unfiltered.ToLower().Replace("@","").Replace(" ","") //filter the garbage out of the usernames
         let username2 = username2unfiltered.ToLower().Replace("@","").Replace(" ","") 

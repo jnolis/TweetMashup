@@ -31,7 +31,7 @@ type ResultSuccess =
 [<JavaScript>]
 module Client =
     open WebSharper.UI.Next.Client.Doc
-
+    let emptyUser = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""; FollowerCount = 0; FollowingCount = 0}
     let buildOutputUIWeb (result:ResultValue) =
         OutputUIWeb.Elt(
                             User1FullName = [text result.User1.FullName],
@@ -140,10 +140,10 @@ module Client =
         | LoginUrl l ->
             tryItDummyUI isMobile l
         | CredentialError -> div [h5 [text "Error with credentials, try refreshing browser"]]
-        | CredentialSet.Credentials credentials ->
+        | Login login ->
             let mutable tweetCache = Array.empty<Combined>
-            let mutable tweetCacheUser1 = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
-            let mutable tweetCacheUser2 = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
+            let mutable tweetCacheUser1 = emptyUser
+            let mutable tweetCacheUser2 = emptyUser
             let mutable tweetCacheChoice = 0
             let outputUIData = Var.Create NotStarted
             let user1 = Var.Create ""
@@ -154,7 +154,7 @@ module Client =
                 if tweetCacheChoice >= Array.length tweetCache || 
                     user1.Value <> tweetCacheUser1.Username || 
                     user2.Value <> tweetCacheUser2.Username then
-                    let mashup =  Server.makeMashup NotRequired user1.Value user2.Value
+                    let mashup =  Server.makeMashup (Some login) user1.Value user2.Value
                     match mashup with
                     | Reponse.Success d ->
                         tweetCache <- d.Combined
@@ -166,8 +166,8 @@ module Client =
                         outputUIData.Value <- Success resultValue
                     | Reponse.Failure d ->
                         tweetCache <- Array.empty<Combined>
-                        tweetCacheUser1 <- {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
-                        tweetCacheUser2 <- {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
+                        tweetCacheUser1 <- emptyUser
+                        tweetCacheUser2 <- emptyUser
                         outputUIData.Value <- Failure d
                 else
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}
@@ -206,14 +206,14 @@ module Client =
     let preset (isMobile: bool) (userPairs : (SmallUser*SmallUser) []) = 
 
         let mutable tweetCache = Array.empty<Combined>
-        let mutable tweetCacheUser1 = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
-        let mutable tweetCacheUser2 = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
+        let mutable tweetCacheUser1 = emptyUser
+        let mutable tweetCacheUser2 = emptyUser
         let mutable tweetCacheChoice = 0
         let outputUIData = Var.Create NotStarted
         let pairUI ((user1,user2) : SmallUser*SmallUser) =
             let onSubmit () = 
                 if tweetCacheChoice >= Array.length tweetCache || user1.Username <> tweetCacheUser1.Username || user2.Username <> tweetCacheUser2.Username then
-                    let mashup =  Server.makeMashup NotRequired user1.Username user2.Username
+                    let mashup =  Server.makeMashup None user1.Username user2.Username
                     match mashup with
                     | Reponse.Success d ->
                         tweetCache <- d.Combined
@@ -225,8 +225,8 @@ module Client =
                         outputUIData.Value <- Success resultValue
                     | Reponse.Failure d ->
                         tweetCache <- Array.empty<Combined>
-                        tweetCacheUser1 <- {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
-                        tweetCacheUser2 <- {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""}
+                        tweetCacheUser1 <- emptyUser
+                        tweetCacheUser2 <- emptyUser
                         outputUIData.Value <- Failure d
                 else
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}

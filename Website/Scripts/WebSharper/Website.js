@@ -109,20 +109,22 @@
      attrs1=[AttrProxy.Create("class","row")];
      return Doc.Concat([Doc.Element("div",attrs,[Doc.TextNode("\n\u0009"),Doc.Element("div",attrs1,[Doc.TextNode(" \n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 left-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User1FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User1Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","overlapping-images col-md-4 col-lg-4")],Arrays.ofSeq(Images)),Doc.TextNode("\n\u0009\u0009"),Doc.Element("div",[AttrProxy.Create("class","col-md-4 col-lg-4 right-name hidden-sm hidden-xs")],[Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h4",[],Arrays.ofSeq(User2FullName)),Doc.TextNode("\n\u0009\u0009\u0009"),Doc.Element("h5",[],Arrays.ofSeq(User2Username)),Doc.TextNode("\n\u0009\u0009")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("h3",[AttrProxy.Create("class","text-center")],[Doc.TextNode(" TweetMashup.com presents:")]),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","row")],[Doc.TextNode("\n\u0009\u0009"),Doc.Element("p",[AttrProxy.Create("class","tweet-text text-center")],Arrays.ofSeq(Text)),Doc.TextNode("\n\u0009")]),Doc.TextNode("\n\u0009"),Doc.Element("div",[AttrProxy.Create("class","text-center row")],Arrays.ofSeq(Link)),Doc.TextNode("\n")])]);
     },
+    emptyUser:Runtime.Field(function()
+    {
+     return{
+      Username:"",
+      FullName:"",
+      Image:"",
+      FollowerCount:0,
+      FollowingCount:0
+     };
+    }),
     preset:function(isMobile,userPairs)
     {
      var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,pairUI,outputUIView;
      tweetCache=[[]];
-     tweetCacheUser1=[{
-      Username:"",
-      FullName:"",
-      Image:""
-     }];
-     tweetCacheUser2=[{
-      Username:"",
-      FullName:"",
-      Image:""
-     }];
+     tweetCacheUser1=[Client.emptyUser()];
+     tweetCacheUser2=[Client.emptyUser()];
      tweetCacheChoice=[0];
      outputUIData=Var.Create({
       $:2
@@ -138,22 +140,14 @@
        if((tweetCacheChoice[0]>=tweetCache[0].length?true:user1.Username!==tweetCacheUser1[0].Username)?true:user2.Username!==tweetCacheUser2[0].Username)
         {
          mashup=AjaxRemotingProvider.Sync("Website:0",[{
-          $:2
+          $:0
          },user1.Username,user2.Username]);
          if(mashup.$==1)
           {
            d=mashup.$0;
            tweetCache[0]=[];
-           tweetCacheUser1[0]={
-            Username:"",
-            FullName:"",
-            Image:""
-           };
-           tweetCacheUser2[0]={
-            Username:"",
-            FullName:"",
-            Image:""
-           };
+           tweetCacheUser1[0]=Client.emptyUser();
+           tweetCacheUser2[0]=Client.emptyUser();
            return Var1.Set(outputUIData,{
             $:1,
             $0:d
@@ -223,7 +217,7 @@
     },
     tryIt:function(isMobile,credentialSet)
     {
-     var _,arg20,arg201,credentials,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,user1Input,user2Input,onSubmit,inputUI,_3,ats,arg202,ats1,outputUIView,l;
+     var _,arg20,arg201,login,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,user1Input,user2Input,onSubmit,inputUI,_3,ats,arg202,ats1,outputUIView,l;
      if(credentialSet.$==2)
       {
        arg201=List.ofArray([Doc.TextNode("Error with credentials, try refreshing browser")]);
@@ -234,18 +228,10 @@
       {
        if(credentialSet.$==0)
         {
-         credentials=credentialSet.$0;
+         login=credentialSet.$0;
          tweetCache=[[]];
-         tweetCacheUser1=[{
-          Username:"",
-          FullName:"",
-          Image:""
-         }];
-         tweetCacheUser2=[{
-          Username:"",
-          FullName:"",
-          Image:""
-         }];
+         tweetCacheUser1=[Client.emptyUser()];
+         tweetCacheUser2=[Client.emptyUser()];
          tweetCacheChoice=[0];
          outputUIData=Var.Create({
           $:2
@@ -260,22 +246,15 @@
           if((tweetCacheChoice[0]>=tweetCache[0].length?true:Var.Get(user1)!==tweetCacheUser1[0].Username)?true:Var.Get(user2)!==tweetCacheUser2[0].Username)
            {
             mashup=AjaxRemotingProvider.Sync("Website:0",[{
-             $:2
+             $:1,
+             $0:login
             },Var.Get(user1),Var.Get(user2)]);
             if(mashup.$==1)
              {
               d=mashup.$0;
               tweetCache[0]=[];
-              tweetCacheUser1[0]={
-               Username:"",
-               FullName:"",
-               Image:""
-              };
-              tweetCacheUser2[0]={
-               Username:"",
-               FullName:"",
-               Image:""
-              };
+              tweetCacheUser1[0]=Client.emptyUser();
+              tweetCacheUser2[0]=Client.emptyUser();
               _2=Var1.Set(outputUIData,{
                $:1,
                $0:d
@@ -396,6 +375,7 @@
  });
  Runtime.OnLoad(function()
  {
+  Client.emptyUser();
   return;
  });
 }());
