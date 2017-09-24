@@ -37,25 +37,6 @@ module Templating =
 
 module Site =
     Tweetinvi.Auth.ApplicationCredentials <- getAppCredentials()
-    let getPairCombos() = 
-        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
-        |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
-        |> Seq.map
-            (fun pair -> 
-                async {
-                    return match (
-                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (fst pair),
-                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (snd pair)) with
-                            | (Some ux, Some uy) -> Some (ux.User, uy.User)
-                            | _ -> None
-                    }
-            )
-        |> Async.Parallel
-        |> Async.RunSynchronously
-        |> Seq.ofArray
-        |> Seq.choose id
-        |> Array.ofSeq
 
     let makeTabs presetName tryItName aboutName (isAuthenticated: bool) =
         seq [
@@ -92,28 +73,26 @@ module Site =
         else
             makeTabs "Pick from popular combinations" "Or make your own!"  "About Tweet mashup!" isAuthenticated
 
-    let tabContents (isMobile: bool) (cs:CredentialSet)  = 
-        let localPairCombos = getPairCombos()
-        let isAuthenticated = match cs with | CredentialSet.Login c -> true | _ -> false
+    let tabContents (isMobile: bool) (login: string option) (loginUrl: string option)  = 
+        let localPairCombos = getPairComboUsers()
+        let isAuthenticated = Option.isNone loginUrl
         makeTabContents 
-            [client <@ Client.preset isMobile localPairCombos @>]
-            [client <@ Client.tryIt isMobile cs @>] 
+            [client <@ Client.preset isMobile login localPairCombos @>]
+            [client <@ Client.tryIt isMobile login loginUrl @>] 
             isAuthenticated
 
     
-    let ctxToCredentialSet (ctx:Context<EndPoint>) =
-            match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
-            | Some login -> 
-                match getCredentials login with
-                | Some credentials -> CredentialSet.Login login
-                | _ ->  CredentialSet.LoginUrl (initAuthentication login)
-            | None -> CredentialError
 
     let homePage (isMobile:bool) (ctx:Context<EndPoint>) =
-        let localPairCombos = getPairCombos()
-        let cs = ctxToCredentialSet ctx
-        let isAuthenticated = match cs with | CredentialSet.Login c -> true | _ -> false
-        Templating.desktopPage ctx {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile cs}
+        let login = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
+        let (isAuthenticated,loginUrl) = 
+            match login with
+            | Some l ->
+                let isAuthenticated = Option.isNone (getCredentials l)
+                if not isAuthenticated then (false,Some (initAuthentication l)) else (true,None)
+            | None -> (false,None)
+        let localPairCombos = getPairComboUsers()
+        Templating.desktopPage ctx {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile login loginUrl}
 
 
         

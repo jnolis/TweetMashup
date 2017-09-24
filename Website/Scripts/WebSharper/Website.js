@@ -119,7 +119,7 @@
       FollowingCount:0
      };
     }),
-    preset:function(isMobile,userPairs)
+    preset:function(isMobile,loginOption,userPairs)
     {
      var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,pairUI,outputUIView;
      tweetCache=[[]];
@@ -136,6 +136,15 @@
       user1=_arg1[0];
       onSubmit=function()
       {
+       Concurrency.Start(Concurrency.Delay(function()
+       {
+        return Concurrency.Bind(AjaxRemotingProvider.Async("Website:1",[isMobile,loginOption,user1.Username,user2.Username]),function()
+        {
+         return Concurrency.Return(null);
+        });
+       }),{
+        $:0
+       });
        return Concurrency.Start(Concurrency.Delay(function()
        {
         var x,resultValue1,index1;
@@ -144,12 +153,12 @@
           x=AjaxRemotingProvider.Async("Website:0",[{
            $:0
           },user1.Username,user2.Username]);
-          return Concurrency.Bind(x,function(_arg2)
+          return Concurrency.Bind(x,function(_arg3)
           {
            var d,d1,resultValue,index;
-           if(_arg2.$==1)
+           if(_arg3.$==1)
             {
-             d=_arg2.$0;
+             d=_arg3.$0;
              tweetCache[0]=[];
              tweetCacheUser1[0]=Client.emptyUser();
              tweetCacheUser2[0]=Client.emptyUser();
@@ -161,7 +170,7 @@
             }
            else
             {
-             d1=_arg2.$0;
+             d1=_arg3.$0;
              tweetCache[0]=d1.Combined;
              tweetCacheUser1[0]=d1.User1;
              tweetCacheUser2[0]=d1.User2;
@@ -227,20 +236,20 @@
       return Client.buildOutputUI(isMobile,r);
      },outputUIView)]));
     },
-    tryIt:function(isMobile,credentialSet)
+    tryIt:function(isMobile,loginOption,loginUrlOption)
     {
-     var _,arg20,arg201,login,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,user1Input,user2Input,onSubmit,inputUI,_3,ats,arg202,ats1,outputUIView,l;
-     if(credentialSet.$==2)
+     var matchValue,_,_1,l,login,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,user1Input,user2Input,onSubmit,inputUI,_4,ats,arg20,ats1,outputUIView,_5,l1,arg201,arg202;
+     matchValue=[loginOption,loginUrlOption];
+     if(matchValue[0].$==1)
       {
-       arg201=List.ofArray([Doc.TextNode("Error with credentials, try refreshing browser")]);
-       arg20=List.ofArray([Doc.Element("h5",[],arg201)]);
-       _=Doc.Element("div",[],arg20);
-      }
-     else
-      {
-       if(credentialSet.$==0)
+       if(matchValue[1].$==1)
         {
-         login=credentialSet.$0;
+         l=matchValue[1].$0;
+         _1=Client.tryItDummyUI(isMobile,l);
+        }
+       else
+        {
+         login=matchValue[0].$0;
          tweetCache=[[]];
          tweetCacheUser1=[Client.emptyUser()];
          tweetCacheUser2=[Client.emptyUser()];
@@ -254,22 +263,32 @@
          user2Input=Client.userSelectionUI(isMobile,1,user2);
          onSubmit=function()
          {
-          var arg00;
+          var arg00,arg001;
           arg00=Concurrency.Delay(function()
           {
-           var _1,x,resultValue1,index1;
+           return Concurrency.Bind(AjaxRemotingProvider.Async("Website:1",[isMobile,loginOption,Var.Get(user1),Var.Get(user2)]),function()
+           {
+            return Concurrency.Return(null);
+           });
+          });
+          Concurrency.Start(arg00,{
+           $:0
+          });
+          arg001=Concurrency.Delay(function()
+          {
+           var _2,x,resultValue1,index1;
            if((tweetCacheChoice[0]>=tweetCache[0].length?true:Var.Get(user1)!==tweetCacheUser1[0].Username)?true:Var.Get(user2)!==tweetCacheUser2[0].Username)
             {
              x=AjaxRemotingProvider.Async("Website:0",[{
               $:1,
               $0:login
              },Var.Get(user1),Var.Get(user2)]);
-             _1=Concurrency.Bind(x,function(_arg1)
+             _2=Concurrency.Bind(x,function(_arg2)
              {
-              var _2,d,d1,resultValue,index;
-              if(_arg1.$==1)
+              var _3,d,d1,resultValue,index;
+              if(_arg2.$==1)
                {
-                d=_arg1.$0;
+                d=_arg2.$0;
                 tweetCache[0]=[];
                 tweetCacheUser1[0]=Client.emptyUser();
                 tweetCacheUser2[0]=Client.emptyUser();
@@ -277,11 +296,11 @@
                  $:1,
                  $0:d
                 });
-                _2=Concurrency.Return(null);
+                _3=Concurrency.Return(null);
                }
               else
                {
-                d1=_arg1.$0;
+                d1=_arg2.$0;
                 tweetCache[0]=d1.Combined;
                 tweetCacheUser1[0]=d1.User1;
                 tweetCacheUser2[0]=d1.User2;
@@ -297,9 +316,9 @@
                  $:0,
                  $0:resultValue
                 });
-                _2=Concurrency.Return(null);
+                _3=Concurrency.Return(null);
                }
-              return _2;
+              return _3;
              });
             }
            else
@@ -315,37 +334,48 @@
               $:0,
               $0:resultValue1
              });
-             _1=Concurrency.Return(null);
+             _2=Concurrency.Return(null);
             }
-           return _1;
+           return _2;
           });
-          return Concurrency.Start(arg00,{
+          return Concurrency.Start(arg001,{
            $:0
           });
          };
          if(!isMobile)
           {
            ats=List.ofArray([AttrProxy.Create("class","form form-inline")]);
-           arg202=List.ofArray([Doc.TextNode("&")]);
-           _3=Doc.Element("div",ats,List.ofArray([Client.userSelectionUI(false,1,user1),Doc.Element("div",List.ofArray([AttrModule.Class("form-group")]),List.ofArray([Doc.Element("h1",[],arg202)])),Client.userSelectionUI(false,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-md-10")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
+           arg20=List.ofArray([Doc.TextNode("&")]);
+           _4=Doc.Element("div",ats,List.ofArray([Client.userSelectionUI(false,1,user1),Doc.Element("div",List.ofArray([AttrModule.Class("form-group")]),List.ofArray([Doc.Element("h1",[],arg20)])),Client.userSelectionUI(false,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-md-10")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
           }
          else
           {
            ats1=List.ofArray([AttrProxy.Create("class","form form-horizontal form-mobile")]);
-           _3=Doc.Element("div",ats1,List.ofArray([Client.userSelectionUI(true,1,user1),Client.userSelectionUI(true,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group form-group-mobile")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-xs-12")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
+           _4=Doc.Element("div",ats1,List.ofArray([Client.userSelectionUI(true,1,user1),Client.userSelectionUI(true,2,user2),Doc.Element("div",List.ofArray([AttrProxy.Create("class","form-group form-group-mobile")]),List.ofArray([Doc.Element("div",List.ofArray([AttrProxy.Create("class","input-group col-xs-12")]),List.ofArray([Doc.ButtonView("Go!",List.ofArray([AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")]),View1.Const(null),onSubmit)]))]))]));
           }
-         inputUI=_3;
+         inputUI=_4;
          outputUIView=outputUIData.get_View();
-         _=Doc.Element("div",List.ofArray([AttrProxy.Create("class",isMobile?"container tweet-mobile-ui preset-container":"container preset-container")]),List.ofArray([inputUI,Doc.BindView(function(r)
+         _1=Doc.Element("div",List.ofArray([AttrProxy.Create("class",isMobile?"container tweet-mobile-ui preset-container":"container preset-container")]),List.ofArray([inputUI,Doc.BindView(function(r)
          {
           return Client.buildOutputUI(isMobile,r);
          },outputUIView)]));
         }
+       _=_1;
+      }
+     else
+      {
+       if(matchValue[1].$==1)
+        {
+         l1=matchValue[1].$0;
+         _5=Client.tryItDummyUI(isMobile,l1);
+        }
        else
         {
-         l=credentialSet.$0;
-         _=Client.tryItDummyUI(isMobile,l);
+         arg202=List.ofArray([Doc.TextNode("Error with credentials, try refreshing browser")]);
+         arg201=List.ofArray([Doc.Element("h5",[],arg202)]);
+         _5=Doc.Element("div",[],arg201);
         }
+       _=_5;
       }
      return _;
     },

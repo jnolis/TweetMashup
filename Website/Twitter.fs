@@ -87,6 +87,18 @@ type CredentialSet =
 
 ///<summary>This module does the work involved with generating a tweet and interfacing with the tweetinvi API.</summary>
 module Twitter =
+    let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","")
+    let pairCombos =
+        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
+        |> System.IO.File.ReadAllText
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
+        |> Seq.cache
+
+    let allowedNoAuth = 
+        Seq.append (Seq.map fst pairCombos) (Seq.map snd pairCombos)
+        |> Seq.map filterUsername
+        |> Set.ofSeq
+
     let createSqlConnection() =
         let connectionString = System.Configuration.ConfigurationManager.ConnectionStrings.["TweetMashup"].ConnectionString
         new SqlConnection(connectionString)
@@ -182,7 +194,7 @@ module Twitter =
         | None -> None
 
     ///Check to see if the login is already authenticated.
-    let getCredentials (login) = 
+    let getCredentials (login: string) = 
         use connection = createSqlConnection()
 
         let pullCredentials = new SqlCommand("Select Login, Username, CreationDate, ConsumerKey, ConsumerSecret, AccessToken, AccessTokenSecret FROM LoginInfo WHERE Login = @login", connection)
@@ -306,9 +318,7 @@ module Twitter =
             match oldValueObj with
             | null -> newValue.Value
             | _ -> 
-                System.Diagnostics.Debug.WriteLine("starting cast")
                 let nonLazyOldValue = (oldValueObj :?> Lazy<'V option>).Value
-                System.Diagnostics.Debug.WriteLine("ending cast")
                 match nonLazyOldValue with
                 | None -> 
                     let nonLazyNewValue = newValue.Value
@@ -365,6 +375,7 @@ module Twitter =
 
     ///A function to get a user _and their tweets_ from the Twitter API using Tweetinvi. If no credentials are provided then the app credentials are used. Also uses a cache
     let getTweetsAndUserInfo (credentials: Models.ITwitterCredentials option) (username:string) = 
+        if Option.isNone credentials && not (Set.contains username allowedNoAuth) then None else //only allow to not have credentials if the username is in the allowed list
         let getUser (credentials: Models.ITwitterCredentials option) (username) =
             try 
                 match credentials with
@@ -557,7 +568,6 @@ module Twitter =
         
     ///This is the function that puts the mashing up all together. Given credentials, a number of tweets to generate, and two user names, returns a set of mashups!
     let mashup (login: string option) (tweetsToGenerate: int) (username1unfiltered: string) (username2unfiltered: string) =
-
         let credentials = 
             match login with
             | Some c ->
@@ -568,8 +578,8 @@ module Twitter =
                 Option.iter Tweetinvi.Auth.SetCredentials credentials
                 credentials
             | None -> None
-        let username1 = username1unfiltered.ToLower().Replace("@","").Replace(" ","") //filter the garbage out of the usernames
-        let username2 = username2unfiltered.ToLower().Replace("@","").Replace(" ","") 
+        let username1 = filterUsername username1unfiltered //filter the garbage out of the usernames
+        let username2 = filterUsername username2unfiltered
         let (user1InfoOption,user2InfoOption) = //pull information about the two users  
             seq [username1;username2] //This is a little bit of fluff to make pulling the users work concurrently
             |> Seq.map (fun user ->
@@ -601,8 +611,21 @@ module Twitter =
                 }
             | _ -> None
         | _ -> None
-                
-                
-            
 
-
+    let getPairComboUsers() = 
+        pairCombos
+        |> Seq.map
+            (fun pair -> 
+                async {
+                    return match (
+                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (fst pair),
+                                    getTweetsAndUserInfo (Some Tweetinvi.Auth.ApplicationCredentials) (snd pair)) with
+                            | (Some ux, Some uy) -> Some (ux.User, uy.User)
+                            | _ -> None
+                    }
+            )
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Seq.ofArray
+        |> Seq.choose id
+        |> Array.ofSeq

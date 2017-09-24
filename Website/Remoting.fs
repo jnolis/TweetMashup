@@ -14,8 +14,18 @@ module Server =
     let makeMashup (login: string option) (username1:string) (username2:string) =
         async {
             let result =
+                try
                 match mashup login 10 username1 username2 with
                 | Some m -> Success m
                 | None -> Failure "Mashup didn't work :("
+                with
+                | _ -> Failure "Mashup didn't work :("
             return result
+        }
+
+    [<Rpc>]
+    let logMashup (isMobile: bool) (login: string option) (username1:string) (username2:string) =
+        System.Diagnostics.Debug.WriteLine ((isMobile.ToString()) + login.ToString() + " " + username1 + " " + username2)
+        async {
+            do! Async.Sleep 1
         }

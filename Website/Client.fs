@@ -31,6 +31,8 @@ type ResultSuccess =
 [<JavaScript>]
 module Client =
     open WebSharper.UI.Next.Client.Doc
+    open System.Security.Policy
+
     let emptyUser = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""; FollowerCount = 0; FollowingCount = 0}
     let buildOutputUIWeb (result:ResultValue) =
         OutputUIWeb.Elt(
@@ -135,12 +137,13 @@ module Client =
             ]
 
     
-    let tryIt (isMobile: bool) (credentialSet: CredentialSet) =
-        match credentialSet with
-        | LoginUrl l ->
+    let tryIt (isMobile: bool) (loginOption: string option) (loginUrlOption: string option) =
+        match (loginOption,loginUrlOption) with
+        | (None,None) ->
+            div [h5 [text "Error with credentials, try refreshing browser"]]
+        | (_,Some l) ->
             tryItDummyUI isMobile l
-        | CredentialError -> div [h5 [text "Error with credentials, try refreshing browser"]]
-        | Login login ->
+        | (Some login,_) ->
             let mutable tweetCache = Array.empty<Combined>
             let mutable tweetCacheUser1 = emptyUser
             let mutable tweetCacheUser2 = emptyUser
@@ -151,6 +154,10 @@ module Client =
             let user1Input = userSelectionUI isMobile 1 user1
             let user2Input = userSelectionUI isMobile 1 user2
             let onSubmit () = 
+                async {
+                    do! Server.logMashup isMobile loginOption user1.Value user2.Value
+                }
+                |> Microsoft.FSharp.Control.Async.Start
                 async {
                 if tweetCacheChoice >= Array.length tweetCache || 
                     user1.Value <> tweetCacheUser1.Username || 
@@ -208,8 +215,7 @@ module Client =
                 Doc.BindView (buildOutputUI isMobile) outputUIView
                 ] 
 
-    let preset (isMobile: bool) (userPairs : (SmallUser*SmallUser) []) = 
-
+    let preset (isMobile: bool) (loginOption: string option) (userPairs : (SmallUser*SmallUser) []) = 
         let mutable tweetCache = Array.empty<Combined>
         let mutable tweetCacheUser1 = emptyUser
         let mutable tweetCacheUser2 = emptyUser
@@ -217,6 +223,10 @@ module Client =
         let outputUIData = Var.Create NotStarted
         let pairUI ((user1,user2) : SmallUser*SmallUser) =
             let onSubmit () = 
+                async {
+                    do! Server.logMashup isMobile loginOption user1.Username user2.Username
+                }
+                |> Microsoft.FSharp.Control.Async.Start
                 async {
                 if tweetCacheChoice >= Array.length tweetCache || user1.Username <> tweetCacheUser1.Username || user2.Username <> tweetCacheUser2.Username then
                     let! mashup =  Server.makeMashup None user1.Username user2.Username
