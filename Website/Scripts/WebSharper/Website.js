@@ -1,6 +1,6 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,Website,Client,List,T,UI,Next,Doc,AttrProxy,Arrays,Var,Remoting,AjaxRemotingProvider,Var1,View1,AttrModule,String;
+ var Global=this,Runtime=this.IntelliFactory.Runtime,Website,Client,List,T,UI,Next,Doc,AttrProxy,Arrays,Var,Concurrency,Remoting,AjaxRemotingProvider,Var1,View1,AttrModule,String;
  Runtime.Define(Global,{
   Website:{
    Client:{
@@ -136,57 +136,69 @@
       user1=_arg1[0];
       onSubmit=function()
       {
-       var mashup,d,d1,resultValue,index,resultValue1,index1;
-       if((tweetCacheChoice[0]>=tweetCache[0].length?true:user1.Username!==tweetCacheUser1[0].Username)?true:user2.Username!==tweetCacheUser2[0].Username)
-        {
-         mashup=AjaxRemotingProvider.Sync("Website:0",[{
-          $:0
-         },user1.Username,user2.Username]);
-         if(mashup.$==1)
+       return Concurrency.Start(Concurrency.Delay(function()
+       {
+        var x,resultValue1,index1;
+        if((tweetCacheChoice[0]>=tweetCache[0].length?true:user1.Username!==tweetCacheUser1[0].Username)?true:user2.Username!==tweetCacheUser2[0].Username)
+         {
+          x=AjaxRemotingProvider.Async("Website:0",[{
+           $:0
+          },user1.Username,user2.Username]);
+          return Concurrency.Bind(x,function(_arg2)
           {
-           d=mashup.$0;
-           tweetCache[0]=[];
-           tweetCacheUser1[0]=Client.emptyUser();
-           tweetCacheUser2[0]=Client.emptyUser();
-           return Var1.Set(outputUIData,{
-            $:1,
-            $0:d
-           });
-          }
-         else
-          {
-           d1=mashup.$0;
-           tweetCache[0]=d1.Combined;
-           tweetCacheUser1[0]=d1.User1;
-           tweetCacheUser2[0]=d1.User2;
-           tweetCacheChoice[0]=0;
-           index=tweetCacheChoice[0];
-           resultValue={
-            Combined:Arrays.get(tweetCache[0],index),
-            User1:user1,
-            User2:user2
-           };
-           tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-           return Var1.Set(outputUIData,{
-            $:0,
-            $0:resultValue
-           });
-          }
-        }
-       else
-        {
-         index1=tweetCacheChoice[0];
-         resultValue1={
-          Combined:Arrays.get(tweetCache[0],index1),
-          User1:tweetCacheUser1[0],
-          User2:tweetCacheUser2[0]
-         };
-         tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-         return Var1.Set(outputUIData,{
-          $:0,
-          $0:resultValue1
-         });
-        }
+           var d,d1,resultValue,index;
+           if(_arg2.$==1)
+            {
+             d=_arg2.$0;
+             tweetCache[0]=[];
+             tweetCacheUser1[0]=Client.emptyUser();
+             tweetCacheUser2[0]=Client.emptyUser();
+             Var1.Set(outputUIData,{
+              $:1,
+              $0:d
+             });
+             return Concurrency.Return(null);
+            }
+           else
+            {
+             d1=_arg2.$0;
+             tweetCache[0]=d1.Combined;
+             tweetCacheUser1[0]=d1.User1;
+             tweetCacheUser2[0]=d1.User2;
+             tweetCacheChoice[0]=0;
+             index=tweetCacheChoice[0];
+             resultValue={
+              Combined:Arrays.get(tweetCache[0],index),
+              User1:user1,
+              User2:user2
+             };
+             tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+             Var1.Set(outputUIData,{
+              $:0,
+              $0:resultValue
+             });
+             return Concurrency.Return(null);
+            }
+          });
+         }
+        else
+         {
+          index1=tweetCacheChoice[0];
+          resultValue1={
+           Combined:Arrays.get(tweetCache[0],index1),
+           User1:tweetCacheUser1[0],
+           User2:tweetCacheUser2[0]
+          };
+          tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+          Var1.Set(outputUIData,{
+           $:0,
+           $0:resultValue1
+          });
+          return Concurrency.Return(null);
+         }
+       }),{
+        $:0
+       });
       };
       if(isMobile)
        {
@@ -242,60 +254,74 @@
          user2Input=Client.userSelectionUI(isMobile,1,user2);
          onSubmit=function()
          {
-          var _1,mashup,_2,d,d1,resultValue,index,resultValue1,index1;
-          if((tweetCacheChoice[0]>=tweetCache[0].length?true:Var.Get(user1)!==tweetCacheUser1[0].Username)?true:Var.Get(user2)!==tweetCacheUser2[0].Username)
-           {
-            mashup=AjaxRemotingProvider.Sync("Website:0",[{
-             $:1,
-             $0:login
-            },Var.Get(user1),Var.Get(user2)]);
-            if(mashup.$==1)
+          var arg00;
+          arg00=Concurrency.Delay(function()
+          {
+           var _1,x,resultValue1,index1;
+           if((tweetCacheChoice[0]>=tweetCache[0].length?true:Var.Get(user1)!==tweetCacheUser1[0].Username)?true:Var.Get(user2)!==tweetCacheUser2[0].Username)
+            {
+             x=AjaxRemotingProvider.Async("Website:0",[{
+              $:1,
+              $0:login
+             },Var.Get(user1),Var.Get(user2)]);
+             _1=Concurrency.Bind(x,function(_arg1)
              {
-              d=mashup.$0;
-              tweetCache[0]=[];
-              tweetCacheUser1[0]=Client.emptyUser();
-              tweetCacheUser2[0]=Client.emptyUser();
-              _2=Var1.Set(outputUIData,{
-               $:1,
-               $0:d
-              });
-             }
-            else
-             {
-              d1=mashup.$0;
-              tweetCache[0]=d1.Combined;
-              tweetCacheUser1[0]=d1.User1;
-              tweetCacheUser2[0]=d1.User2;
-              tweetCacheChoice[0]=0;
-              index=tweetCacheChoice[0];
-              resultValue={
-               Combined:Arrays.get(tweetCache[0],index),
-               User1:d1.User1,
-               User2:d1.User2
-              };
-              tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-              _2=Var1.Set(outputUIData,{
-               $:0,
-               $0:resultValue
-              });
-             }
-            _1=_2;
-           }
-          else
-           {
-            index1=tweetCacheChoice[0];
-            resultValue1={
-             Combined:Arrays.get(tweetCache[0],index1),
-             User1:tweetCacheUser1[0],
-             User2:tweetCacheUser2[0]
-            };
-            tweetCacheChoice[0]=tweetCacheChoice[0]+1;
-            _1=Var1.Set(outputUIData,{
-             $:0,
-             $0:resultValue1
-            });
-           }
-          return _1;
+              var _2,d,d1,resultValue,index;
+              if(_arg1.$==1)
+               {
+                d=_arg1.$0;
+                tweetCache[0]=[];
+                tweetCacheUser1[0]=Client.emptyUser();
+                tweetCacheUser2[0]=Client.emptyUser();
+                Var1.Set(outputUIData,{
+                 $:1,
+                 $0:d
+                });
+                _2=Concurrency.Return(null);
+               }
+              else
+               {
+                d1=_arg1.$0;
+                tweetCache[0]=d1.Combined;
+                tweetCacheUser1[0]=d1.User1;
+                tweetCacheUser2[0]=d1.User2;
+                tweetCacheChoice[0]=0;
+                index=tweetCacheChoice[0];
+                resultValue={
+                 Combined:Arrays.get(tweetCache[0],index),
+                 User1:d1.User1,
+                 User2:d1.User2
+                };
+                tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+                Var1.Set(outputUIData,{
+                 $:0,
+                 $0:resultValue
+                });
+                _2=Concurrency.Return(null);
+               }
+              return _2;
+             });
+            }
+           else
+            {
+             index1=tweetCacheChoice[0];
+             resultValue1={
+              Combined:Arrays.get(tweetCache[0],index1),
+              User1:tweetCacheUser1[0],
+              User2:tweetCacheUser2[0]
+             };
+             tweetCacheChoice[0]=tweetCacheChoice[0]+1;
+             Var1.Set(outputUIData,{
+              $:0,
+              $0:resultValue1
+             });
+             _1=Concurrency.Return(null);
+            }
+           return _1;
+          });
+          return Concurrency.Start(arg00,{
+           $:0
+          });
          };
          if(!isMobile)
           {
@@ -366,6 +392,7 @@
   AttrProxy=Runtime.Safe(Next.AttrProxy);
   Arrays=Runtime.Safe(Global.WebSharper.Arrays);
   Var=Runtime.Safe(Next.Var);
+  Concurrency=Runtime.Safe(Global.WebSharper.Concurrency);
   Remoting=Runtime.Safe(Global.WebSharper.Remoting);
   AjaxRemotingProvider=Runtime.Safe(Remoting.AjaxRemotingProvider);
   Var1=Runtime.Safe(Next.Var1);

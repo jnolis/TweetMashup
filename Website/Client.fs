@@ -151,10 +151,13 @@ module Client =
             let user1Input = userSelectionUI isMobile 1 user1
             let user2Input = userSelectionUI isMobile 1 user2
             let onSubmit () = 
+                async {
                 if tweetCacheChoice >= Array.length tweetCache || 
                     user1.Value <> tweetCacheUser1.Username || 
                     user2.Value <> tweetCacheUser2.Username then
-                    let mashup =  Server.makeMashup (Some login) user1.Value user2.Value
+                    let! mashup =  
+                        Server.makeMashup (Some login) user1.Value user2.Value
+                        
                     match mashup with
                     | Reponse.Success d ->
                         tweetCache <- d.Combined
@@ -173,6 +176,8 @@ module Client =
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
+                }
+                |> Microsoft.FSharp.Control.Async.Start
             let inputUI =
                 if not isMobile then
                     divAttr [attr.``class`` "form form-inline"] [       
@@ -212,8 +217,9 @@ module Client =
         let outputUIData = Var.Create NotStarted
         let pairUI ((user1,user2) : SmallUser*SmallUser) =
             let onSubmit () = 
+                async {
                 if tweetCacheChoice >= Array.length tweetCache || user1.Username <> tweetCacheUser1.Username || user2.Username <> tweetCacheUser2.Username then
-                    let mashup =  Server.makeMashup None user1.Username user2.Username
+                    let! mashup =  Server.makeMashup None user1.Username user2.Username
                     match mashup with
                     | Reponse.Success d ->
                         tweetCache <- d.Combined
@@ -231,7 +237,8 @@ module Client =
                 else
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}
                     tweetCacheChoice <- tweetCacheChoice + 1
-                    outputUIData.Value <- Success resultValue   
+                    outputUIData.Value <- Success resultValue
+                } |> Microsoft.FSharp.Control.Async.Start
             if isMobile then
                 PresetUIMobile.Elt(GoButton = [ButtonView (user1.FullName + " & " + user2.FullName) [attr.``class`` "btn go-button col-xs-12"; attr.value "Go!"] (View.Const()) onSubmit])
                     :> Doc
