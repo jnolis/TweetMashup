@@ -7,6 +7,7 @@ open Newtonsoft.Json
 open System.Data.SqlClient
 open System.Data
 open System.Runtime.Caching
+open Shared
 
 ///The information that stores a twitter user
 type SmallUser = {
@@ -87,7 +88,7 @@ type CredentialSet =
 
 ///<summary>This module does the work involved with generating a tweet and interfacing with the tweetinvi API.</summary>
 module Twitter =
-    let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","")
+    let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","").Substring(0,min 15 username.Length)
     let pairCombos =
         System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
         |> System.IO.File.ReadAllText
@@ -98,11 +99,6 @@ module Twitter =
         Seq.append (Seq.map fst pairCombos) (Seq.map snd pairCombos)
         |> Seq.map filterUsername
         |> Set.ofSeq
-
-    let createSqlConnection() =
-        let connectionString = System.Configuration.ConfigurationManager.ConnectionStrings.["TweetMashup"].ConnectionString
-        new SqlConnection(connectionString)
-        
 
     ///This function takes a set of SimpleCredentials and turns it into something Tweetinvi can use
     let simpleCredentialsToCredentials (c:SimpleCredentials) = 

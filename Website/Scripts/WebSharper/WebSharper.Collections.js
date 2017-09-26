@@ -1,1674 +1,1535 @@
 (function()
 {
- var Global=this,Runtime=this.IntelliFactory.Runtime,Collections,BalancedTree,Operators,Arrays,Seq,List,T,Seq1,JavaScript,JSModule,Enumerator,DictionaryUtil,Dictionary,Unchecked,FSharpMap,Pair,Option,MapUtil,FSharpSet,SetModule,SetUtil,Array,HashSetUtil,HashSetProxy,LinkedList,E,T1,ResizeArray,ResizeArrayProxy;
- Runtime.Define(Global,{
-  WebSharper:{
-   Collections:{
-    BalancedTree:{
-     Add:function(x,t)
-     {
-      return BalancedTree.Put(function()
-      {
-       return function(x1)
-       {
-        return x1;
-       };
-      },x,t);
-     },
-     Branch:function(node,left,right)
-     {
-      return{
-       Node:node,
-       Left:left,
-       Right:right,
-       Height:1+Operators.Max(left==null?0:left.Height,right==null?0:right.Height),
-       Count:1+(left==null?0:left.Count)+(right==null?0:right.Count)
-      };
-     },
-     Build:function(data,min,max)
-     {
-      var sz,_,center,left,right;
-      sz=max-min+1;
-      if(sz<=0)
-       {
-        _=null;
-       }
-      else
-       {
-        center=(min+max)/2>>0;
-        left=BalancedTree.Build(data,min,center-1);
-        right=BalancedTree.Build(data,center+1,max);
-        _=BalancedTree.Branch(Arrays.get(data,center),left,right);
-       }
-      return _;
-     },
-     Contains:function(v,t)
-     {
-      return!((BalancedTree.Lookup(v,t))[0]==null);
-     },
-     Enumerate:function(flip,t)
-     {
-      var gen;
-      gen=function(tupledArg)
-      {
-       var t1,spine,_,_1,t2,spine1,other;
-       t1=tupledArg[0];
-       spine=tupledArg[1];
-       if(t1==null)
-        {
-         if(spine.$==1)
-          {
-           t2=spine.$0[0];
-           spine1=spine.$1;
-           other=spine.$0[1];
-           _1={
-            $:1,
-            $0:[t2,[other,spine1]]
-           };
-          }
-         else
-          {
-           _1={
-            $:0
-           };
-          }
-         _=_1;
-        }
-       else
-        {
-         _=flip?gen([t1.Right,Runtime.New(T,{
-          $:1,
-          $0:[t1.Node,t1.Left],
-          $1:spine
-         })]):gen([t1.Left,Runtime.New(T,{
-          $:1,
-          $0:[t1.Node,t1.Right],
-          $1:spine
-         })]);
-        }
-       return _;
-      };
-      return Seq.unfold(gen,[t,Runtime.New(T,{
-       $:0
-      })]);
-     },
-     Lookup:function(k,t)
-     {
-      var spine,t1,loop,_,matchValue,_1;
-      spine=[];
-      t1=t;
-      loop=true;
-      while(loop)
-       {
-        if(t1==null)
-         {
-          _=loop=false;
-         }
-        else
-         {
-          matchValue=Operators.Compare(k,t1.Node);
-          if(matchValue===0)
-           {
-            _1=loop=false;
-           }
-          else
-           {
-            if(matchValue===1)
-             {
-              spine.unshift([true,t1.Node,t1.Left]);
-              _1=t1=t1.Right;
-             }
-            else
-             {
-              spine.unshift([false,t1.Node,t1.Right]);
-              _1=t1=t1.Left;
-             }
-           }
-          _=_1;
-         }
-       }
-      return[t1,spine];
-     },
-     OfSeq:function(data)
-     {
-      var data1;
-      data1=Arrays.sort(Seq1.toArray(Seq.distinct(data)));
-      return BalancedTree.Build(data1,0,data1.length-1);
-     },
-     Put:function(combine,k,t)
-     {
-      var patternInput,t1,spine;
-      patternInput=BalancedTree.Lookup(k,t);
-      t1=patternInput[0];
-      spine=patternInput[1];
-      return t1==null?BalancedTree.Rebuild(spine,BalancedTree.Branch(k,null,null)):BalancedTree.Rebuild(spine,BalancedTree.Branch((combine(t1.Node))(k),t1.Left,t1.Right));
-     },
-     Rebuild:function(spine,t)
-     {
-      var h,t1,i,matchValue,_,x1,l,_1,_2,m,x2,r,_3,_4,m1;
-      h=function(x)
-      {
-       return x==null?0:x.Height;
-      };
-      t1=t;
-      for(i=0;i<=Arrays.length(spine)-1;i++){
-       matchValue=Arrays.get(spine,i);
-       if(matchValue[0])
-        {
-         x1=matchValue[1];
-         l=matchValue[2];
-         if(h(t1)>h(l)+1)
-          {
-           if(h(t1.Left)===h(t1.Right)+1)
-            {
-             m=t1.Left;
-             _2=BalancedTree.Branch(m.Node,BalancedTree.Branch(x1,l,m.Left),BalancedTree.Branch(t1.Node,m.Right,t1.Right));
-            }
-           else
-            {
-             _2=BalancedTree.Branch(t1.Node,BalancedTree.Branch(x1,l,t1.Left),t1.Right);
-            }
-           _1=_2;
-          }
-         else
-          {
-           _1=BalancedTree.Branch(x1,l,t1);
-          }
-         _=_1;
-        }
-       else
-        {
-         x2=matchValue[1];
-         r=matchValue[2];
-         if(h(t1)>h(r)+1)
-          {
-           if(h(t1.Right)===h(t1.Left)+1)
-            {
-             m1=t1.Right;
-             _4=BalancedTree.Branch(m1.Node,BalancedTree.Branch(t1.Node,t1.Left,m1.Left),BalancedTree.Branch(x2,m1.Right,r));
-            }
-           else
-            {
-             _4=BalancedTree.Branch(t1.Node,t1.Left,BalancedTree.Branch(x2,t1.Right,r));
-            }
-           _3=_4;
-          }
-         else
-          {
-           _3=BalancedTree.Branch(x2,t1,r);
-          }
-         _=_3;
-        }
-       t1=_;
-      }
-      return t1;
-     },
-     Remove:function(k,src)
-     {
-      var patternInput,t,spine,_,_1,_2,source,data,t1;
-      patternInput=BalancedTree.Lookup(k,src);
-      t=patternInput[0];
-      spine=patternInput[1];
-      if(t==null)
-       {
-        _=src;
-       }
-      else
-       {
-        if(t.Right==null)
-         {
-          _1=BalancedTree.Rebuild(spine,t.Left);
-         }
-        else
-         {
-          if(t.Left==null)
-           {
-            _2=BalancedTree.Rebuild(spine,t.Right);
-           }
-          else
-           {
-            source=Seq1.append(BalancedTree.Enumerate(false,t.Left),BalancedTree.Enumerate(false,t.Right));
-            data=Seq1.toArray(source);
-            t1=BalancedTree.Build(data,0,data.length-1);
-            _2=BalancedTree.Rebuild(spine,t1);
-           }
-          _1=_2;
-         }
-        _=_1;
-       }
-      return _;
-     },
-     TryFind:function(v,t)
-     {
-      var x;
-      x=(BalancedTree.Lookup(v,t))[0];
-      return x==null?{
-       $:0
-      }:{
-       $:1,
-       $0:x.Node
-      };
-     }
-    },
-    Dictionary:Runtime.Class({
-     Add:function(k,v)
-     {
-      var h,_;
-      h=this.hash.call(null,k);
-      if(this.data.hasOwnProperty(h))
-       {
-        _=Operators.FailWith("An item with the same key has already been added.");
-       }
-      else
-       {
-        this.data[h]={
-         K:k,
-         V:v
-        };
-        _=void(this.count=this.count+1);
-       }
-      return _;
-     },
-     Clear:function()
-     {
-      this.data={};
-      this.count=0;
-      return;
-     },
-     ContainsKey:function(k)
-     {
-      return this.data.hasOwnProperty(this.hash.call(null,k));
-     },
-     GetEnumerator:function()
-     {
-      var s;
-      s=JSModule.GetFieldValues(this.data);
-      return Enumerator.Get(s);
-     },
-     Remove:function(k)
-     {
-      var h,_;
-      h=this.hash.call(null,k);
-      if(this.data.hasOwnProperty(h))
-       {
-        JSModule.Delete(this.data,h);
-        this.count=this.count-1;
-        _=true;
-       }
-      else
-       {
-        _=false;
-       }
-      return _;
-     },
-     get_Item:function(k)
-     {
-      var k1,_,x;
-      k1=this.hash.call(null,k);
-      if(this.data.hasOwnProperty(k1))
-       {
-        x=this.data[k1];
-        _=x.V;
-       }
-      else
-       {
-        _=DictionaryUtil.notPresent();
-       }
-      return _;
-     },
-     set_Item:function(k,v)
-     {
-      var h;
-      h=this.hash.call(null,k);
-      !this.data.hasOwnProperty(h)?void(this.count=this.count+1):null;
-      this.data[h]={
-       K:k,
-       V:v
-      };
-      return;
-     }
-    },{
-     New:function(dictionary)
-     {
-      return Runtime.New(this,Dictionary.New4(dictionary,function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },function(obj)
-      {
-       return Unchecked.Hash(obj);
-      }));
-     },
-     New1:function(dictionary,comparer)
-     {
-      return Runtime.New(this,Dictionary.New4(dictionary,function(x)
-      {
-       return function(y)
-       {
-        return comparer.Equals(x,y);
-       };
-      },function(x)
-      {
-       return comparer.GetHashCode(x);
-      }));
-     },
-     New11:function(capacity,comparer)
-     {
-      return Runtime.New(this,Dictionary.New3(comparer));
-     },
-     New12:function()
-     {
-      return Runtime.New(this,Dictionary.New4([],function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },function(obj)
-      {
-       return Unchecked.Hash(obj);
-      }));
-     },
-     New2:function()
-     {
-      return Runtime.New(this,Dictionary.New12());
-     },
-     New3:function(comparer)
-     {
-      return Runtime.New(this,Dictionary.New4([],function(x)
-      {
-       return function(y)
-       {
-        return comparer.Equals(x,y);
-       };
-      },function(x)
-      {
-       return comparer.GetHashCode(x);
-      }));
-     },
-     New4:function(init,equals,hash)
-     {
-      var r,enumerator,_,x,x1;
-      r=Runtime.New(this,{});
-      r.hash=hash;
-      r.count=0;
-      r.data={};
-      enumerator=Enumerator.Get(init);
-      try
-      {
-       while(enumerator.MoveNext())
-        {
-         x=enumerator.get_Current();
-         x1=x.K;
-         r.data[r.hash.call(null,x1)]=x.V;
-        }
-      }
-      finally
-      {
-       enumerator.Dispose!=undefined?enumerator.Dispose():null;
-      }
-      return r;
-     }
-    }),
-    DictionaryUtil:{
-     notPresent:function()
-     {
-      return Operators.FailWith("The given key was not present in the dictionary.");
-     }
-    },
-    FSharpMap:Runtime.Class({
-     Add:function(k,v)
-     {
-      var x,x1;
-      x=this.tree;
-      x1=Runtime.New(Pair,{
-       Key:k,
-       Value:v
-      });
-      return FSharpMap.New(BalancedTree.Add(x1,x));
-     },
-     CompareTo:function(other)
-     {
-      return Seq.compareWith(function(x)
-      {
-       return function(y)
-       {
-        return Operators.Compare(x,y);
-       };
-      },this,other);
-     },
-     ContainsKey:function(k)
-     {
-      var x,v;
-      x=this.tree;
-      v=Runtime.New(Pair,{
-       Key:k,
-       Value:undefined
-      });
-      return BalancedTree.Contains(v,x);
-     },
-     Equals:function(other)
-     {
-      return this.get_Count()===other.get_Count()?Seq1.forall2(function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },this,other):false;
-     },
-     GetEnumerator:function()
-     {
-      var mapping,source,s;
-      mapping=function(kv)
-      {
-       return{
-        K:kv.Key,
-        V:kv.Value
-       };
-      };
-      source=BalancedTree.Enumerate(false,this.tree);
-      s=Seq1.map(mapping,source);
-      return Enumerator.Get(s);
-     },
-     GetHashCode:function()
-     {
-      return Unchecked.Hash(Seq1.toArray(this));
-     },
-     Remove:function(k)
-     {
-      var x,k1;
-      x=this.tree;
-      k1=Runtime.New(Pair,{
-       Key:k,
-       Value:undefined
-      });
-      return FSharpMap.New(BalancedTree.Remove(k1,x));
-     },
-     TryFind:function(k)
-     {
-      var x,v,mapping,option;
-      x=this.tree;
-      v=Runtime.New(Pair,{
-       Key:k,
-       Value:undefined
-      });
-      mapping=function(kv)
-      {
-       return kv.Value;
-      };
-      option=BalancedTree.TryFind(v,x);
-      return Option.map(mapping,option);
-     },
-     get_Count:function()
-     {
-      var tree;
-      tree=this.tree;
-      return tree==null?0:tree.Count;
-     },
-     get_IsEmpty:function()
-     {
-      return this.tree==null;
-     },
-     get_Item:function(k)
-     {
-      var matchValue,_,v;
-      matchValue=this.TryFind(k);
-      if(matchValue.$==0)
-       {
-        _=Operators.FailWith("The given key was not present in the dictionary.");
-       }
-      else
-       {
-        v=matchValue.$0;
-        _=v;
-       }
-      return _;
-     },
-     get_Tree:function()
-     {
-      return this.tree;
-     }
-    },{
-     New:function(tree)
-     {
-      var r;
-      r=Runtime.New(this,{});
-      r.tree=tree;
-      return r;
-     },
-     New1:function(s)
-     {
-      return Runtime.New(this,FSharpMap.New(MapUtil.fromSeq(s)));
-     }
-    }),
-    FSharpSet:Runtime.Class({
-     Add:function(x)
-     {
-      return FSharpSet.New1(BalancedTree.Add(x,this.tree));
-     },
-     CompareTo:function(other)
-     {
-      return Seq.compareWith(function(e1)
-      {
-       return function(e2)
-       {
-        return Operators.Compare(e1,e2);
-       };
-      },this,other);
-     },
-     Contains:function(v)
-     {
-      return BalancedTree.Contains(v,this.tree);
-     },
-     Equals:function(other)
-     {
-      return this.get_Count()===other.get_Count()?Seq1.forall2(function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },this,other):false;
-     },
-     GetEnumerator:function()
-     {
-      return Enumerator.Get(BalancedTree.Enumerate(false,this.tree));
-     },
-     GetHashCode:function()
-     {
-      return-1741749453+Unchecked.Hash(Seq1.toArray(this));
-     },
-     IsProperSubsetOf:function(s)
-     {
-      return this.IsSubsetOf(s)?this.get_Count()<s.get_Count():false;
-     },
-     IsProperSupersetOf:function(s)
-     {
-      return this.IsSupersetOf(s)?this.get_Count()>s.get_Count():false;
-     },
-     IsSubsetOf:function(s)
-     {
-      return Seq1.forall(function(arg00)
-      {
-       return s.Contains(arg00);
-      },this);
-     },
-     IsSupersetOf:function(s)
-     {
-      var _this=this;
-      return Seq1.forall(function(arg00)
-      {
-       return _this.Contains(arg00);
-      },s);
-     },
-     Remove:function(v)
-     {
-      return FSharpSet.New1(BalancedTree.Remove(v,this.tree));
-     },
-     add:function(x)
-     {
-      return FSharpSet.New1(BalancedTree.OfSeq(Seq1.append(this,x)));
-     },
-     get_Count:function()
-     {
-      var tree;
-      tree=this.tree;
-      return tree==null?0:tree.Count;
-     },
-     get_IsEmpty:function()
-     {
-      return this.tree==null;
-     },
-     get_MaximumElement:function()
-     {
-      return Seq1.head(BalancedTree.Enumerate(true,this.tree));
-     },
-     get_MinimumElement:function()
-     {
-      return Seq1.head(BalancedTree.Enumerate(false,this.tree));
-     },
-     get_Tree:function()
-     {
-      return this.tree;
-     },
-     sub:function(x)
-     {
-      return SetModule.Filter(function(x1)
-      {
-       return!x.Contains(x1);
-      },this);
-     }
-    },{
-     New:function(s)
-     {
-      return Runtime.New(this,FSharpSet.New1(SetUtil.ofSeq(s)));
-     },
-     New1:function(tree)
-     {
-      var r;
-      r=Runtime.New(this,{});
-      r.tree=tree;
-      return r;
-     }
-    }),
-    HashSetProxy:Runtime.Class({
-     Add:function(item)
-     {
-      return this.add(item);
-     },
-     Clear:function()
-     {
-      this.data=Array.prototype.constructor.apply(Array,[]);
-      this.count=0;
-      return;
-     },
-     Contains:function(item)
-     {
-      var arr;
-      arr=this.data[this.hash.call(null,item)];
-      return arr==null?false:this.arrContains(item,arr);
-     },
-     CopyTo:function(arr)
-     {
-      var i,all,i1;
-      i=0;
-      all=HashSetUtil.concat(this.data);
-      for(i1=0;i1<=all.length-1;i1++){
-       Arrays.set(arr,i1,all[i1]);
-      }
-      return;
-     },
-     ExceptWith:function(xs)
-     {
-      var enumerator,_,item,value;
-      enumerator=Enumerator.Get(xs);
-      try
-      {
-       while(enumerator.MoveNext())
-        {
-         item=enumerator.get_Current();
-         value=this.Remove(item);
-        }
-      }
-      finally
-      {
-       enumerator.Dispose!=undefined?enumerator.Dispose():null;
-      }
-      return _;
-     },
-     GetEnumerator:function()
-     {
-      return Enumerator.Get(HashSetUtil.concat(this.data));
-     },
-     IntersectWith:function(xs)
-     {
-      var other,all,i,item,value,_,value1;
-      other=HashSetProxy.New3(xs,this.equals,this.hash);
-      all=HashSetUtil.concat(this.data);
-      for(i=0;i<=all.length-1;i++){
-       item=all[i];
-       value=other.Contains(item);
-       if(!value)
-        {
-         value1=this.Remove(item);
-         _=void value1;
-        }
-       else
-        {
-         _=null;
-        }
-      }
-      return;
-     },
-     IsProperSubsetOf:function(xs)
-     {
-      var other;
-      other=Arrays.ofSeq(xs);
-      return this.count<Arrays.length(other)?this.IsSubsetOf(other):false;
-     },
-     IsProperSupersetOf:function(xs)
-     {
-      var other;
-      other=Arrays.ofSeq(xs);
-      return this.count>Arrays.length(other)?this.IsSupersetOf(other):false;
-     },
-     IsSubsetOf:function(xs)
-     {
-      var other,predicate,array;
-      other=HashSetProxy.New3(xs,this.equals,this.hash);
-      predicate=function(arg00)
-      {
-       return other.Contains(arg00);
-      };
-      array=HashSetUtil.concat(this.data);
-      return Seq1.forall(predicate,array);
-     },
-     IsSupersetOf:function(xs)
-     {
-      var predicate,x=this;
-      predicate=function(arg00)
-      {
-       return x.Contains(arg00);
-      };
-      return Seq1.forall(predicate,xs);
-     },
-     Overlaps:function(xs)
-     {
-      var predicate,x=this;
-      predicate=function(arg00)
-      {
-       return x.Contains(arg00);
-      };
-      return Seq1.exists(predicate,xs);
-     },
-     Remove:function(item)
-     {
-      var h,arr,_,_1;
-      h=this.hash.call(null,item);
-      arr=this.data[h];
-      if(arr==null)
-       {
-        _=false;
-       }
-      else
-       {
-        if(this.arrRemove(item,arr))
-         {
-          this.count=this.count-1;
-          _1=true;
-         }
-        else
-         {
-          _1=false;
-         }
-        _=_1;
-       }
-      return _;
-     },
-     RemoveWhere:function(cond)
-     {
-      var all,i,item,_,value;
-      all=HashSetUtil.concat(this.data);
-      for(i=0;i<=all.length-1;i++){
-       item=all[i];
-       if(cond(item))
-        {
-         value=this.Remove(item);
-         _=void value;
-        }
-       else
-        {
-         _=null;
-        }
-      }
-      return;
-     },
-     SetEquals:function(xs)
-     {
-      var other;
-      other=HashSetProxy.New3(xs,this.equals,this.hash);
-      return this.get_Count()===other.get_Count()?this.IsSupersetOf(other):false;
-     },
-     SymmetricExceptWith:function(xs)
-     {
-      var enumerator,_,item,_1,value,value1;
-      enumerator=Enumerator.Get(xs);
-      try
-      {
-       while(enumerator.MoveNext())
-        {
-         item=enumerator.get_Current();
-         if(this.Contains(item))
-          {
-           value=this.Remove(item);
-           _1=void value;
-          }
-         else
-          {
-           value1=this.Add(item);
-           _1=void value1;
-          }
-        }
-      }
-      finally
-      {
-       enumerator.Dispose!=undefined?enumerator.Dispose():null;
-      }
-      return _;
-     },
-     UnionWith:function(xs)
-     {
-      var enumerator,_,item,value;
-      enumerator=Enumerator.Get(xs);
-      try
-      {
-       while(enumerator.MoveNext())
-        {
-         item=enumerator.get_Current();
-         value=this.Add(item);
-        }
-      }
-      finally
-      {
-       enumerator.Dispose!=undefined?enumerator.Dispose():null;
-      }
-      return _;
-     },
-     add:function(item)
-     {
-      var h,arr,_,_1,value;
-      h=this.hash.call(null,item);
-      arr=this.data[h];
-      if(arr==null)
-       {
-        this.data[h]=[item];
-        this.count=this.count+1;
-        _=true;
-       }
-      else
-       {
-        if(this.arrContains(item,arr))
-         {
-          _1=false;
-         }
-        else
-         {
-          value=arr.push(item);
-          this.count=this.count+1;
-          _1=true;
-         }
-        _=_1;
-       }
-      return _;
-     },
-     arrContains:function(item,arr)
-     {
-      var c,i,l;
-      c=true;
-      i=0;
-      l=arr.length;
-      while(c?i<l:false)
-       {
-        (this.equals.call(null,arr[i]))(item)?c=false:i=i+1;
-       }
-      return!c;
-     },
-     arrRemove:function(item,arr)
-     {
-      var c,i,l,_,start,ps,value;
-      c=true;
-      i=0;
-      l=arr.length;
-      while(c?i<l:false)
-       {
-        if((this.equals.call(null,arr[i]))(item))
-         {
-          start=i;
-          ps=[];
-          value=arr.splice.apply(arr,[start,1].concat(ps));
-          _=c=false;
-         }
-        else
-         {
-          _=i=i+1;
-         }
-       }
-      return!c;
-     },
-     get_Count:function()
-     {
-      return this.count;
-     }
-    },{
-     New:function(init)
-     {
-      return Runtime.New(this,HashSetProxy.New3(init,function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },function(obj)
-      {
-       return Unchecked.Hash(obj);
-      }));
-     },
-     New1:function(comparer)
-     {
-      return Runtime.New(this,HashSetProxy.New3(Seq1.empty(),function(x)
-      {
-       return function(y)
-       {
-        return comparer.Equals(x,y);
-       };
-      },function(x)
-      {
-       return comparer.GetHashCode(x);
-      }));
-     },
-     New11:function()
-     {
-      return Runtime.New(this,HashSetProxy.New3(Seq1.empty(),function(x)
-      {
-       return function(y)
-       {
-        return Unchecked.Equals(x,y);
-       };
-      },function(obj)
-      {
-       return Unchecked.Hash(obj);
-      }));
-     },
-     New2:function(init,comparer)
-     {
-      return Runtime.New(this,HashSetProxy.New3(init,function(x)
-      {
-       return function(y)
-       {
-        return comparer.Equals(x,y);
-       };
-      },function(x)
-      {
-       return comparer.GetHashCode(x);
-      }));
-     },
-     New3:function(init,equals,hash)
-     {
-      var r,enumerator,_,x,value;
-      r=Runtime.New(this,{});
-      r.equals=equals;
-      r.hash=hash;
-      r.data=Array.prototype.constructor.apply(Array,[]);
-      r.count=0;
-      enumerator=Enumerator.Get(init);
-      try
-      {
-       while(enumerator.MoveNext())
-        {
-         x=enumerator.get_Current();
-         value=r.add(x);
-        }
-      }
-      finally
-      {
-       enumerator.Dispose!=undefined?enumerator.Dispose():null;
-      }
-      return r;
-     }
-    }),
-    HashSetUtil:{
-     concat:function($o)
-     {
-      var $0=this,$this=this;
-      var r=[];
-      for(var k in $o){
-       r.push.apply(r,$o[k]);
-      }
-      ;
-      return r;
-     }
-    },
-    LinkedList:{
-     E:Runtime.Class({
-      Dispose:function()
-      {
-       return null;
-      },
-      MoveNext:function()
-      {
-       this.c=this.c.n;
-       return!Unchecked.Equals(this.c,null);
-      },
-      get_Current:function()
-      {
-       return this.c.v;
-      }
-     },{
-      New:function(l)
-      {
-       var r;
-       r=Runtime.New(this,{});
-       r.c=l;
-       return r;
-      }
-     }),
-     T:Runtime.Class({
-      AddAfter:function(after,value)
-      {
-       var before,node,_;
-       before=after.n;
-       node={
-        p:after,
-        n:before,
-        v:value
-       };
-       Unchecked.Equals(after.n,null)?void(this.p=node):null;
-       after.n=node;
-       if(!Unchecked.Equals(before,null))
-        {
-         before.p=node;
-         _=node;
-        }
-       else
-        {
-         _=null;
-        }
-       this.c=this.c+1;
-       return node;
-      },
-      AddBefore:function(before,value)
-      {
-       var after,node,_;
-       after=before.p;
-       node={
-        p:after,
-        n:before,
-        v:value
-       };
-       Unchecked.Equals(before.p,null)?void(this.n=node):null;
-       before.p=node;
-       if(!Unchecked.Equals(after,null))
-        {
-         after.n=node;
-         _=node;
-        }
-       else
-        {
-         _=null;
-        }
-       this.c=this.c+1;
-       return node;
-      },
-      AddFirst:function(value)
-      {
-       var _,node;
-       if(this.c===0)
-        {
-         node={
-          p:null,
-          n:null,
-          v:value
-         };
-         this.n=node;
-         this.p=this.n;
-         this.c=1;
-         _=node;
-        }
-       else
-        {
-         _=this.AddBefore(this.n,value);
-        }
-       return _;
-      },
-      AddLast:function(value)
-      {
-       var _,node;
-       if(this.c===0)
-        {
-         node={
-          p:null,
-          n:null,
-          v:value
-         };
-         this.n=node;
-         this.p=this.n;
-         this.c=1;
-         _=node;
-        }
-       else
-        {
-         _=this.AddAfter(this.p,value);
-        }
-       return _;
-      },
-      Clear:function()
-      {
-       this.c=0;
-       this.n=null;
-       this.p=null;
-       return;
-      },
-      Contains:function(value)
-      {
-       var found,node;
-       found=false;
-       node=this.n;
-       while(!Unchecked.Equals(node,null)?!found:false)
-        {
-         node.v==value?found=true:node=node.n;
-        }
-       return found;
-      },
-      Find:function(value)
-      {
-       var node,notFound;
-       node=this.n;
-       notFound=true;
-       while(notFound?!Unchecked.Equals(node,null):false)
-        {
-         node.v==value?notFound=false:node=node.n;
-        }
-       return notFound?null:node;
-      },
-      FindLast:function(value)
-      {
-       var node,notFound;
-       node=this.p;
-       notFound=true;
-       while(notFound?!Unchecked.Equals(node,null):false)
-        {
-         node.v==value?notFound=false:node=node.p;
-        }
-       return notFound?null:node;
-      },
-      GetEnumerator:function()
-      {
-       return E.New(this);
-      },
-      Remove:function(node)
-      {
-       var before,after,_,_1;
-       before=node.p;
-       after=node.n;
-       if(Unchecked.Equals(before,null))
-        {
-         _=void(this.n=after);
-        }
-       else
-        {
-         before.n=after;
-         _=after;
-        }
-       if(Unchecked.Equals(after,null))
-        {
-         _1=void(this.p=before);
-        }
-       else
-        {
-         after.p=before;
-         _1=before;
-        }
-       this.c=this.c-1;
-       return;
-      },
-      Remove1:function(value)
-      {
-       var node,_;
-       node=this.Find(value);
-       if(Unchecked.Equals(node,null))
-        {
-         _=false;
-        }
-       else
-        {
-         this.Remove(node);
-         _=true;
-        }
-       return _;
-      },
-      RemoveFirst:function()
-      {
-       return this.Remove(this.n);
-      },
-      RemoveLast:function()
-      {
-       return this.Remove(this.p);
-      },
-      get_Count:function()
-      {
-       return this.c;
-      },
-      get_First:function()
-      {
-       return this.n;
-      },
-      get_Last:function()
-      {
-       return this.p;
-      }
-     },{
-      New:function()
-      {
-       return Runtime.New(this,T1.New1(Seq1.empty()));
-      },
-      New1:function(coll)
-      {
-       var r,ie,_,node;
-       r=Runtime.New(this,{});
-       r.c=0;
-       r.n=null;
-       r.p=null;
-       ie=Enumerator.Get(coll);
-       if(ie.MoveNext())
-        {
-         r.n={
-          p:null,
-          n:null,
-          v:ie.get_Current()
-         };
-         r.p=r.n;
-         _=void(r.c=1);
-        }
-       else
-        {
-         _=null;
-        }
-       while(ie.MoveNext())
-        {
-         node={
-          p:r.p,
-          n:null,
-          v:ie.get_Current()
-         };
-         r.p.n=node;
-         r.p=node;
-         r.c=r.c+1;
-        }
-       return r;
-      }
-     })
-    },
-    MapModule:{
-     Exists:function(f,m)
-     {
-      var predicate;
-      predicate=function(kv)
-      {
-       return(f(kv.K))(kv.V);
-      };
-      return Seq1.exists(predicate,m);
-     },
-     Filter:function(f,m)
-     {
-      var predicate,source,source1,data,t;
-      predicate=function(kv)
-      {
-       return(f(kv.Key))(kv.Value);
-      };
-      source=BalancedTree.Enumerate(false,m.get_Tree());
-      source1=Seq1.filter(predicate,source);
-      data=Seq1.toArray(source1);
-      t=BalancedTree.Build(data,0,data.length-1);
-      return FSharpMap.New(t);
-     },
-     FindKey:function(f,m)
-     {
-      var chooser;
-      chooser=function(kv)
-      {
-       return(f(kv.K))(kv.V)?{
-        $:1,
-        $0:kv.K
-       }:{
-        $:0
-       };
-      };
-      return Seq1.pick(chooser,m);
-     },
-     Fold:function(f,s,m)
-     {
-      var folder,source;
-      folder=function(s1)
-      {
-       return function(kv)
-       {
-        return((f(s1))(kv.Key))(kv.Value);
-       };
-      };
-      source=BalancedTree.Enumerate(false,m.get_Tree());
-      return Seq1.fold(folder,s,source);
-     },
-     FoldBack:function(f,m,s)
-     {
-      var folder,source;
-      folder=function(s1)
-      {
-       return function(kv)
-       {
-        return((f(kv.Key))(kv.Value))(s1);
-       };
-      };
-      source=BalancedTree.Enumerate(true,m.get_Tree());
-      return Seq1.fold(folder,s,source);
-     },
-     ForAll:function(f,m)
-     {
-      var predicate;
-      predicate=function(kv)
-      {
-       return(f(kv.K))(kv.V);
-      };
-      return Seq1.forall(predicate,m);
-     },
-     Iterate:function(f,m)
-     {
-      var action;
-      action=function(kv)
-      {
-       return(f(kv.K))(kv.V);
-      };
-      return Seq1.iter(action,m);
-     },
-     Map:function(f,m)
-     {
-      var mapping,source,data,t;
-      mapping=function(kv)
-      {
-       return Runtime.New(Pair,{
-        Key:kv.Key,
-        Value:(f(kv.Key))(kv.Value)
-       });
-      };
-      source=BalancedTree.Enumerate(false,m.get_Tree());
-      data=Seq1.map(mapping,source);
-      t=BalancedTree.OfSeq(data);
-      return FSharpMap.New(t);
-     },
-     OfArray:function(a)
-     {
-      var mapping,data,t;
-      mapping=function(tupledArg)
-      {
-       var k,v;
-       k=tupledArg[0];
-       v=tupledArg[1];
-       return Runtime.New(Pair,{
-        Key:k,
-        Value:v
-       });
-      };
-      data=Seq1.map(mapping,a);
-      t=BalancedTree.OfSeq(data);
-      return FSharpMap.New(t);
-     },
-     Partition:function(f,m)
-     {
-      var predicate,array,patternInput,y,x;
-      predicate=function(kv)
-      {
-       return(f(kv.Key))(kv.Value);
-      };
-      array=Seq1.toArray(BalancedTree.Enumerate(false,m.get_Tree()));
-      patternInput=Arrays.partition(predicate,array);
-      y=patternInput[1];
-      x=patternInput[0];
-      return[FSharpMap.New(BalancedTree.Build(x,0,x.length-1)),FSharpMap.New(BalancedTree.Build(y,0,y.length-1))];
-     },
-     Pick:function(f,m)
-     {
-      var chooser;
-      chooser=function(kv)
-      {
-       return(f(kv.K))(kv.V);
-      };
-      return Seq1.pick(chooser,m);
-     },
-     ToSeq:function(m)
-     {
-      var mapping,source;
-      mapping=function(kv)
-      {
-       return[kv.Key,kv.Value];
-      };
-      source=BalancedTree.Enumerate(false,m.get_Tree());
-      return Seq1.map(mapping,source);
-     },
-     TryFind:function(k,m)
-     {
-      return m.TryFind(k);
-     },
-     TryFindKey:function(f,m)
-     {
-      var chooser;
-      chooser=function(kv)
-      {
-       return(f(kv.K))(kv.V)?{
-        $:1,
-        $0:kv.K
-       }:{
-        $:0
-       };
-      };
-      return Seq1.tryPick(chooser,m);
-     },
-     TryPick:function(f,m)
-     {
-      var chooser;
-      chooser=function(kv)
-      {
-       return(f(kv.K))(kv.V);
-      };
-      return Seq1.tryPick(chooser,m);
-     }
-    },
-    MapUtil:{
-     fromSeq:function(s)
-     {
-      var a;
-      a=Seq1.toArray(Seq1.delay(function()
-      {
-       return Seq1.collect(function(matchValue)
-       {
-        var v,k;
-        v=matchValue[1];
-        k=matchValue[0];
-        return[Runtime.New(Pair,{
-         Key:k,
-         Value:v
-        })];
-       },Seq.distinctBy(function(tuple)
-       {
-        return tuple[0];
-       },s));
-      }));
-      Arrays.sortInPlace(a);
-      return BalancedTree.Build(a,0,a.length-1);
-     }
-    },
-    Pair:Runtime.Class({
-     CompareTo:function(other)
-     {
-      return Operators.Compare(this.Key,other.Key);
-     },
-     Equals:function(other)
-     {
-      return Unchecked.Equals(this.Key,other.Key);
-     },
-     GetHashCode:function()
-     {
-      return Unchecked.Hash(this.Key);
-     }
-    }),
-    ResizeArray:{
-     ResizeArrayProxy:Runtime.Class({
-      Add:function(x)
-      {
-       return this.arr.push(x);
-      },
-      AddRange:function(x)
-      {
-       var _this=this;
-       return Seq1.iter(function(arg00)
-       {
-        return _this.Add(arg00);
-       },x);
-      },
-      Clear:function()
-      {
-       var value;
-       value=ResizeArray.splice(this.arr,0,Arrays.length(this.arr),[]);
-       return;
-      },
-      CopyTo:function(arr)
-      {
-       return this.CopyTo1(arr,0);
-      },
-      CopyTo1:function(arr,offset)
-      {
-       return this.CopyTo2(0,arr,offset,this.get_Count());
-      },
-      CopyTo2:function(index,target,offset,count)
-      {
-       return Arrays.blit(this.arr,index,target,offset,count);
-      },
-      GetEnumerator:function()
-      {
-       return Enumerator.Get(this.arr);
-      },
-      GetRange:function(index,count)
-      {
-       return ResizeArrayProxy.New11(Arrays.sub(this.arr,index,count));
-      },
-      Insert:function(index,items)
-      {
-       var value;
-       value=ResizeArray.splice(this.arr,index,0,[items]);
-       return;
-      },
-      InsertRange:function(index,items)
-      {
-       var value;
-       value=ResizeArray.splice(this.arr,index,0,Seq1.toArray(items));
-       return;
-      },
-      RemoveAt:function(x)
-      {
-       var value;
-       value=ResizeArray.splice(this.arr,x,1,[]);
-       return;
-      },
-      RemoveRange:function(index,count)
-      {
-       var value;
-       value=ResizeArray.splice(this.arr,index,count,[]);
-       return;
-      },
-      Reverse:function()
-      {
-       return this.arr.reverse();
-      },
-      Reverse1:function(index,count)
-      {
-       return Arrays.reverse(this.arr,index,count);
-      },
-      ToArray:function()
-      {
-       return this.arr.slice();
-      },
-      get_Count:function()
-      {
-       return Arrays.length(this.arr);
-      },
-      get_Item:function(x)
-      {
-       return Arrays.get(this.arr,x);
-      },
-      set_Item:function(x,v)
-      {
-       return Arrays.set(this.arr,x,v);
-      }
-     },{
-      New:function(el)
-      {
-       return Runtime.New(this,ResizeArrayProxy.New11(Seq1.toArray(el)));
-      },
-      New1:function()
-      {
-       return Runtime.New(this,ResizeArrayProxy.New11([]));
-      },
-      New11:function(arr)
-      {
-       var r;
-       r=Runtime.New(this,{});
-       r.arr=arr;
-       return r;
-      },
-      New2:function()
-      {
-       return Runtime.New(this,ResizeArrayProxy.New11([]));
-      }
-     }),
-     splice:function($arr,$index,$howMany,$items)
-     {
-      var $0=this,$this=this;
-      return Global.Array.prototype.splice.apply($arr,[$index,$howMany].concat($items));
-     }
-    },
-    SetModule:{
-     Filter:function(f,s)
-     {
-      var data;
-      data=Seq1.toArray(Seq1.filter(f,s));
-      return FSharpSet.New1(BalancedTree.Build(data,0,data.length-1));
-     },
-     FoldBack:function(f,a,s)
-     {
-      return Seq1.fold(function(s1)
-      {
-       return function(x)
-       {
-        return(f(x))(s1);
-       };
-      },s,BalancedTree.Enumerate(true,a.get_Tree()));
-     },
-     Partition:function(f,a)
-     {
-      var patternInput,y,x;
-      patternInput=Arrays.partition(f,Seq1.toArray(a));
-      y=patternInput[1];
-      x=patternInput[0];
-      return[FSharpSet.New1(BalancedTree.OfSeq(x)),FSharpSet.New1(BalancedTree.OfSeq(y))];
-     }
-    },
-    SetUtil:{
-     ofSeq:function(s)
-     {
-      var a;
-      a=Seq1.toArray(s);
-      Arrays.sortInPlace(a);
-      return BalancedTree.Build(a,0,a.length-1);
-     }
-    }
-   }
+ "use strict";
+ var Global,WebSharper,Collections,BalancedTree,Tree,Pair,MapUtil,FSharpMap,Map,FSharpSet,Set,ListEnumerator,List,LinkedListEnumerator,LinkedList,Grouping,FsComparer,ProjectionComparer,CompoundComparer,ReverseComparer,OrderedEnumerable,Linq,Arrays,Seq,Unchecked,List$1,IntelliFactory,Runtime,Enumerator,Operators,HashSet,Dictionary,Nullable;
+ Global=window;
+ WebSharper=Global.WebSharper=Global.WebSharper||{};
+ Collections=WebSharper.Collections=WebSharper.Collections||{};
+ BalancedTree=Collections.BalancedTree=Collections.BalancedTree||{};
+ Tree=BalancedTree.Tree=BalancedTree.Tree||{};
+ Pair=Collections.Pair=Collections.Pair||{};
+ MapUtil=Collections.MapUtil=Collections.MapUtil||{};
+ FSharpMap=Collections.FSharpMap=Collections.FSharpMap||{};
+ Map=Collections.Map=Collections.Map||{};
+ FSharpSet=Collections.FSharpSet=Collections.FSharpSet||{};
+ Set=Collections.Set=Collections.Set||{};
+ ListEnumerator=Collections.ListEnumerator=Collections.ListEnumerator||{};
+ List=Collections.List=Collections.List||{};
+ LinkedListEnumerator=Collections.LinkedListEnumerator=Collections.LinkedListEnumerator||{};
+ LinkedList=Collections.LinkedList=Collections.LinkedList||{};
+ Grouping=WebSharper.Grouping=WebSharper.Grouping||{};
+ FsComparer=WebSharper.FsComparer=WebSharper.FsComparer||{};
+ ProjectionComparer=WebSharper.ProjectionComparer=WebSharper.ProjectionComparer||{};
+ CompoundComparer=WebSharper.CompoundComparer=WebSharper.CompoundComparer||{};
+ ReverseComparer=WebSharper.ReverseComparer=WebSharper.ReverseComparer||{};
+ OrderedEnumerable=WebSharper.OrderedEnumerable=WebSharper.OrderedEnumerable||{};
+ Linq=WebSharper.Linq=WebSharper.Linq||{};
+ Arrays=WebSharper&&WebSharper.Arrays;
+ Seq=WebSharper&&WebSharper.Seq;
+ Unchecked=WebSharper&&WebSharper.Unchecked;
+ List$1=WebSharper&&WebSharper.List;
+ IntelliFactory=Global.IntelliFactory;
+ Runtime=IntelliFactory&&IntelliFactory.Runtime;
+ Enumerator=WebSharper&&WebSharper.Enumerator;
+ Operators=WebSharper&&WebSharper.Operators;
+ HashSet=Collections&&Collections.HashSet;
+ Dictionary=Collections&&Collections.Dictionary;
+ Nullable=WebSharper&&WebSharper.Nullable;
+ Tree.New=function(Node,Left,Right,Height,Count)
+ {
+  return{
+   Node:Node,
+   Left:Left,
+   Right:Right,
+   Height:Height,
+   Count:Count
+  };
+ };
+ BalancedTree.TryFind=function(v,t)
+ {
+  var x;
+  x=(BalancedTree.Lookup(v,t))[0];
+  return x==null?null:{
+   $:1,
+   $0:x.Node
+  };
+ };
+ BalancedTree.Contains=function(v,t)
+ {
+  return!((BalancedTree.Lookup(v,t))[0]==null);
+ };
+ BalancedTree.Add=function(x,t)
+ {
+  return BalancedTree.Put(function($1,$2)
+  {
+   return $2;
+  },x,t);
+ };
+ BalancedTree.Remove=function(k,src)
+ {
+  var p,t,spine,d;
+  p=BalancedTree.Lookup(k,src);
+  t=p[0];
+  spine=p[1];
+  return t==null?src:t.Right==null?BalancedTree.Rebuild(spine,t.Left):t.Left==null?BalancedTree.Rebuild(spine,t.Right):BalancedTree.Rebuild(spine,(d=Arrays.ofSeq(Seq.append(BalancedTree.Enumerate(false,t.Left),BalancedTree.Enumerate(false,t.Right))),BalancedTree.Build(d,0,d.length-1)));
+ };
+ BalancedTree.Put=function(combine,k,t)
+ {
+  var p,t$1;
+  p=BalancedTree.Lookup(k,t);
+  t$1=p[0];
+  return t$1==null?BalancedTree.Rebuild(p[1],BalancedTree.Branch(k,null,null)):BalancedTree.Rebuild(p[1],BalancedTree.Branch(combine(t$1.Node,k),t$1.Left,t$1.Right));
+ };
+ BalancedTree.Rebuild=function(spine,t)
+ {
+  var t$1,i,$1,m,x,l,m$1,x$1,r,m$2;
+  function h(x$2)
+  {
+   return x$2==null?0:x$2.Height;
   }
- });
- Runtime.OnInit(function()
+  t$1=t;
+  for(i=0,$1=Arrays.length(spine)-1;i<=$1;i++){
+   t$1=(m=Arrays.get(spine,i),m[0]?(x=m[1],(l=m[2],h(t$1)>h(l)+1?h(t$1.Left)===h(t$1.Right)+1?(m$1=t$1.Left,BalancedTree.Branch(m$1.Node,BalancedTree.Branch(x,l,m$1.Left),BalancedTree.Branch(t$1.Node,m$1.Right,t$1.Right))):BalancedTree.Branch(t$1.Node,BalancedTree.Branch(x,l,t$1.Left),t$1.Right):BalancedTree.Branch(x,l,t$1))):(x$1=m[1],(r=m[2],h(t$1)>h(r)+1?h(t$1.Right)===h(t$1.Left)+1?(m$2=t$1.Right,BalancedTree.Branch(m$2.Node,BalancedTree.Branch(t$1.Node,t$1.Left,m$2.Left),BalancedTree.Branch(x$1,m$2.Right,r))):BalancedTree.Branch(t$1.Node,t$1.Left,BalancedTree.Branch(x$1,t$1.Right,r)):BalancedTree.Branch(x$1,t$1,r))));
+  }
+  return t$1;
+ };
+ BalancedTree.Lookup=function(k,t)
  {
-  Collections=Runtime.Safe(Global.WebSharper.Collections);
-  BalancedTree=Runtime.Safe(Collections.BalancedTree);
-  Operators=Runtime.Safe(Global.WebSharper.Operators);
-  Arrays=Runtime.Safe(Global.WebSharper.Arrays);
-  Seq=Runtime.Safe(Global.Seq);
-  List=Runtime.Safe(Global.WebSharper.List);
-  T=Runtime.Safe(List.T);
-  Seq1=Runtime.Safe(Global.WebSharper.Seq);
-  JavaScript=Runtime.Safe(Global.WebSharper.JavaScript);
-  JSModule=Runtime.Safe(JavaScript.JSModule);
-  Enumerator=Runtime.Safe(Global.WebSharper.Enumerator);
-  DictionaryUtil=Runtime.Safe(Collections.DictionaryUtil);
-  Dictionary=Runtime.Safe(Collections.Dictionary);
-  Unchecked=Runtime.Safe(Global.WebSharper.Unchecked);
-  FSharpMap=Runtime.Safe(Collections.FSharpMap);
-  Pair=Runtime.Safe(Collections.Pair);
-  Option=Runtime.Safe(Global.WebSharper.Option);
-  MapUtil=Runtime.Safe(Collections.MapUtil);
-  FSharpSet=Runtime.Safe(Collections.FSharpSet);
-  SetModule=Runtime.Safe(Collections.SetModule);
-  SetUtil=Runtime.Safe(Collections.SetUtil);
-  Array=Runtime.Safe(Global.Array);
-  HashSetUtil=Runtime.Safe(Collections.HashSetUtil);
-  HashSetProxy=Runtime.Safe(Collections.HashSetProxy);
-  LinkedList=Runtime.Safe(Collections.LinkedList);
-  E=Runtime.Safe(LinkedList.E);
-  T1=Runtime.Safe(LinkedList.T);
-  ResizeArray=Runtime.Safe(Collections.ResizeArray);
-  return ResizeArrayProxy=Runtime.Safe(ResizeArray.ResizeArrayProxy);
- });
- Runtime.OnLoad(function()
+  var spine,t$1,loop,m;
+  spine=[];
+  t$1=t;
+  loop=true;
+  while(loop)
+   if(t$1==null)
+    loop=false;
+   else
+    {
+     m=Unchecked.Compare(k,t$1.Node);
+     m===0?loop=false:m===1?(spine.unshift([true,t$1.Node,t$1.Left]),t$1=t$1.Right):(spine.unshift([false,t$1.Node,t$1.Right]),t$1=t$1.Left);
+    }
+  return[t$1,spine];
+ };
+ BalancedTree.OfSeq=function(data)
  {
-  return;
- });
+  var a;
+  a=Arrays.ofSeq(Seq.distinct(data));
+  Arrays.sortInPlace(a);
+  return BalancedTree.Build(a,0,a.length-1);
+ };
+ BalancedTree.Build=function(data,min,max)
+ {
+  var center,left,right;
+  return max-min+1<=0?null:(center=(min+max)/2>>0,(left=BalancedTree.Build(data,min,center-1),(right=BalancedTree.Build(data,center+1,max),BalancedTree.Branch(Arrays.get(data,center),left,right))));
+ };
+ BalancedTree.Enumerate=function(flip,t)
+ {
+  function gen(t$1,spine)
+  {
+   var t$2;
+   while(true)
+    if(t$1==null)
+     return spine.$==1?{
+      $:1,
+      $0:[spine.$0[0],[spine.$0[1],spine.$1]]
+     }:null;
+    else
+     if(flip)
+      {
+       t$2=t$1;
+       t$1=t$2.Right;
+       spine=new List$1.T({
+        $:1,
+        $0:[t$2.Node,t$2.Left],
+        $1:spine
+       });
+      }
+     else
+      {
+       t$2=t$1;
+       t$1=t$2.Left;
+       spine=new List$1.T({
+        $:1,
+        $0:[t$2.Node,t$2.Right],
+        $1:spine
+       });
+      }
+  }
+  return Seq.unfold(function($1)
+  {
+   return gen($1[0],$1[1]);
+  },[t,List$1.T.Empty]);
+ };
+ BalancedTree.Branch=function(node,left,right)
+ {
+  var a,b;
+  return Tree.New(node,left,right,1+(a=left==null?0:left.Height,(b=right==null?0:right.Height,Unchecked.Compare(a,b)===1?a:b)),1+(left==null?0:left.Count)+(right==null?0:right.Count));
+ };
+ Pair=Collections.Pair=Runtime.Class({
+  Equals:function(other)
+  {
+   return Unchecked.Equals(this.Key,other.Key);
+  },
+  GetHashCode:function()
+  {
+   return Unchecked.Hash(this.Key);
+  },
+  CompareTo0:function(other)
+  {
+   return Unchecked.Compare(this.Key,other.Key);
+  }
+ },null,Pair);
+ Pair.New=function(Key,Value)
+ {
+  return new Pair({
+   Key:Key,
+   Value:Value
+  });
+ };
+ MapUtil.fromSeq=function(s)
+ {
+  var a;
+  a=Arrays.ofSeq(Seq.delay(function()
+  {
+   return Seq.collect(function(m)
+   {
+    return[Pair.New(m[0],m[1])];
+   },Seq.distinctBy(function(t)
+   {
+    return t[0];
+   },s));
+  }));
+  Arrays.sortInPlace(a);
+  return BalancedTree.Build(a,0,a.length-1);
+ };
+ FSharpMap=Collections.FSharpMap=Runtime.Class({
+  Equals:function(other)
+  {
+   return this.get_Count()===other.get_Count()&&Seq.forall2(Unchecked.Equals,this,other);
+  },
+  GetHashCode:function()
+  {
+   return Unchecked.Hash(Arrays.ofSeq(this));
+  },
+  GetEnumerator$1:function()
+  {
+   return Enumerator.Get(Seq.map(function(kv)
+   {
+    return{
+     K:kv.Key,
+     V:kv.Value
+    };
+   },BalancedTree.Enumerate(false,this.tree)));
+  },
+  TryFind:function(k)
+  {
+   var o;
+   o=BalancedTree.TryFind(Pair.New(k,void 0),this.tree);
+   return o==null?null:{
+    $:1,
+    $0:o.$0.Value
+   };
+  },
+  Remove:function(k)
+  {
+   return new FSharpMap.New$1(BalancedTree.Remove(Pair.New(k,void 0),this.tree));
+  },
+  get_Item:function(k)
+  {
+   var m;
+   m=this.TryFind(k);
+   return m==null?Operators.FailWith("The given key was not present in the dictionary."):m.$0;
+  },
+  get_IsEmpty:function()
+  {
+   return this.tree==null;
+  },
+  get_Count:function()
+  {
+   var tree;
+   tree=this.tree;
+   return tree==null?0:tree.Count;
+  },
+  ContainsKey:function(k)
+  {
+   return BalancedTree.Contains(Pair.New(k,void 0),this.tree);
+  },
+  Add:function(k,v)
+  {
+   return new FSharpMap.New$1(BalancedTree.Add(Pair.New(k,v),this.tree));
+  },
+  get_Tree:function()
+  {
+   return this.tree;
+  },
+  GetEnumerator:function()
+  {
+   return this.GetEnumerator$1();
+  },
+  GetEnumerator0:function()
+  {
+   return this.GetEnumerator$1();
+  },
+  CompareTo0:function(other)
+  {
+   return Seq.compareWith(Unchecked.Compare,this,other);
+  }
+ },WebSharper.Obj,FSharpMap);
+ FSharpMap.New=Runtime.Ctor(function(s)
+ {
+  FSharpMap.New$1.call(this,MapUtil.fromSeq(s));
+ },FSharpMap);
+ FSharpMap.New$1=Runtime.Ctor(function(tree)
+ {
+  this.tree=tree;
+ },FSharpMap);
+ Map.Map=function(f,m)
+ {
+  return new FSharpMap.New$1(BalancedTree.OfSeq(Seq.map(function(kv)
+  {
+   return Pair.New(kv.Key,f(kv.Key,kv.Value));
+  },BalancedTree.Enumerate(false,m.get_Tree()))));
+ };
+ Map.TryPick=function(f,m)
+ {
+  return Seq.tryPick(function(kv)
+  {
+   return f(kv.K,kv.V);
+  },m);
+ };
+ Map.TryFindKey=function(f,m)
+ {
+  return Seq.tryPick(function(kv)
+  {
+   return f(kv.K,kv.V)?{
+    $:1,
+    $0:kv.K
+   }:null;
+  },m);
+ };
+ Map.TryFind=function(k,m)
+ {
+  return m.TryFind(k);
+ };
+ Map.ToSeq=function(m)
+ {
+  return Seq.map(function(kv)
+  {
+   return[kv.Key,kv.Value];
+  },BalancedTree.Enumerate(false,m.get_Tree()));
+ };
+ Map.Pick=function(f,m)
+ {
+  return Seq.pick(function(kv)
+  {
+   return f(kv.K,kv.V);
+  },m);
+ };
+ Map.Partition=function(f,m)
+ {
+  var p,data,data$1;
+  p=Arrays.partition(function(kv)
+  {
+   return f(kv.Key,kv.Value);
+  },Arrays.ofSeq(BalancedTree.Enumerate(false,m.get_Tree())));
+  return[new FSharpMap.New$1((data=p[0],BalancedTree.Build(data,0,data.length-1))),new FSharpMap.New$1((data$1=p[1],BalancedTree.Build(data$1,0,data$1.length-1)))];
+ };
+ Map.OfArray=function(a)
+ {
+  return new FSharpMap.New$1(BalancedTree.OfSeq(Seq.map(function($1)
+  {
+   return Pair.New($1[0],$1[1]);
+  },a)));
+ };
+ Map.Iterate=function(f,m)
+ {
+  Seq.iter(function(kv)
+  {
+   f(kv.K,kv.V);
+  },m);
+ };
+ Map.ForAll=function(f,m)
+ {
+  return Seq.forall(function(kv)
+  {
+   return f(kv.K,kv.V);
+  },m);
+ };
+ Map.FoldBack=function(f,m,s)
+ {
+  return Seq.fold(function(s$1,kv)
+  {
+   return f(kv.Key,kv.Value,s$1);
+  },s,BalancedTree.Enumerate(true,m.get_Tree()));
+ };
+ Map.Fold=function(f,s,m)
+ {
+  return Seq.fold(function(s$1,kv)
+  {
+   return f(s$1,kv.Key,kv.Value);
+  },s,BalancedTree.Enumerate(false,m.get_Tree()));
+ };
+ Map.FindKey=function(f,m)
+ {
+  return Seq.pick(function(kv)
+  {
+   return f(kv.K,kv.V)?{
+    $:1,
+    $0:kv.K
+   }:null;
+  },m);
+ };
+ Map.Filter=function(f,m)
+ {
+  var d;
+  return new FSharpMap.New$1((d=Arrays.ofSeq(Seq.filter(function(kv)
+  {
+   return f(kv.Key,kv.Value);
+  },BalancedTree.Enumerate(false,m.get_Tree()))),BalancedTree.Build(d,0,d.length-1)));
+ };
+ Map.Exists=function(f,m)
+ {
+  return Seq.exists(function(kv)
+  {
+   return f(kv.K,kv.V);
+  },m);
+ };
+ FSharpSet=Collections.FSharpSet=Runtime.Class({
+  Equals:function(other)
+  {
+   return this.get_Count()===other.get_Count()&&Seq.forall2(Unchecked.Equals,this,other);
+  },
+  GetHashCode:function()
+  {
+   return -1741749453+Unchecked.Hash(Arrays.ofSeq(this));
+  },
+  GetEnumerator$1:function()
+  {
+   return Enumerator.Get(BalancedTree.Enumerate(false,this.tree));
+  },
+  Remove:function(v)
+  {
+   return new FSharpSet.New$1(BalancedTree.Remove(v,this.tree));
+  },
+  get_MinimumElement:function()
+  {
+   return Seq.head(BalancedTree.Enumerate(false,this.tree));
+  },
+  get_MaximumElement:function()
+  {
+   return Seq.head(BalancedTree.Enumerate(true,this.tree));
+  },
+  IsSupersetOf:function(s)
+  {
+   var $this;
+   $this=this;
+   return Seq.forall(function(a)
+   {
+    return $this.Contains(a);
+   },s);
+  },
+  IsSubsetOf:function(s)
+  {
+   return Seq.forall(function(a)
+   {
+    return s.Contains(a);
+   },this);
+  },
+  IsProperSupersetOf:function(s)
+  {
+   return this.IsSupersetOf(s)&&this.get_Count()>s.get_Count();
+  },
+  IsProperSubsetOf:function(s)
+  {
+   return this.IsSubsetOf(s)&&this.get_Count()<s.get_Count();
+  },
+  get_Tree:function()
+  {
+   return this.tree;
+  },
+  get_IsEmpty:function()
+  {
+   return this.tree==null;
+  },
+  get_Count:function()
+  {
+   var tree;
+   tree=this.tree;
+   return tree==null?0:tree.Count;
+  },
+  Contains:function(v)
+  {
+   return BalancedTree.Contains(v,this.tree);
+  },
+  Add:function(x)
+  {
+   return new FSharpSet.New$1(BalancedTree.Add(x,this.tree));
+  },
+  sub:function(x)
+  {
+   return Set.Filter(function(x$1)
+   {
+    return!x.Contains(x$1);
+   },this);
+  },
+  add:function(x)
+  {
+   return new FSharpSet.New$1(BalancedTree.OfSeq(Seq.append(this,x)));
+  },
+  CompareTo0:function(other)
+  {
+   return Seq.compareWith(Unchecked.Compare,this,other);
+  },
+  GetEnumerator:function()
+  {
+   return this.GetEnumerator$1();
+  },
+  GetEnumerator0:function()
+  {
+   return this.GetEnumerator$1();
+  }
+ },WebSharper.Obj,FSharpSet);
+ FSharpSet.op_Subtraction=function(x,y)
+ {
+  return Set.Filter(function(x$1)
+  {
+   return!y.Contains(x$1);
+  },x);
+ };
+ FSharpSet.op_Addition=function(x,y)
+ {
+  return new FSharpSet.New$1(BalancedTree.OfSeq(Seq.append(x,y)));
+ };
+ FSharpSet.New=Runtime.Ctor(function(s)
+ {
+  FSharpSet.New$1.call(this,BalancedTree.OfSeq(s));
+ },FSharpSet);
+ FSharpSet.New$1=Runtime.Ctor(function(tree)
+ {
+  this.tree=tree;
+ },FSharpSet);
+ Set.Partition=function(f,a)
+ {
+  var p;
+  p=Arrays.partition(f,Arrays.ofSeq(a));
+  return[new FSharpSet.New$1(BalancedTree.OfSeq(p[0])),new FSharpSet.New$1(BalancedTree.OfSeq(p[1]))];
+ };
+ Set.FoldBack=function(f,a,s)
+ {
+  return Seq.fold(function($1,$2)
+  {
+   return f($2,$1);
+  },s,BalancedTree.Enumerate(true,a.get_Tree()));
+ };
+ Set.Filter=function(f,s)
+ {
+  var data;
+  return new FSharpSet.New$1((data=Arrays.ofSeq(Seq.filter(f,s)),BalancedTree.Build(data,0,data.length-1)));
+ };
+ ListEnumerator=Collections.ListEnumerator=Runtime.Class({
+  get_Current:function()
+  {
+   return Arrays.get(this.arr,this.i);
+  },
+  MoveNext$1:function()
+  {
+   this.i=this.i+1;
+   return this.i<Arrays.length(this.arr);
+  },
+  Dispose:Global.ignore,
+  Current:function()
+  {
+   return Arrays.get(this.arr,this.i);
+  },
+  Reset:function()
+  {
+   Operators.FailWith("IEnumerator.Reset not supported");
+  },
+  Current0:function()
+  {
+   return Arrays.get(this.arr,this.i);
+  },
+  MoveNext:function()
+  {
+   return this.MoveNext$1();
+  }
+ },WebSharper.Obj,ListEnumerator);
+ ListEnumerator.New=Runtime.Ctor(function(arr)
+ {
+  this.arr=arr;
+  this.i=-1;
+ },ListEnumerator);
+ List=Collections.List=Runtime.Class({
+  GetEnumerator:function()
+  {
+   return Enumerator.Get(this);
+  },
+  GetEnumerator0:function()
+  {
+   return Enumerator.Get0(this);
+  }
+ },null,List);
+ List.RemoveAll=function($this,pred)
+ {
+  var removed,i,j,_delete;
+  removed=0;
+  i=0;
+  while(i<Arrays.length($this))
+   if(pred($this[i]))
+    {
+     j=i+1;
+     while(j<Arrays.length($this)&&pred($this[j]))
+      j=j+1;
+     removed=removed+j-i;
+     _delete=j-i;
+     $this.splice.apply($this,[i,_delete]);
+    }
+   else
+    i=i+1;
+  return removed;
+ };
+ List.Remove=function($this,item)
+ {
+  var m;
+  m=Arrays.findIndexBound($this,0,Arrays.length($this),item==null?function(v)
+  {
+   return v==null;
+  }:function(a)
+  {
+   return Unchecked.Equals(item,a);
+  });
+  return m===-1?false:($this.splice.apply($this,[m,1]),true);
+ };
+ LinkedListEnumerator=Collections.LinkedListEnumerator=Runtime.Class({
+  Reset:Global.ignore,
+  Dispose:Global.ignore,
+  MoveNext:function()
+  {
+   this.c=this.c.n;
+   return!Unchecked.Equals(this.c,null);
+  },
+  Current0:function()
+  {
+   return this.c.v;
+  },
+  Current:function()
+  {
+   return this.c.v;
+  }
+ },WebSharper.Obj,LinkedListEnumerator);
+ LinkedListEnumerator.New=Runtime.Ctor(function(l)
+ {
+  this.c=l;
+ },LinkedListEnumerator);
+ LinkedList=Collections.LinkedList=Runtime.Class({
+  RemoveLast:function()
+  {
+   this.Remove$1(this.p);
+  },
+  RemoveFirst:function()
+  {
+   this.Remove$1(this.n);
+  },
+  Remove:function(value)
+  {
+   var node;
+   node=this.Find(value);
+   return Unchecked.Equals(node,null)?false:(this.Remove$1(node),true);
+  },
+  Remove$1:function(node)
+  {
+   var before,after;
+   before=node.p;
+   after=node.n;
+   Unchecked.Equals(before,null)?this.n=after:before.n=after;
+   Unchecked.Equals(after,null)?this.p=before:after.p=before;
+   this.c=this.c-1;
+  },
+  GetEnumerator$1:function()
+  {
+   return new LinkedListEnumerator.New(this);
+  },
+  FindLast:function(value)
+  {
+   var node,notFound;
+   node=this.p;
+   notFound=true;
+   while(notFound&&!Unchecked.Equals(node,null))
+    if(node.v==value)
+     notFound=false;
+    else
+     node=node.p;
+   return notFound?null:node;
+  },
+  Find:function(value)
+  {
+   var node,notFound;
+   node=this.n;
+   notFound=true;
+   while(notFound&&!Unchecked.Equals(node,null))
+    if(node.v==value)
+     notFound=false;
+    else
+     node=node.n;
+   return notFound?null:node;
+  },
+  Contains:function(value)
+  {
+   var found,node;
+   found=false;
+   node=this.n;
+   while(!Unchecked.Equals(node,null)&&!found)
+    if(node.v==value)
+     found=true;
+    else
+     node=node.n;
+   return found;
+  },
+  Clear:function()
+  {
+   this.c=0;
+   this.n=null;
+   this.p=null;
+  },
+  AddLast:function(value)
+  {
+   var node;
+   return this.c===0?(node={
+    p:null,
+    n:null,
+    v:value
+   },(this.n=node,this.p=this.n,this.c=1,node)):this.AddAfter(this.p,value);
+  },
+  AddFirst:function(value)
+  {
+   var node;
+   return this.c===0?(node={
+    p:null,
+    n:null,
+    v:value
+   },(this.n=node,this.p=this.n,this.c=1,node)):this.AddBefore(this.n,value);
+  },
+  AddBefore:function(before,value)
+  {
+   var after,node;
+   after=before.p;
+   node={
+    p:after,
+    n:before,
+    v:value
+   };
+   Unchecked.Equals(before.p,null)?this.n=node:void 0;
+   before.p=node;
+   !Unchecked.Equals(after,null)?after.n=node:void 0;
+   this.c=this.c+1;
+   return node;
+  },
+  AddAfter:function(after,value)
+  {
+   var before,node;
+   before=after.n;
+   node={
+    p:after,
+    n:before,
+    v:value
+   };
+   Unchecked.Equals(after.n,null)?this.p=node:void 0;
+   after.n=node;
+   !Unchecked.Equals(before,null)?before.p=node:void 0;
+   this.c=this.c+1;
+   return node;
+  },
+  GetEnumerator:function()
+  {
+   return this.GetEnumerator$1();
+  },
+  GetEnumerator0:function()
+  {
+   return this.GetEnumerator$1();
+  }
+ },WebSharper.Obj,LinkedList);
+ LinkedList.New=Runtime.Ctor(function()
+ {
+  LinkedList.New$1.call(this,[]);
+ },LinkedList);
+ LinkedList.New$1=Runtime.Ctor(function(coll)
+ {
+  var ie,node;
+  this.c=0;
+  this.n=null;
+  this.p=null;
+  ie=Enumerator.Get(coll);
+  ie.MoveNext()?(this.n={
+   p:null,
+   n:null,
+   v:ie.Current()
+  },this.p=this.n,this.c=1):void 0;
+  while(ie.MoveNext())
+   {
+    node={
+     p:this.p,
+     n:null,
+     v:ie.Current()
+    };
+    this.p.n=node;
+    this.p=node;
+    this.c=this.c+1;
+   }
+ },LinkedList);
+ Grouping=WebSharper.Grouping=Runtime.Class({
+  System_Linq_IGrouping_2$get_Key:function()
+  {
+   return this.k;
+  },
+  GetEnumerator0:function()
+  {
+   return Enumerator.Get0(this.v);
+  },
+  GetEnumerator:function()
+  {
+   return Enumerator.Get(this.v);
+  }
+ },WebSharper.Obj,Grouping);
+ Grouping.New=Runtime.Ctor(function(k,v)
+ {
+  this.k=k;
+  this.v=v;
+ },Grouping);
+ FsComparer=WebSharper.FsComparer=Runtime.Class({
+  Compare:function(x,y)
+  {
+   return Unchecked.Compare(x,y);
+  }
+ },WebSharper.Obj,FsComparer);
+ FsComparer.New=Runtime.Ctor(function()
+ {
+ },FsComparer);
+ ProjectionComparer=WebSharper.ProjectionComparer=Runtime.Class({
+  Compare:function(x,y)
+  {
+   return this.primary.Compare(this.projection(x),this.projection(y));
+  }
+ },WebSharper.Obj,ProjectionComparer);
+ ProjectionComparer.New=Runtime.Ctor(function(primary,projection)
+ {
+  this.primary=primary;
+  this.projection=projection;
+ },ProjectionComparer);
+ CompoundComparer=WebSharper.CompoundComparer=Runtime.Class({
+  Compare:function(x,y)
+  {
+   var m;
+   m=this.primary.Compare(x,y);
+   return m===0?this.secondary.Compare(x,y):m;
+  }
+ },WebSharper.Obj,CompoundComparer);
+ CompoundComparer.New=Runtime.Ctor(function(primary,secondary)
+ {
+  this.primary=primary;
+  this.secondary=secondary;
+ },CompoundComparer);
+ ReverseComparer=WebSharper.ReverseComparer=Runtime.Class({
+  Compare:function(x,y)
+  {
+   return this.primary.Compare(this.projection(y),this.projection(x));
+  }
+ },WebSharper.Obj,ReverseComparer);
+ ReverseComparer.New=Runtime.Ctor(function(primary,projection)
+ {
+  this.primary=primary;
+  this.projection=projection;
+ },ReverseComparer);
+ OrderedEnumerable=WebSharper.OrderedEnumerable=Runtime.Class({
+  GetEnumerator0:function()
+  {
+   return Enumerator.Get(this);
+  },
+  GetEnumerator:function()
+  {
+   var $this,a;
+   $this=this;
+   a=Arrays.ofSeq(this.source);
+   Arrays.sortInPlaceWith(function($1,$2)
+   {
+    return $this.primary.Compare($1,$2);
+   },a);
+   return Enumerator.Get(a);
+  },
+  System_Linq_IOrderedEnumerable_1$CreateOrderedEnumerable:function(keySelector,secondary,descending)
+  {
+   return new OrderedEnumerable.New(this.source,new CompoundComparer.New(this.primary,descending?new ReverseComparer.New(secondary,keySelector):new ProjectionComparer.New(secondary,keySelector)));
+  }
+ },WebSharper.Obj,OrderedEnumerable);
+ OrderedEnumerable.New=Runtime.Ctor(function(source,primary)
+ {
+  this.source=source;
+  this.primary=primary;
+ },OrderedEnumerable);
+ Linq.ElementAtOrDefault=function(_this,index,defaultValue)
+ {
+  try
+  {
+   return Seq.nth(index,_this);
+  }
+  catch(m)
+  {
+   return defaultValue;
+  }
+ };
+ Linq.FirstOrDefault=function(_this,defaultValue)
+ {
+  var e;
+  e=Enumerator.Get(_this);
+  try
+  {
+   return e.MoveNext()?e.Current():defaultValue;
+  }
+  finally
+  {
+   if("Dispose"in e)
+    e.Dispose();
+  }
+ };
+ Linq.FirstOrDefault$1=function(_this,predicate,defaultValue)
+ {
+  var m;
+  m=Seq.tryFind(predicate,_this);
+  return m==null?defaultValue:m.$0;
+ };
+ Linq.LastOrDefault=function(_this,predicate,defaultValue)
+ {
+  var m;
+  m=Linq.LastPred(_this,predicate);
+  return m==null?defaultValue:m.$0;
+ };
+ Linq.SingleOrDefault=function(_this,predicate,defaultValue)
+ {
+  var e,found;
+  e=Enumerator.Get(_this);
+  try
+  {
+   found=null;
+   while(e.MoveNext())
+    if(predicate(e.Current()))
+     if(found!=null&&found.$==1)
+      Operators.InvalidOp("Sequence contains more than one element");
+     else
+      found={
+       $:1,
+       $0:e.Current()
+      };
+   return found==null?defaultValue:found.$0;
+  }
+  finally
+  {
+   if("Dispose"in e)
+    e.Dispose();
+  }
+ };
+ Linq.Where=function(_this,predicate)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var i;
+    i=0;
+    return Seq.enumWhile(function()
+    {
+     return e.MoveNext();
+    },Seq.delay(function()
+    {
+     return Seq.append(predicate(e.Current(),i)?[e.Current()]:[],Seq.delay(function()
+     {
+      i=i+1;
+      return[];
+     }));
+    }));
+   });
+  });
+ };
+ Linq.Union=function(_this,second,comparer)
+ {
+  var tbl,e;
+  tbl=new HashSet.New(_this,comparer);
+  e=Enumerator.Get(second);
+  try
+  {
+   while(e.MoveNext())
+    tbl.Add(e.Current());
+  }
+  finally
+  {
+   if("Dispose"in e)
+    e.Dispose();
+  }
+  return tbl;
+ };
+ Linq.ToDictionary=function(_this,keySelector,elementSelector,comparer)
+ {
+  var d;
+  d=new Dictionary.New$3(comparer);
+  Seq.iter(function(x)
+  {
+   d.Add(keySelector(x),elementSelector(x));
+  },_this);
+  return d;
+ };
+ Linq.ToDictionary$1=function(_this,keySelector,comparer)
+ {
+  var d;
+  d=new Dictionary.New$3(comparer);
+  Seq.iter(function(x)
+  {
+   d.Add(keySelector(x),x);
+  },_this);
+  return d;
+ };
+ Linq.TakeWhile=function(_this,predicate)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    return Seq.enumWhile(function()
+    {
+     return e.MoveNext()&&predicate(e.Current());
+    },Seq.delay(function()
+    {
+     return[e.Current()];
+    }));
+   });
+  });
+ };
+ Linq.TakeWhile$1=function(_this,predicate)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var i;
+    i=0;
+    return Seq.enumWhile(function()
+    {
+     return e.MoveNext()&&predicate(e.Current(),i);
+    },Seq.delay(function()
+    {
+     i=i+1;
+     return[e.Current()];
+    }));
+   });
+  });
+ };
+ Linq.Take=function(_this,count)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var i;
+    i=0;
+    return Seq.enumWhile(function()
+    {
+     return i<count&&e.MoveNext();
+    },Seq.delay(function()
+    {
+     i=i+1;
+     return[e.Current()];
+    }));
+   });
+  });
+ };
+ Linq.Sum=function(_this)
+ {
+  var s;
+  s=Seq.choose(function(x)
+  {
+   return x!=null?{
+    $:1,
+    $0:Nullable.get(x)
+   }:null;
+  },_this);
+  return Seq.isEmpty(s)?null:Seq.sum(s);
+ };
+ Linq.SkipWhile=function(_this,predicate)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var predWasTrue;
+    predWasTrue=true;
+    return Seq.append(Seq.enumWhile(function()
+    {
+     return predWasTrue&&e.MoveNext();
+    },Seq.delay(function()
+    {
+     return!predicate(e.Current())?(predWasTrue=false,[]):[];
+    })),Seq.delay(function()
+    {
+     return!predWasTrue?Seq.append([e.Current()],Seq.delay(function()
+     {
+      return Seq.enumWhile(function()
+      {
+       return e.MoveNext();
+      },Seq.delay(function()
+      {
+       return[e.Current()];
+      }));
+     })):[];
+    }));
+   });
+  });
+ };
+ Linq.SkipWhile$1=function(_this,predicate)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var i,predWasTrue;
+    i=0;
+    predWasTrue=true;
+    return Seq.append(Seq.enumWhile(function()
+    {
+     return predWasTrue&&e.MoveNext();
+    },Seq.delay(function()
+    {
+     return predicate(e.Current(),i)?(i=i+1,[]):(predWasTrue=false,[]);
+    })),Seq.delay(function()
+    {
+     return!predWasTrue?Seq.append([e.Current()],Seq.delay(function()
+     {
+      return Seq.enumWhile(function()
+      {
+       return e.MoveNext();
+      },Seq.delay(function()
+      {
+       return[e.Current()];
+      }));
+     })):[];
+    }));
+   });
+  });
+ };
+ Linq.Skip=function(_this,count)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var i;
+    i=0;
+    return Seq.append(Seq.enumWhile(function()
+    {
+     return i<count&&e.MoveNext();
+    },Seq.delay(function()
+    {
+     i=i+1;
+     return[];
+    })),Seq.delay(function()
+    {
+     return Seq.enumWhile(function()
+     {
+      return e.MoveNext();
+     },Seq.delay(function()
+     {
+      return[e.Current()];
+     }));
+    }));
+   });
+  });
+ };
+ Linq.Single=function(_this,predicate)
+ {
+  var x;
+  function f(state,cur)
+  {
+   return predicate(cur)?state!=null?Operators.InvalidOp("Sequence contains more than one matching element"):{
+    $:1,
+    $0:cur
+   }:state;
+  }
+  x=(((Runtime.Curried3(Seq.fold))(f))(null))(_this);
+  return x!=null&&x.$==1?x.$0:Operators.InvalidOp("Sequence contains no elements");
+ };
+ Linq.SequenceEqual=function(_this,second,comparer)
+ {
+  var e1,$1,e2;
+  e1=Enumerator.Get(_this);
+  try
+  {
+   e2=Enumerator.Get(_this);
+   try
+   {
+    $1=function()
+    {
+     while(true)
+      if(e1.MoveNext())
+      {
+       if(!(e2.MoveNext()&&comparer.CEquals(e1.Current(),e2.Current())))
+        return false;
+      }
+      else
+       return!e2.MoveNext();
+    }();
+   }
+   finally
+   {
+    if("Dispose"in e2)
+     e2.Dispose();
+   }
+   return $1;
+  }
+  finally
+  {
+   if("Dispose"in e1)
+    e1.Dispose();
+  }
+ };
+ Linq.SelectMany=function(_this,selector,collectionSelector)
+ {
+  function m(t,cs)
+  {
+   return Seq.map(function(c)
+   {
+    return collectionSelector(t,c);
+   },cs);
+  }
+  return Seq.collect(function($1)
+  {
+   return m($1[0],$1[1]);
+  },Seq.mapi(function(i,t)
+  {
+   return[t,selector(t,i)];
+  },_this));
+ };
+ Linq.SelectMany$1=function(_this,selector,collectionSelector)
+ {
+  function m(t,cs)
+  {
+   return Seq.map(function(c)
+   {
+    return collectionSelector(t,c);
+   },cs);
+  }
+  return Seq.collect(function($1)
+  {
+   return m($1[0],$1[1]);
+  },Seq.map(function(t)
+  {
+   return[t,selector(t)];
+  },_this));
+ };
+ Linq.SelectMany$2=function(_this,selector)
+ {
+  return Seq.concat(Seq.mapi(function($1,$2)
+  {
+   return selector($2,$1);
+  },_this));
+ };
+ Linq.Select=function(_this,selector)
+ {
+  return Seq.mapi(function($1,$2)
+  {
+   return selector($2,$1);
+  },_this);
+ };
+ Linq.Reverse=function(_this)
+ {
+  return Arrays.ofSeq(_this).slice().reverse();
+ };
+ Linq.Repeat=function(element,count)
+ {
+  return Seq.init(count,function()
+  {
+   return element;
+  });
+ };
+ Linq.Range=function(start,count)
+ {
+  return Seq.init(count,function(y)
+  {
+   return start+y;
+  });
+ };
+ Linq.OrderByDescending=function(_this,keySelector,comparer)
+ {
+  return new OrderedEnumerable.New(_this,new ReverseComparer.New(comparer,keySelector));
+ };
+ Linq.OrderBy=function(_this,keySelector,comparer)
+ {
+  return new OrderedEnumerable.New(_this,new ProjectionComparer.New(comparer,keySelector));
+ };
+ Linq.Min=function(_this)
+ {
+  var s;
+  s=Seq.choose(function(x)
+  {
+   return x!=null?{
+    $:1,
+    $0:Nullable.get(x)
+   }:null;
+  },_this);
+  return Seq.isEmpty(s)?null:Seq.min(s);
+ };
+ Linq.Max=function(_this)
+ {
+  var s;
+  s=Seq.choose(function(x)
+  {
+   return x!=null?{
+    $:1,
+    $0:Nullable.get(x)
+   }:null;
+  },_this);
+  return Seq.isEmpty(s)?null:Seq.max(s);
+ };
+ Linq.Last=function(_this,predicate)
+ {
+  var m;
+  m=Linq.LastPred(_this,predicate);
+  return m==null?Operators.InvalidOp("Sequence contains no matching element"):m.$0;
+ };
+ Linq.LastPred=function(_this,predicate)
+ {
+  function f(acc,elt)
+  {
+   return predicate(elt)?{
+    $:1,
+    $0:elt
+   }:acc;
+  }
+  return(((Runtime.Curried3(Seq.fold))(f))(null))(_this);
+ };
+ Linq.Join=function(outer,inner,outerKeySelector,innerKeySelector,resultSelector,comparer)
+ {
+  return Seq.delay(function()
+  {
+   var t,a,e;
+   t=new Dictionary.New$3(comparer);
+   a=Arrays.ofSeq(Seq.delay(function()
+   {
+    return Seq.collect(function(o)
+    {
+     var k,o$1,pair;
+     k=outerKeySelector(o);
+     return(o$1=null,[t.TryGetValue(k,{
+      get:function()
+      {
+       return o$1;
+      },
+      set:function(v)
+      {
+       o$1=v;
+      }
+     }),o$1])[0]?[]:(pair=[o,[]],(t.Add(k,pair),[pair]));
+    },outer);
+   }));
+   e=Enumerator.Get(inner);
+   try
+   {
+    while(e.MoveNext())
+     (function()
+     {
+      var i,m,o;
+      i=e.Current();
+      m=(o=null,[t.TryGetValue(innerKeySelector(i),{
+       get:function()
+       {
+        return o;
+       },
+       set:function(v)
+       {
+        o=v;
+       }
+      }),o]);
+      return m[0]?void m[1][1].push(i):null;
+     }());
+   }
+   finally
+   {
+    if("Dispose"in e)
+     e.Dispose();
+   }
+   return Arrays.ofSeq(Seq.delay(function()
+   {
+    return Seq.collect(function(m)
+    {
+     var o;
+     o=m[0];
+     return Seq.map(function(i)
+     {
+      return resultSelector(o,i);
+     },m[1]);
+    },a);
+   }));
+  });
+ };
+ Linq.Intersect=function(_this,second,comparer)
+ {
+  var t1;
+  t1=new HashSet.New(_this,comparer);
+  return Seq.delay(function()
+  {
+   var t2;
+   t2=new HashSet.New$1(comparer);
+   return Seq.collect(function(x)
+   {
+    return t1.Contains(x)&&t2.Add(x)?[x]:[];
+   },second);
+  });
+ };
+ Linq.GroupJoin=function(outer,inner,outerKeySelector,innerKeySelector,resultSelector,comparer)
+ {
+  return Seq.delay(function()
+  {
+   var t,a,e;
+   t=new Dictionary.New$3(comparer);
+   a=Arrays.ofSeq(Seq.delay(function()
+   {
+    return Seq.collect(function(o)
+    {
+     var k,o$1,pair;
+     k=outerKeySelector(o);
+     return(o$1=null,[t.TryGetValue(k,{
+      get:function()
+      {
+       return o$1;
+      },
+      set:function(v)
+      {
+       o$1=v;
+      }
+     }),o$1])[0]?[]:(pair=[o,[]],(t.Add(k,pair),[pair]));
+    },outer);
+   }));
+   e=Enumerator.Get(inner);
+   try
+   {
+    while(e.MoveNext())
+     (function()
+     {
+      var i,m,o;
+      i=e.Current();
+      m=(o=null,[t.TryGetValue(innerKeySelector(i),{
+       get:function()
+       {
+        return o;
+       },
+       set:function(v)
+       {
+        o=v;
+       }
+      }),o]);
+      return m[0]?void m[1][1].push(i):null;
+     }());
+   }
+   finally
+   {
+    if("Dispose"in e)
+     e.Dispose();
+   }
+   Arrays.iteri(function(i,t$1)
+   {
+    return Arrays.set(a,i,resultSelector(t$1[0],t$1[1]));
+   },a);
+   return a;
+  });
+ };
+ Linq.GroupBy=function(_this,keySelector,elementSelector,resultSelector,comparer)
+ {
+  return Seq.map(function(g)
+  {
+   return resultSelector(g.System_Linq_IGrouping_2$get_Key(),g);
+  },Linq.GroupBy$1(_this,keySelector,elementSelector,comparer));
+ };
+ Linq.GroupBy$1=function(_this,keySelector,elementSelector,comparer)
+ {
+  return Seq.delay(function()
+  {
+   return Arrays.ofSeq(Seq.delay(function()
+   {
+    var t;
+    t=new Dictionary.New$3(comparer);
+    return Seq.collect(function(x)
+    {
+     var k,e,m,o,a;
+     k=keySelector(x);
+     e=elementSelector(x);
+     m=(o=null,[t.TryGetValue(k,{
+      get:function()
+      {
+       return o;
+      },
+      set:function(v)
+      {
+       o=v;
+      }
+     }),o]);
+     return m[0]?(m[1].push(e),[]):(a=[],(a.push(e),t.set_Item(k,a),[new Grouping.New(k,a)]));
+    },_this);
+   }));
+  });
+ };
+ Linq.Except=function(_this,second,comparer)
+ {
+  var tbl,e;
+  tbl=new HashSet.New(_this,comparer);
+  e=Enumerator.Get(second);
+  try
+  {
+   while(e.MoveNext())
+    tbl.Remove(e.Current());
+  }
+  finally
+  {
+   if("Dispose"in e)
+    e.Dispose();
+  }
+  return tbl;
+ };
+ Linq.Distinct=function(_this,comparer)
+ {
+  return Seq.delay(function()
+  {
+   return Seq.enumUsing(Enumerator.Get(_this),function(e)
+   {
+    var tbl;
+    tbl=new HashSet.New$1(comparer);
+    return Seq.enumWhile(function()
+    {
+     return e.MoveNext();
+    },Seq.delay(function()
+    {
+     return tbl.Add(e.Current())?[e.Current()]:[];
+    }));
+   });
+  });
+ };
+ Linq.DefaultIfEmpty=function(_this,defaultValue)
+ {
+  return Seq.isEmpty(_this)?[defaultValue]:_this;
+ };
+ Linq.Average=function(_this)
+ {
+  var x,e,c,c$1;
+  x=[];
+  e=Enumerator.Get(_this);
+  try
+  {
+   while(e.MoveNext())
+    {
+     if(c=e.Current(),c!=null)
+      {
+       x.push((c$1=e.Current(),Nullable.get(c$1)));
+      }
+    }
+   return Arrays.length(x)===0?null:Seq.sum(x)/Arrays.length(x);
+  }
+  finally
+  {
+   if("Dispose"in e)
+    e.Dispose();
+  }
+ };
 }());

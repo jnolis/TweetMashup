@@ -3,6 +3,7 @@ open WebSharper.UI.Next
 open WebSharper.UI.Next.Client
 open WebSharper.UI.Next.Html
 open WebSharper.UI.Next.Templating
+open WebSharper.UI.Next.Notation
 open WebSharper
 
 type NamesUI =
@@ -32,39 +33,39 @@ type ResultSuccess =
 module Client =
     open WebSharper.UI.Next.Client.Doc
     open System.Security.Policy
-
     let emptyUser = {SmallUser.FullName = ""; SmallUser.Username = ""; SmallUser.Image = ""; FollowerCount = 0; FollowingCount = 0}
     let buildOutputUIWeb (result:ResultValue) =
-        OutputUIWeb.Elt(
-                            User1FullName = [text result.User1.FullName],
-                            User1Username = [text ("@" + result.User1.Username)],
-                            Images = 
-                                    [
-                                        imgAttr [attr.``class`` "img-circle img-left"; attr.width "128"; attr.height "128"; attr.src result.User1.Image] []
-                                        imgAttr [attr.``class`` "img-circle img-right"; attr.width "128"; attr.height "128"; attr.src result.User2.Image] []
-                                    ],
-                            User2FullName = [text result.User2.FullName],
-                            User2Username = [text ("@" + result.User2.Username)],
-                            Text = [text result.Combined.Tweet],
-                            Link = [
+        OutputUIWeb.OutputUIWeb()
+                            .User1FullName([text result.User1.FullName])
+                            .User1Username([text ("@" + result.User1.Username)])
+                            .Images([
+                                        imgAttr [attr.``class`` "img-circle img-left"; attr.width "128"; attr.height "128"; attr.src result.User1.Image] [] :> Doc
+                                        imgAttr [attr.``class`` "img-circle img-right"; attr.width "128"; attr.height "128"; attr.src result.User2.Image] [] :> Doc
+                                    ])
+                            .User2FullName([text result.User2.FullName])
+                            .User2Username([text ("@" + result.User2.Username)])
+                            .Text([text result.Combined.Tweet])
+                            .Link([
                                     aAttr [attr.``class`` "btn btn-lg twitter-button"; 
                                            attr.href ("https://twitter.com/intent/tweet?text=" + result.Combined.TweetWithContext); 
                                            attr.target "_blank"] 
-                                          [iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
-                                            spanAttr [attr.``class`` "label"] [text "Tweet this!"]
-                                            ]
+                                          [
+                                            iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [] 
+                                            spanAttr [attr.``class`` "label"] [text "Tweet this!"] 
+                                            ]  :> Doc
                                    ])
+                            .Elt()
 
     let buildOutputUIMobile (result:ResultValue) =
-        OutputUIMobile.Elt(
-                            Images = 
+        OutputUIMobile.OutputUIMobile()
+                            .Images(
                                     [
-                                        imgAttr [attr.``class`` "img-circle img-left-small"; attr.width "96"; attr.height "96"; attr.src result.User1.Image] []
-                                        imgAttr [attr.``class`` "img-circle img-right-small"; attr.width "96"; attr.height "96"; attr.src result.User2.Image] []
-                                    ],
-                            Usernames = [text (result.User1.FullName + " & " + result.User2.FullName)],
-                            Text = [text result.Combined.Tweet],
-                            Link =
+                                        imgAttr [attr.``class`` "img-circle img-left-small"; attr.width "96"; attr.height "96"; attr.src result.User1.Image] [] :> Doc
+                                        imgAttr [attr.``class`` "img-circle img-right-small"; attr.width "96"; attr.height "96"; attr.src result.User2.Image] [] :> Doc
+                                    ])
+                            .Usernames([text (result.User1.FullName + " & " + result.User2.FullName)])
+                            .Text([text result.Combined.Tweet])
+                            .Link(
                                 [aAttr 
                                     [attr.``class`` "btn btn-lg twitter-button";
                                      attr.href ("https://twitter.com/intent/tweet?text=" + result.Combined.TweetWithContext);
@@ -72,14 +73,16 @@ module Client =
                                     [
                                         iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] []
                                         spanAttr [attr.``class`` "label"] [text "Tweet this!"] 
-                                        ]
+                                        ] :> Doc
                                         ])
+                            .Elt()
+
 
     let buildOutputUIFailureWeb (message: string) = 
-        OutputUIFailureWeb.Elt(Text=[text message])
+        OutputUIFailureWeb.OutputUIFailureWeb().Text([text message]).Elt()
 
     let buildOutputUIFailureMobile (message: string) = 
-        OutputUIFailureMobile.Elt(Text=[text message])
+        OutputUIFailureMobile.OutputUIFailureMobile().Text([text message]).Elt()
 
     let buildOutputUI (isMobile:bool) (r:ResultSuccess) =
         match (isMobile,r) with
@@ -250,16 +253,16 @@ module Client =
                     outputUIData.Value <- Success resultValue
                 } |> Microsoft.FSharp.Control.Async.Start
             if isMobile then
-                PresetUIMobile.Elt(GoButton = [ButtonView (user1.FullName + " & " + user2.FullName) [attr.``class`` "btn go-button col-xs-12"; attr.value "Go!"] (View.Const()) onSubmit])
-                    :> Doc
+                PresetUIMobile.PresetUIMobile().GoButton(
+                    [ButtonView (user1.FullName + " & " + user2.FullName) [attr.``class`` "btn go-button col-xs-12"; attr.value "Go!"] (View.Const()) onSubmit :> Doc] ).Doc()
             else 
-                PresetUIWeb.Elt(Images = [
-                                    imgAttr [attr.src user1.Image; attr.``class`` "img-circle img-left-small"; attr.width "96"; attr.height "96"] []
-                                    imgAttr [attr.src user2.Image; attr.``class`` "img-circle img-right-small"; attr.width "96"; attr.height "96"] []
-                                    ],
-                                GoButton = [ButtonView "Go!" [attr.``class`` "btn go-button btn-lg"; attr.value "Go!"] (View.Const()) onSubmit],
-                                Usernames = [text (user1.FullName + " & " + user2.FullName)])
-                    :> Doc
+                PresetUIWeb.PresetUIWeb().Images([
+                                                    imgAttr [attr.src user1.Image; attr.``class`` "img-circle img-left-small"; attr.width "96"; attr.height "96"] [] :> Doc
+                                                    imgAttr [attr.src user2.Image; attr.``class`` "img-circle img-right-small"; attr.width "96"; attr.height "96"] [] :> Doc
+                                                    ])
+                                .GoButton([ButtonView "Go!" [attr.``class`` "btn go-button btn-lg"; attr.value "Go!"] (View.Const()) onSubmit :> Doc])
+                                .Usernames([text (user1.FullName + " & " + user2.FullName)])
+                                .Doc()
                         
         let outputUIView = View.FromVar outputUIData
         

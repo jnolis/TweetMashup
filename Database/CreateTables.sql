@@ -34,5 +34,17 @@ CREATE TABLE [dbo].[UserTweetInfo](
 
 GO
 
+CREATE TABLE [dbo].[AnalyticsLog](
+	[Id] int IDENTITY(1,1) PRIMARY KEY CLUSTERED,
+	[IsMobile] bit NOT NULL,
+	[User1] [nvarchar](16) NOT NULL,
+	[User2] [nvarchar](16) NOT NULL,
+	[CreationDate] [datetimeoffset] NOT NULL,
+	[Login] [varchar](36) NULL
+)
+
+GO
+
+
 
 

@@ -112,12 +112,14 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\packages\WebSharper.3.6.20.6\build\WebSharper.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WebSharper.3.6.20.6\build\WebSharper.targets'))" />
+    <Error Condition="!Exists('..\packages\WebSharper.UI.Next.4.0.10.92\build\WebSharper.UI.Next.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WebSharper.UI.Next.4.0.10.92\build\WebSharper.UI.Next.targets'))" />
+    <Error Condition="!Exists('..\packages\WebSharper.FSharp.4.0.192.106\build\WebSharper.FSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WebSharper.FSharp.4.0.192.106\build\WebSharper.FSharp.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <Import Project="..\packages\WebSharper.3.6.20.6\build\WebSharper.targets" Condition="Exists('..\packages\WebSharper.3.6.20.6\build\WebSharper.targets')" />
   <ItemGroup>
+    <Compile Include="Shared.fs" />
     <Compile Include="Twitter.fs" />
+    <Compile Include="Analytics.fs" />
     <Compile Include="Remoting.fs" />
     <Compile Include="Client.fs" />
     <Compile Include="Main.fs" />
@@ -126,22 +128,22 @@
     <Compile Include="Global.asax.fs" />
     <Content Include="packages.config" />
     <Content Include="Main.html" />
-	<Content Include="Mobile.html" />
+    <Content Include="Mobile.html" />
     <Content Include="About.html" />
-	<Content Include="PresetUIWeb.html" />
-	<Content Include="PresetUIMobile.html" />
-	<Content Include="OutputUIWeb.html" />
-	<Content Include="OutputUIMobile.html" />
-	<Content Include="OutputUIFailureWeb.html" />
-	<Content Include="OutputUIFailureMobile.html" />
+    <Content Include="PresetUIWeb.html" />
+    <Content Include="PresetUIMobile.html" />
+    <Content Include="OutputUIWeb.html" />
+    <Content Include="OutputUIMobile.html" />
+    <Content Include="OutputUIFailureWeb.html" />
+    <Content Include="OutputUIFailureMobile.html" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\packages\Autofac.4.6.0\lib\net45\Autofac.dll</HintPath>
+      <HintPath>..\packages\Autofac.4.6.1\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="IntelliFactory.Reactive">
-      <HintPath>..\packages\IntelliFactory.Reactive.3.6.10.1\lib\net40\IntelliFactory.Reactive.dll</HintPath>
+    <Reference Include="HtmlAgilityPack">
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="IntelliFactory.Xml">
       <HintPath>..\packages\IntelliFactory.Xml.0.6.64.1\lib\net40\IntelliFactory.Xml.dll</HintPath>
@@ -160,17 +162,30 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Context">
+      <HintPath>..\packages\Nito.AsyncEx.Context.1.1.0\lib\net46\Nito.AsyncEx.Context.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Tasks">
+      <HintPath>..\packages\Nito.AsyncEx.Tasks.1.1.0\lib\net46\Nito.AsyncEx.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Disposables">
+      <HintPath>..\packages\Nito.Disposables.1.0.0\lib\portable45-net45+win8+wp8+wpa81\Nito.Disposables.dll</HintPath>
     </Reference>
     <Reference Include="PCLWebUtility">
       <HintPath>..\packages\PCLWebUtility.1.0.3\lib\portable-net4+sl4+wp7+win8\PCLWebUtility.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions.dll" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http.Extensions">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\net45\System.Net.Http.Extensions.dll</HintPath>
       <Private>True</Private>
@@ -181,7 +196,26 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Reflection.TypeExtensions">
+      <HintPath>..\packages\System.Reflection.TypeExtensions.4.3.0\lib\net46\System.Reflection.TypeExtensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Primitives">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Discovery" />
     <Reference Include="System.Web" />
@@ -192,43 +226,54 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq.dll" />
     <Reference Include="Tweetinvi">
-      <HintPath>..\packages\TweetinviAPI.1.2.0.1\lib\net45\Tweetinvi.dll</HintPath>
+      <HintPath>..\packages\TweetinviAPI.1.3.0\lib\net45\Tweetinvi.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Collections">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Collections.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Collections.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Control">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Control.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Control.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Core">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Core.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Core.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Core.JavaScript">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Core.JavaScript.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Core.JavaScript.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.InterfaceGenerator">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.InterfaceGenerator.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.InterfaceGenerator.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.JavaScript">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.JavaScript.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.JavaScript.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.JQuery">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.JQuery.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.JQuery.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Main">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Main.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Main.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Sitelets">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Sitelets.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Sitelets.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.UI.Next">
-      <HintPath>..\packages\WebSharper.UI.Next.3.6.18.2\lib\net40\WebSharper.UI.Next.dll</HintPath>
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\WebSharper.UI.Next.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Next.CSharp">
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\WebSharper.UI.Next.CSharp.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.UI.Next.Templating">
-      <HintPath>..\packages\WebSharper.UI.Next.3.6.18.2\lib\net40\WebSharper.UI.Next.Templating.dll</HintPath>
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\WebSharper.UI.Next.Templating.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Next.Templating.Common">
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\WebSharper.UI.Next.Templating.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Next.Templating.Runtime">
+      <HintPath>..\packages\WebSharper.UI.Next.4.0.10.92\lib\net40\WebSharper.UI.Next.Templating.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="WebSharper.Web">
-      <HintPath>..\packages\WebSharper.3.6.20.6\lib\net40\WebSharper.Web.dll</HintPath>
+      <HintPath>..\packages\WebSharper.4.0.192.106\lib\net40\WebSharper.Web.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <Import Project="..\packages\WebSharper.UI.Next.4.0.10.92\build\WebSharper.UI.Next.targets" Condition="Exists('..\packages\WebSharper.UI.Next.4.0.10.92\build\WebSharper.UI.Next.targets')" />
+  <Import Project="..\packages\WebSharper.FSharp.4.0.192.106\build\WebSharper.FSharp.targets" Condition="Exists('..\packages\WebSharper.FSharp.4.0.192.106\build\WebSharper.FSharp.targets')" />
 </Project>

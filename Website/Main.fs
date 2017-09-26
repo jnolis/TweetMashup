@@ -6,12 +6,14 @@ open Tweetinvi
 open WebSharper.UI.Next
 open WebSharper.UI.Next.Server
 open WebSharper.UI.Next.Templating
+open WebSharper.UI.Next.Notation
 open WebSharper.UI.Next.Html
 open Twitter
 
 type EndPoint =
     | [<EndPoint "/">] Home
     | [<Query("authorization_id", "oauth_token","oauth_verifier")>] Login of authorization_id : string * oauth_token : string * oauth_verifier : string
+    | [<Query("authorization_id", "denied")>] Denied of authorization_id : string * denied : string
 
 type SiteContent = {
     Tabs: Doc seq
@@ -21,16 +23,16 @@ type SiteContent = {
 
 
 module Templating =
-
+    
     type MainPage = Template<"Main.html">
     type MobilePage = Template<"Mobile.html">
     type AboutPage = Template<"About.html">
     let mobilePage ctx siteContent : Async<Content<EndPoint>> =
-        MobilePage.Doc(Tabs = siteContent.Tabs, TabContents = siteContent.TabContents)
+        MobilePage().Tabs(siteContent.Tabs).TabContents(siteContent.TabContents).Doc()
         |> Content.Page
 
     let desktopPage ctx siteContent : Async<Content<EndPoint>> =
-        MainPage.Doc(Tabs = siteContent.Tabs, TabContents = siteContent.TabContents)
+        MainPage().Tabs(siteContent.Tabs).TabContents(siteContent.TabContents).Doc()
         |> Content.Page
 
 
@@ -53,18 +55,15 @@ module Site =
             |> Seq.map (fun x -> x :> Doc)
 
     let makeTabContents preset tryIt (isAuthenticated: bool)=
-        seq [
-            divAttr [attr.``class`` "tab-content"]
-                    [
-                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if not isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "preset"]
-                            preset
-                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "tryit"]
-                            tryIt
-                    divAttr [Attr.Create "role" "tabpanel"; attr.``class`` "tab-pane"; attr.id "about"]
-                            [(Templating.AboutPage.Doc())]
-                    ]
-               ]
-            |> Seq.map (fun x -> x :> Doc)
+            [
+            divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if not isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "preset"]
+                    preset
+            divAttr [Attr.Create "role" "tabpanel"; attr.``class`` (if isAuthenticated then "tab-pane active" else "tab-pane"); attr.id "tryit"]
+                    tryIt
+            divAttr [Attr.Create "role" "tabpanel"; attr.``class`` "tab-pane"; attr.id "about"]
+                    [Templating.AboutPage().Doc()]
+            ]
+            |> Seq.map (fun x-> x:>Doc)
 
     
     let tabs isMobile isAuthenticated = 
@@ -88,7 +87,7 @@ module Site =
         let (isAuthenticated,loginUrl) = 
             match login with
             | Some l ->
-                let isAuthenticated = Option.isNone (getCredentials l)
+                let isAuthenticated = Option.isSome (getCredentials l)
                 if not isAuthenticated then (false,Some (initAuthentication l)) else (true,None)
             | None -> (false,None)
         let localPairCombos = getPairComboUsers()
@@ -101,17 +100,25 @@ module Site =
 
     [<Website>]
     let Main =
-        Application.MultiPage (fun ctx endpoint ->
-            let context = ctx.Environment.["HttpContext"] :?> System.Web.HttpContextWrapper
+        Application.MultiPage (fun (ctx: Context<EndPoint>) endpoint ->
+            let context = ctx.Environment.Item("HttpContext") :?> System.Web.HttpContextWrapper
+            let triedLogin = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
+            let isMobile = context.Request.Browser.IsMobileDevice
             match endpoint with
             | EndPoint.Home -> 
-                let isMobile = context.Request.Browser.IsMobileDevice
-                match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
+                match triedLogin  with
+                | Some login -> ()
+                | None -> 
+                    let loginFunction (login:string) = ctx.UserSession.LoginUser(login,true)
+                    Async.RunSynchronously (loginFunction (System.Guid.NewGuid().ToString()))
+                homePage isMobile ctx
+            | EndPoint.Denied (authorization_id, denied) -> 
+                match triedLogin with
                 | Some login -> ()
                 | None -> ctx.UserSession.LoginUser (System.Guid.NewGuid().ToString(),true) |> Async.RunSynchronously
                 homePage isMobile ctx
             | EndPoint.Login (authorization_id, oauth_token,oauth_verifier) -> 
-                match ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously with
+                match triedLogin with
                 | Some login ->
                     finishAuthentication oauth_verifier login
                     |> ignore

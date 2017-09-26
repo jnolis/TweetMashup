@@ -2,6 +2,7 @@ namespace Website
 open WebSharper
 open Twitter
 open Tweetinvi
+open Analytics
 
 ///I think this is actually a standard type in F# 4.1, but I started writing this before that existed
 type Reponse<'a,'b> =
@@ -25,7 +26,8 @@ module Server =
 
     [<Rpc>]
     let logMashup (isMobile: bool) (login: string option) (username1:string) (username2:string) =
-        System.Diagnostics.Debug.WriteLine ((isMobile.ToString()) + login.ToString() + " " + username1 + " " + username2)
         async {
-            do! Async.Sleep 1
+            let creationDate = System.DateTimeOffset.Now
+            let data = {IsMobile = isMobile; User1 = filterUsername username1; User2 = filterUsername username2; CreationDate = creationDate; Login = login}
+            do writeAnalytics data
         }
