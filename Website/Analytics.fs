@@ -14,8 +14,8 @@ type AnalyticsData = {
 }
 
 module Analytics =
-    let pushAt = 10
-    let resetAt = 5
+    let pushAt = 100
+    let resetAt = 10
     let mutable isPushAvailable = true
     let analyticsQueue = System.Collections.Concurrent.ConcurrentQueue<AnalyticsData>()
 
