@@ -15,9 +15,10 @@ type AnalyticsData = {
 
 module Analytics =
     let pushAt = 100
-    let resetAt = 10
+    let resetAt = 50
     let mutable isPushAvailable = true
     let analyticsQueue = System.Collections.Concurrent.ConcurrentQueue<AnalyticsData>()
+    let viewQueue = System.Collections.Concurrent.ConcurrentQueue<string*System.DateTimeOffset>()
 
     let analyticsPush =
         async {
@@ -54,10 +55,50 @@ module Analytics =
         }
 
     let writeAnalytics (data: AnalyticsData) = 
-        if analyticsQueue.Count <= resetAt then
-            isPushAvailable <- true
-        analyticsQueue.Enqueue(data)
-        if isPushAvailable && analyticsQueue.Count >= pushAt then
-            isPushAvailable <- false
-            Async.Start analyticsPush
+        async {
+            if analyticsQueue.Count <= resetAt then
+                isPushAvailable <- true
+            analyticsQueue.Enqueue(data)
+            if isPushAvailable && analyticsQueue.Count >= pushAt then
+                isPushAvailable <- false
+                Async.Start analyticsPush
+            return ()
+            }
             
+
+    let viewPush =
+        async {
+            use table = new System.Data.DataTable() 
+            table.Columns.Add(new System.Data.DataColumn("ViewDate",typeof<System.DateTimeOffset>,AllowDBNull=false))
+            table.Columns.Add(new System.Data.DataColumn("Login",typeof<string>,AllowDBNull=false))
+            while not viewQueue.IsEmpty do
+                let mutable tempItem = ("",System.DateTimeOffset.MinValue)
+                if viewQueue.TryDequeue(&tempItem) then
+                    let row = table.NewRow()
+                    row.["Login"] <- fst tempItem
+                    row.["ViewDate"] <- snd tempItem
+                    table.Rows.Add(row)
+
+            use connection = createSqlConnection()
+            let bulkCopy = new System.Data.SqlClient.SqlBulkCopy(connection,BulkCopyTimeout = 0, DestinationTableName = "ViewLog")
+
+            seq {for c in table.Columns -> c.ColumnName}
+            |> Seq.iter (fun cn -> bulkCopy.ColumnMappings.Add(cn,cn) |> ignore)
+            
+            connection.Open()
+            bulkCopy.WriteToServer(table)
+            connection.Close()
+            connection.Dispose()
+            return ()
+        }
+
+    let writeView (login: string) (viewDate:System.DateTimeOffset) = 
+        async {
+            if viewQueue.Count <= resetAt then
+                isPushAvailable <- true
+            viewQueue.Enqueue((login,viewDate))
+            if isPushAvailable && viewQueue.Count >= pushAt then
+                isPushAvailable <- false
+                Async.Start viewPush
+            return ()
+            }

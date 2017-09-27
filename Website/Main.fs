@@ -84,6 +84,11 @@ module Site =
 
     let homePage (isMobile:bool) (ctx:Context<EndPoint>) =
         let login = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
+        match login with
+            | Some l ->
+                Analytics.writeView l System.DateTimeOffset.Now 
+                |> Async.Start
+            | None -> ()
         let (isAuthenticated,loginUrl) = 
             match login with
             | Some l ->

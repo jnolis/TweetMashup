@@ -29,5 +29,5 @@ module Server =
         async {
             let creationDate = System.DateTimeOffset.Now
             let data = {IsMobile = isMobile; User1 = filterUsername username1; User2 = filterUsername username2; CreationDate = creationDate; Login = login}
-            do writeAnalytics data
+            do! writeAnalytics data
         }

@@ -45,6 +45,14 @@ CREATE TABLE [dbo].[AnalyticsLog](
 
 GO
 
+CREATE TABLE [dbo].[ViewLog](
+	[Id] int IDENTITY(1,1) PRIMARY KEY CLUSTERED,
+	[ViewDate] [datetimeoffset] NOT NULL,
+	[Login] [varchar](36) NULL
+)
+
+GO
+
 
 
 
