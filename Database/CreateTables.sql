@@ -53,6 +53,16 @@ CREATE TABLE [dbo].[ViewLog](
 
 GO
 
+CREATE TABLE [dbo].[PresetPairs](
+	[User1] [nvarchar](16) NOT NULL,
+	[User2] [nvarchar](16) NOT NULL
+)
+GO
 
-
+INSERT INTO PresetPairs (User1,User2) Values ('GuyInYourMFA','dril')
+INSERT INTO PresetPairs (User1,User2) Values ('parishilton','potus')
+INSERT INTO PresetPairs (User1,User2) Values ('dog_rates','realdonaldtrump')
+INSERT INTO PresetPairs (User1,User2) Values ('BBCBreaking','elmo')
+INSERT INTO PresetPairs (User1,User2) Values ('officialjaden','BuzzFeed')
+INSERT INTO PresetPairs (User1,User2) Values ('ch000ch','skyetetra')
 

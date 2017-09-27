@@ -90,10 +90,14 @@ type CredentialSet =
 module Twitter =
     let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","").Substring(0,min 15 username.Length)
     let pairCombos =
-        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
-        |> System.IO.File.ReadAllText
-        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
-        |> Seq.cache
+        use connection = createSqlConnection()
+        let pullPairs = new SqlCommand("Select User1, User2 FROM PresetPairs", connection)
+        do connection.Open()
+        use reader = pullPairs.ExecuteReader()
+        let pairs = System.Collections.Generic.List<string*string>()
+        while reader.Read() do
+            pairs.Add(reader.GetString(0),reader.GetString(1))
+        Seq.cache pairs
 
     let allowedNoAuth = 
         Seq.append (Seq.map fst pairCombos) (Seq.map snd pairCombos)
