@@ -40,7 +40,8 @@ CREATE TABLE [dbo].[AnalyticsLog](
 	[User1] [nvarchar](16) NOT NULL,
 	[User2] [nvarchar](16) NOT NULL,
 	[CreationDate] [datetimeoffset] NOT NULL,
-	[Login] [varchar](36) NULL
+	[Login] [varchar](36) NULL,
+	[Tweet] [nvarchar](max) NULL
 )
 
 GO
