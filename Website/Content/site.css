@@ -304,6 +304,10 @@ float: right!important;
 	margin-top:10px;
 }
 
+.preset-container-mobile {
+	margin-top:0px;
+}
+
 .output-ui {
 	margin-bottom:20px;
 }

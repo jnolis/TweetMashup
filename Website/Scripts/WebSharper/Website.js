@@ -29,38 +29,54 @@
    var t,t$1;
    function onSubmit()
    {
-    var b,b$1;
+    var b;
     Concurrency.Start((b=null,Concurrency.Delay(function()
     {
-     return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:-681248531",[isMobile,loginOption,user1.Username,user2.Username]),function()
+     var tempResult,resultValue;
+     tempResult={
+      $:1,
+      $0:""
+     };
+     return Concurrency.Combine(tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[null,user1.Username,user2.Username]),function(a)
      {
-      return Concurrency.Return(null);
-     });
-    })),null);
-    Concurrency.Start((b$1=null,Concurrency.Delay(function()
-    {
-     return tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[null,user1.Username,user2.Username]),function(a)
-     {
-      var d;
-      return a.$==1?(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
+      var d,d$1,resultValue$1;
+      return a.$==1?(d=a.$0,(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
        $:1,
-       $0:a.$0
-      }),Concurrency.Zero()):(d=a.$0,(tweetCache=d.Combined,tweetCacheUser1=d.User1,tweetCacheUser2=d.User2,tweetCacheChoice=0,tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
-       $:0,
-       $0:{
-        Combined:Arrays.get(tweetCache,tweetCacheChoice),
-        User1:user1,
-        User2:user2
-       }
-      }),Concurrency.Zero()));
-     }):(tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
-      $:0,
-      $0:{
+       $0:d
+      }),tempResult={
+       $:1,
+       $0:d
+      },Concurrency.Zero())):(d$1=a.$0,(tweetCache=d$1.Combined,tweetCacheUser1=d$1.User1,tweetCacheUser2=d$1.User2,tweetCacheChoice=0,resultValue$1={
        Combined:Arrays.get(tweetCache,tweetCacheChoice),
-       User1:tweetCacheUser1,
-       User2:tweetCacheUser2
-      }
-     }),Concurrency.Zero());
+       User1:user1,
+       User2:user2
+      },tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
+       $:0,
+       $0:resultValue$1
+      }),tempResult={
+       $:0,
+       $0:resultValue$1
+      },Concurrency.Zero()));
+     }):(resultValue={
+      Combined:Arrays.get(tweetCache,tweetCacheChoice),
+      User1:tweetCacheUser1,
+      User2:tweetCacheUser2
+     },(tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
+      $:0,
+      $0:resultValue
+     }),tempResult={
+      $:0,
+      $0:resultValue
+     },Concurrency.Zero())),Concurrency.Delay(function()
+     {
+      return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,loginOption,user1.Username,user2.Username,tempResult.$==0?{
+       $:1,
+       $0:tempResult.$0.Combined.Tweet
+      }:null]),function()
+      {
+       return Concurrency.Return(null);
+      });
+     }));
     })),null);
    }
    return isMobile?Website_Templates.presetuimobile(new List.T({
@@ -117,41 +133,59 @@
   var $1,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,inputUI;
   function onSubmit()
   {
-   var b,b$1;
+   var b;
    Concurrency.Start((b=null,Concurrency.Delay(function()
    {
-    return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:-681248531",[isMobile,loginOption,user1.c,user2.c]),function()
-    {
-     return Concurrency.Return(null);
-    });
-   })),null);
-   Concurrency.Start((b$1=null,Concurrency.Delay(function()
-   {
-    return tweetCacheChoice>=tweetCache.length||user1.c!==tweetCacheUser1.Username||user2.c!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
+    var tempResult,user1StoredValue,user2StoredValue,resultValue;
+    tempResult={
+     $:1,
+     $0:""
+    };
+    user1StoredValue=user1.c;
+    user2StoredValue=user2.c;
+    return Concurrency.Combine(tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
      $:1,
      $0:$1
     },user1.c,user2.c]),function(a)
     {
-     var d;
-     return a.$==1?(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
+     var d,d$1,resultValue$1;
+     return a.$==1?(d=a.$0,tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
       $:1,
-      $0:a.$0
-     }),Concurrency.Zero()):(d=a.$0,tweetCache=d.Combined,tweetCacheUser1=d.User1,tweetCacheUser2=d.User2,tweetCacheChoice=0,tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
-      $:0,
-      $0:{
-       Combined:Arrays.get(tweetCache,tweetCacheChoice),
-       User1:d.User1,
-       User2:d.User2
-      }
-     }),Concurrency.Zero());
-    }):(tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
-     $:0,
-     $0:{
+      $0:d
+     }),tempResult={
+      $:1,
+      $0:d
+     },Concurrency.Zero()):(d$1=a.$0,tweetCache=d$1.Combined,tweetCacheUser1=d$1.User1,tweetCacheUser2=d$1.User2,tweetCacheChoice=0,resultValue$1={
       Combined:Arrays.get(tweetCache,tweetCacheChoice),
-      User1:tweetCacheUser1,
-      User2:tweetCacheUser2
-     }
-    }),Concurrency.Zero());
+      User1:d$1.User1,
+      User2:d$1.User2
+     },tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
+      $:0,
+      $0:resultValue$1
+     }),tempResult={
+      $:0,
+      $0:resultValue$1
+     },Concurrency.Zero());
+    }):(resultValue={
+     Combined:Arrays.get(tweetCache,tweetCacheChoice),
+     User1:tweetCacheUser1,
+     User2:tweetCacheUser2
+    },tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
+     $:0,
+     $0:resultValue
+    }),tempResult={
+     $:0,
+     $0:resultValue
+    },Concurrency.Zero()),Concurrency.Delay(function()
+    {
+     return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,loginOption,user1StoredValue,user2StoredValue,tempResult.$==0?{
+      $:1,
+      $0:tempResult.$0.Combined.Tweet
+     }:null]),function()
+     {
+      return Concurrency.Return(null);
+     });
+    }));
    })),null);
   }
   switch(loginOption!=null&&loginOption.$==1?loginUrlOption!=null&&loginUrlOption.$==1?($1=loginUrlOption.$0,1):($1=loginOption.$0,2):loginUrlOption!=null&&loginUrlOption.$==1?($1=loginUrlOption.$0,1):0)
@@ -192,7 +226,7 @@
   {
    return Doc.Element("div",[AttrProxy.Create("class",!isMobile$1?"form-group":"form-group form-group-mobile")],[Doc.Element("label",[AttrProxy.Create("class","sr-only"),AttrProxy.Create("for","username"+Global.String(i))],[Doc.TextNode("Username "+Global.String(i))]),Doc.Element("div",[AttrProxy.Create("class",!isMobile$1?"input-group input-group-lg col-md-10":"input-group col-xs-12")],[Doc.Element("span",[AttrProxy.Create("class","input-group-addon"),AttrProxy.Create("id","username"+Global.String(i))],[Doc.TextNode("@")]),Doc.Element("input",[AttrProxy.Create("value",""),AttrProxy.Create("type","text"),AttrProxy.Create("class","form-control"),AttrProxy.Create("disabled",""),AttrProxy.Create("placeholder","username"),AttrProxy.Create("aria-describedby","username"+Global.String(i))],[])])]);
   }
-  return Doc.Element("div",[AttrProxy.Create("class","form form-inline")],[dummyUserSelectionUI(isMobile,1),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.Element("h1",[],[Doc.TextNode("&")])]),dummyUserSelectionUI(isMobile,2),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.Element("a",[AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href",loginUrl)],[Doc.Element("i",[AttrProxy.Create("class","fa fa-twitter wow bounceIn")],[]),Doc.Element("span",[AttrProxy.Create("class","label")],[Doc.TextNode("Authorize to  make your own!")])])])]);
+  return isMobile?Doc.Element("div",[AttrProxy.Create("class","form form-inline")],[dummyUserSelectionUI(isMobile,1),dummyUserSelectionUI(isMobile,2),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.Element("a",[AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href",loginUrl)],[Doc.Element("i",[AttrProxy.Create("class","fa fa-twitter wow bounceIn")],[]),Doc.Element("span",[AttrProxy.Create("class","label")],[Doc.TextNode("Authorize to  make your own!")])])])]):Doc.Element("div",[AttrProxy.Create("class","form form-horizontal form-mobile")],[dummyUserSelectionUI(isMobile,1),dummyUserSelectionUI(isMobile,2),Doc.Element("div",[AttrProxy.Create("class","form-group-mobile")],[Doc.Element("a",[AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href",loginUrl)],[Doc.Element("i",[AttrProxy.Create("class","fa fa-twitter wow bounceIn")],[]),Doc.Element("span",[AttrProxy.Create("class","label")],[Doc.TextNode("Authorize to  make your own!")])])])]);
  };
  Client.buildOutputUI=function(isMobile,r)
  {
@@ -361,13 +395,13 @@
    $0:"presetuimobile"
   },function()
   {
-   return $.parseHTML("<div class=\"form form-horizontal form-mobile preset-container\">\r\n\u0009<div class=\"form-group form-group-mobile\">\r\n\u0009\u0009<div class=\"input-group col-xs-12\" ws-hole=\"GoButton\">\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n</div>");
+   return $.parseHTML("<div class=\"form form-horizontal form-mobile preset-container-mobile\">\r\n\u0009<div class=\"form-group form-group-mobile\">\r\n\u0009\u0009<div class=\"input-group col-xs-12\" ws-hole=\"GoButton\">\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n</div>");
   },h):Doc.PrepareTemplate("presetuimobile",{
    $:1,
    $0:"presetuimobile"
   },function()
   {
-   return $.parseHTML("<div class=\"form form-horizontal form-mobile preset-container\">\r\n\u0009<div class=\"form-group form-group-mobile\">\r\n\u0009\u0009<div class=\"input-group col-xs-12\" ws-hole=\"GoButton\">\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n</div>");
+   return $.parseHTML("<div class=\"form form-horizontal form-mobile preset-container-mobile\">\r\n\u0009<div class=\"form-group form-group-mobile\">\r\n\u0009\u0009<div class=\"input-group col-xs-12\" ws-hole=\"GoButton\">\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n</div>");
   });
  };
  Website_Templates.outputuifailuremobile=function(h)

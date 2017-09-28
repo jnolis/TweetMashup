@@ -11,6 +11,7 @@ type AnalyticsData = {
     User2: string
     CreationDate: System.DateTimeOffset
     Login: string option
+    Tweet: string option
 }
 
 module Analytics =
@@ -28,8 +29,9 @@ module Analytics =
             table.Columns.Add(new System.Data.DataColumn("User2",typeof<string>,AllowDBNull=false))
             table.Columns.Add(new System.Data.DataColumn("CreationDate",typeof<System.DateTimeOffset>,AllowDBNull=false))
             table.Columns.Add(new System.Data.DataColumn("Login",typeof<string>,AllowDBNull=true))
+            table.Columns.Add(new System.Data.DataColumn("Tweet",typeof<string>,AllowDBNull=true))
             while not analyticsQueue.IsEmpty do
-                let mutable tempItem = {IsMobile = false; User1 = ""; User2 = ""; CreationDate = System.DateTimeOffset.MinValue; Login = None}
+                let mutable tempItem = {IsMobile = false; User1 = ""; User2 = ""; CreationDate = System.DateTimeOffset.MinValue; Login = None; Tweet = None}
                 if analyticsQueue.TryDequeue(&tempItem) then
                     let row = table.NewRow()
                     row.["IsMobile"] <- tempItem.IsMobile
@@ -39,6 +41,9 @@ module Analytics =
                     match tempItem.Login with
                     | Some l -> row.["Login"] <- l
                     | None -> row.["Login"] <- System.DBNull.Value
+                    match tempItem.Tweet with
+                    | Some l -> row.["Tweet"] <- l
+                    | None -> row.["Tweet"] <- System.DBNull.Value
                     table.Rows.Add(row)
 
             use connection = createSqlConnection()

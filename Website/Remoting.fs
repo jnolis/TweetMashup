@@ -25,9 +25,9 @@ module Server =
         }
 
     [<Rpc>]
-    let logMashup (isMobile: bool) (login: string option) (username1:string) (username2:string) =
+    let logMashup (isMobile: bool) (login: string option) (username1:string) (username2:string) (tweet: string option)=
         async {
             let creationDate = System.DateTimeOffset.Now
-            let data = {IsMobile = isMobile; User1 = filterUsername username1; User2 = filterUsername username2; CreationDate = creationDate; Login = login}
+            let data = {IsMobile = isMobile; User1 = filterUsername username1; User2 = filterUsername username2; CreationDate = creationDate; Login = login; Tweet = tweet}
             do! writeAnalytics data
         }

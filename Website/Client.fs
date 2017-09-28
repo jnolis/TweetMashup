@@ -110,17 +110,29 @@ module Client =
                         []
                     ]
                 ]
-        divAttr [attr.``class`` "form form-inline"] [       
-            (dummyUserSelectionUI isMobile 1)
-            divAttr [attr.``class`` "form-group"] [h1 [text "&"] ] 
-            (dummyUserSelectionUI isMobile 2)
-            divAttr [attr.``class`` "form-group"] [
-                aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
-                    iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
-                                    spanAttr [attr.``class`` "label"] [text "Authorize to  make your own!"]
-                                    ]
-                    ]
-            ]
+        if isMobile then
+            divAttr [attr.``class`` "form form-inline"] [       
+                (dummyUserSelectionUI isMobile 1)
+                (dummyUserSelectionUI isMobile 2)
+                divAttr [attr.``class`` "form-group"] [
+                    aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
+                        iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
+                                        spanAttr [attr.``class`` "label"] [text "Authorize to  make your own!"]
+                                        ]
+                        ]
+                ]
+        else
+            divAttr [attr.``class`` "form form-horizontal form-mobile"] [       
+                (dummyUserSelectionUI isMobile 1)
+                (dummyUserSelectionUI isMobile 2)
+                divAttr [attr.``class`` "form-group-mobile"] [
+                    aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
+                        iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
+                                        spanAttr [attr.``class`` "label"] [text "Authorize to  make your own!"]
+                                        ]
+                        ]
+                ]
+
     let userSelectionUI (isMobile: bool) (i:int) (x: Var<string>) = 
 
         divAttr [attr.``class`` "form-group form-group-mobile"] 
@@ -158,13 +170,13 @@ module Client =
             let user2Input = userSelectionUI isMobile 1 user2
             let onSubmit () = 
                 async {
-                    do! Server.logMashup isMobile loginOption user1.Value user2.Value
-                }
-                |> Microsoft.FSharp.Control.Async.Start
-                async {
+                let mutable tempResult = Failure ""
+                let user1StoredValue = user1.Value
+                let user2StoredValue = user2.Value
+                
                 if tweetCacheChoice >= Array.length tweetCache || 
-                    user1.Value <> tweetCacheUser1.Username || 
-                    user2.Value <> tweetCacheUser2.Username then
+                    user1StoredValue <> tweetCacheUser1.Username || 
+                    user2StoredValue <> tweetCacheUser2.Username then
                     let! mashup =  
                         Server.makeMashup (Some login) user1.Value user2.Value
                         
@@ -177,15 +189,19 @@ module Client =
                         let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = d.User1; User2 = d.User2}
                         tweetCacheChoice <- tweetCacheChoice + 1
                         outputUIData.Value <- Success resultValue
+                        tempResult <- Success resultValue
                     | Reponse.Failure d ->
                         tweetCache <- Array.empty<Combined>
                         tweetCacheUser1 <- emptyUser
                         tweetCacheUser2 <- emptyUser
                         outputUIData.Value <- Failure d
+                        tempResult <- Failure d
                 else
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
+                    tempResult <- Success resultValue
+                do! Server.logMashup isMobile loginOption user1StoredValue user2StoredValue (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 }
                 |> Microsoft.FSharp.Control.Async.Start
             let inputUI =
@@ -227,10 +243,7 @@ module Client =
         let pairUI ((user1,user2) : SmallUser*SmallUser) =
             let onSubmit () = 
                 async {
-                    do! Server.logMashup isMobile loginOption user1.Username user2.Username
-                }
-                |> Microsoft.FSharp.Control.Async.Start
-                async {
+                let mutable tempResult = Failure ""
                 if tweetCacheChoice >= Array.length tweetCache || user1.Username <> tweetCacheUser1.Username || user2.Username <> tweetCacheUser2.Username then
                     let! mashup =  Server.makeMashup None user1.Username user2.Username
                     match mashup with
@@ -242,15 +255,19 @@ module Client =
                         let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = user1; User2 = user2}
                         tweetCacheChoice <- tweetCacheChoice + 1
                         outputUIData.Value <- Success resultValue
+                        tempResult <- Success resultValue
                     | Reponse.Failure d ->
                         tweetCache <- Array.empty<Combined>
                         tweetCacheUser1 <- emptyUser
                         tweetCacheUser2 <- emptyUser
                         outputUIData.Value <- Failure d
+                        tempResult <- Failure d
                 else
                     let resultValue = {ResultValue.Combined = (Array.item tweetCacheChoice tweetCache); User1 = tweetCacheUser1; User2 = tweetCacheUser2}
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
+                    tempResult <- Success resultValue
+                do! Server.logMashup isMobile loginOption user1.Username user2.Username (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 } |> Microsoft.FSharp.Control.Async.Start
             if isMobile then
                 PresetUIMobile.PresetUIMobile().GoButton(

@@ -96,7 +96,9 @@ module Site =
                 if not isAuthenticated then (false,Some (initAuthentication l)) else (true,None)
             | None -> (false,None)
         let localPairCombos = getPairComboUsers()
-        Templating.desktopPage ctx {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile login loginUrl}
+        {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile login loginUrl}
+        |> (if isMobile then Templating.mobilePage else Templating.desktopPage) ctx
+        
 
 
         
