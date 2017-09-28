@@ -16,7 +16,7 @@ module Server =
         async {
             let result =
                 try
-                match mashup login 10 username1 username2 with
+                match mashup login 25 username1 username2 with
                 | Some m -> Success m
                 | None -> Failure "Mashup didn't work :("
                 with
