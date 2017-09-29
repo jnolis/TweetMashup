@@ -110,14 +110,15 @@ module Client =
                         []
                     ]
                 ]
-        if isMobile then
+        if not isMobile then
             divAttr [attr.``class`` "form form-inline"] [       
                 (dummyUserSelectionUI isMobile 1)
+                divAttr [Attr.Class "form-group"] [h1 [text "&"] ]
                 (dummyUserSelectionUI isMobile 2)
                 divAttr [attr.``class`` "form-group"] [
                     aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
                         iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
-                                        spanAttr [attr.``class`` "label"] [text "Authorize to  make your own!"]
+                                        spanAttr [attr.``class`` "label"] [text "Authorize to make your own!"]
                                         ]
                         ]
                 ]
@@ -128,7 +129,7 @@ module Client =
                 divAttr [attr.``class`` "form-group-mobile"] [
                     aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
                         iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
-                                        spanAttr [attr.``class`` "label"] [text "Authorize to  make your own!"]
+                                        spanAttr [attr.``class`` "label"] [text "Authorize to make your own!"]
                                         ]
                         ]
                 ]
