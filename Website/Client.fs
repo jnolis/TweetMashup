@@ -123,15 +123,17 @@ module Client =
                         ]
                 ]
         else
-            divAttr [attr.``class`` "form form-horizontal form-mobile"] [       
-                (dummyUserSelectionUI isMobile 1)
-                (dummyUserSelectionUI isMobile 2)
-                divAttr [attr.``class`` "form-group-mobile"] [
-                    aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
-                        iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
-                                        spanAttr [attr.``class`` "label"] [text "Authorize to make your own!"]
-                                        ]
-                        ]
+            divAttr [attr.``class`` (if isMobile then "container tweet-mobile-ui preset-container" else "container preset-container")] [
+                divAttr [attr.``class`` (if isMobile then "form form-horizontal form-mobile" else "form form-horizontal")] [       
+                    (dummyUserSelectionUI isMobile 1)
+                    (dummyUserSelectionUI isMobile 2)
+                    divAttr [attr.``class`` (if isMobile then "form-group form-group-mobile" else "form-group")] [
+                        aAttr [attr.``class`` "btn btn-lg twitter-button"; attr.href loginUrl] [
+                            iAttr [attr.``class`` "fa fa-twitter wow bounceIn"] [];
+                                            spanAttr [attr.``class`` "label"] [text "Authorize to make your own!"]
+                                            ]
+                            ]
+                    ]
                 ]
 
     let userSelectionUI (isMobile: bool) (i:int) (x: Var<string>) = 
