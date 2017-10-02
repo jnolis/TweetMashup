@@ -37,13 +37,11 @@ module Client =
     let buildOutputUIWeb (result:ResultValue) =
         OutputUIWeb.OutputUIWeb()
                             .User1FullName([text result.User1.FullName])
-                            .User1Username([text ("@" + result.User1.Username)])
                             .Images([
                                         imgAttr [attr.``class`` "img-circle img-left"; attr.width "128"; attr.height "128"; attr.src result.User1.Image] [] :> Doc
                                         imgAttr [attr.``class`` "img-circle img-right"; attr.width "128"; attr.height "128"; attr.src result.User2.Image] [] :> Doc
                                     ])
                             .User2FullName([text result.User2.FullName])
-                            .User2Username([text ("@" + result.User2.Username)])
                             .Text([text result.Combined.Tweet])
                             .Link([
                                     aAttr [attr.``class`` "btn btn-lg twitter-button"; 
