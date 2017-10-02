@@ -65,14 +65,13 @@ module Site =
             ]
             |> Seq.map (fun x-> x:>Doc)
 
-    
     let tabs isMobile isAuthenticated = 
         if isMobile then
             makeTabs "Popular combos" "Try your own"  "About" isAuthenticated
         else
             makeTabs "Pick from popular combinations" "Or make your own!"  "About Tweet mashup!" isAuthenticated
 
-    let tabContents (isMobile: bool) (login: string option) (loginUrl: string option)  = 
+    let tabContents (isMobile: bool) (login: string) (loginUrl: string option)  = 
         let localPairCombos = getPairComboUsers()
         let isAuthenticated = Option.isNone loginUrl
         makeTabContents 
@@ -80,55 +79,38 @@ module Site =
             [client <@ Client.tryIt isMobile login loginUrl @>] 
             isAuthenticated
 
-    
+    let homePage (isMobile:bool) (login:string) (ctx:Context<EndPoint>) =
+        Analytics.writeView login System.DateTimeOffset.Now 
+        |> Async.Start
 
-    let homePage (isMobile:bool) (ctx:Context<EndPoint>) =
-        let login = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
-        match login with
-            | Some l ->
-                Analytics.writeView l System.DateTimeOffset.Now 
-                |> Async.Start
-            | None -> ()
         let (isAuthenticated,loginUrl) = 
-            match login with
-            | Some l ->
-                let isAuthenticated = Option.isSome (getCredentials l)
-                if not isAuthenticated then (false,Some (initAuthentication l)) else (true,None)
-            | None -> (false,None)
+            let isAuthenticated = Option.isSome (getCredentials login)
+            if not isAuthenticated then (false,Some (initAuthentication login)) else (true,None)
         let localPairCombos = getPairComboUsers()
         {Tabs = tabs isMobile isAuthenticated; TabContents = tabContents isMobile login loginUrl}
         |> (if isMobile then Templating.mobilePage else Templating.desktopPage) ctx
-        
-
-
-        
-        
-
 
     [<Website>]
     let Main =
         Application.MultiPage (fun (ctx: Context<EndPoint>) endpoint ->
             let context = ctx.Environment.Item("HttpContext") :?> System.Web.HttpContextWrapper
-            let triedLogin = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
+            let (isNewLogin,login) = 
+                let triedLogin = ctx.UserSession.GetLoggedInUser() |> Async.RunSynchronously
+                match triedLogin with
+                | Some login -> (false,login)
+                | None -> 
+                    let login = System.Guid.NewGuid().ToString()
+                    Async.RunSynchronously (ctx.UserSession.LoginUser(login,true))
+                    (true,login)
             let isMobile = context.Request.Browser.IsMobileDevice
             match endpoint with
             | EndPoint.Home -> 
-                match triedLogin  with
-                | Some login -> ()
-                | None -> 
-                    let loginFunction (login:string) = ctx.UserSession.LoginUser(login,true)
-                    Async.RunSynchronously (loginFunction (System.Guid.NewGuid().ToString()))
-                homePage isMobile ctx
+                homePage isMobile login ctx
             | EndPoint.Denied (authorization_id, denied) -> 
-                match triedLogin with
-                | Some login -> ()
-                | None -> ctx.UserSession.LoginUser (System.Guid.NewGuid().ToString(),true) |> Async.RunSynchronously
-                homePage isMobile ctx
+                homePage isMobile login ctx
             | EndPoint.Login (authorization_id, oauth_token,oauth_verifier) -> 
-                match triedLogin with
-                | Some login ->
+                if not isNewLogin then 
                     finishAuthentication oauth_verifier login
                     |> ignore
-                | None -> ()
                 Content.RedirectPermanentToUrl (ctx.Link EndPoint.Home)
         )

@@ -21,7 +21,7 @@
  View=Next&&Next.View;
  AttrModule=Next&&Next.AttrModule;
  $=Global.jQuery;
- Client.preset=function(isMobile,loginOption,userPairs)
+ Client.preset=function(isMobile,login,userPairs)
  {
   var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData;
   function pairUI(user1,user2)
@@ -69,7 +69,10 @@
       $0:resultValue
      },Concurrency.Zero())),Concurrency.Delay(function()
      {
-      return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,loginOption,user1.Username,user2.Username,tempResult.$==0?{
+      return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,{
+       $:1,
+       $0:login
+      },user1.Username,user2.Username,tempResult.$==0?{
        $:1,
        $0:tempResult.$0.Combined.Tweet
       }:null]),function()
@@ -128,9 +131,9 @@
    return Client.buildOutputUI(isMobile,r);
   },outputUIData.v)]);
  };
- Client.tryIt=function(isMobile,loginOption,loginUrlOption)
+ Client.tryIt=function(isMobile,login,loginUrlOption)
  {
-  var $1,tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,inputUI;
+  var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData,user1,user2,inputUI;
   function onSubmit()
   {
    var b;
@@ -145,17 +148,17 @@
     user2StoredValue=user2.c;
     return Concurrency.Combine(tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
      $:1,
-     $0:$1
+     $0:login
     },user1.c,user2.c]),function(a)
     {
      var d,d$1,resultValue$1;
-     return a.$==1?(d=a.$0,tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
+     return a.$==1?(d=a.$0,(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
       $:1,
       $0:d
      }),tempResult={
       $:1,
       $0:d
-     },Concurrency.Zero()):(d$1=a.$0,tweetCache=d$1.Combined,tweetCacheUser1=d$1.User1,tweetCacheUser2=d$1.User2,tweetCacheChoice=0,resultValue$1={
+     },Concurrency.Zero())):(d$1=a.$0,(tweetCache=d$1.Combined,tweetCacheUser1=d$1.User1,tweetCacheUser2=d$1.User2,tweetCacheChoice=0,resultValue$1={
       Combined:Arrays.get(tweetCache,tweetCacheChoice),
       User1:d$1.User1,
       User2:d$1.User2
@@ -165,20 +168,23 @@
      }),tempResult={
       $:0,
       $0:resultValue$1
-     },Concurrency.Zero());
+     },Concurrency.Zero()));
     }):(resultValue={
      Combined:Arrays.get(tweetCache,tweetCacheChoice),
      User1:tweetCacheUser1,
      User2:tweetCacheUser2
-    },tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
+    },(tweetCacheChoice=tweetCacheChoice+1,Var.Set(outputUIData,{
      $:0,
      $0:resultValue
     }),tempResult={
      $:0,
      $0:resultValue
-    },Concurrency.Zero()),Concurrency.Delay(function()
+    },Concurrency.Zero())),Concurrency.Delay(function()
     {
-     return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,loginOption,user1StoredValue,user2StoredValue,tempResult.$==0?{
+     return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,{
+      $:1,
+      $0:login
+     },user1StoredValue,user2StoredValue,tempResult.$==0?{
       $:1,
       $0:tempResult.$0.Combined.Tweet
      }:null]),function()
@@ -188,33 +194,12 @@
     }));
    })),null);
   }
-  switch(loginOption!=null&&loginOption.$==1?loginUrlOption!=null&&loginUrlOption.$==1?($1=loginUrlOption.$0,1):($1=loginOption.$0,2):loginUrlOption!=null&&loginUrlOption.$==1?($1=loginUrlOption.$0,1):0)
+  return loginUrlOption==null?(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),tweetCacheChoice=0,outputUIData=Var.Create$1({
+   $:2
+  }),user1=Var.Create$1(""),user2=Var.Create$1(""),Client.userSelectionUI(isMobile,1,user1),Client.userSelectionUI(isMobile,1,user2),inputUI=!isMobile?Doc.Element("div",[AttrProxy.Create("class","form form-inline")],[Client.userSelectionUI(false,1,user1),Doc.Element("div",[AttrModule.Class("form-group")],[Doc.Element("h1",[],[Doc.TextNode("&")])]),Client.userSelectionUI(false,2,user2),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.Element("div",[AttrProxy.Create("class","input-group col-md-10")],[Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)])])]):Doc.Element("div",[AttrProxy.Create("class","form form-horizontal form-mobile")],[Client.userSelectionUI(true,1,user1),Client.userSelectionUI(true,2,user2),Doc.Element("div",[AttrProxy.Create("class","form-group form-group-mobile")],[Doc.Element("div",[AttrProxy.Create("class","input-group col-xs-12")],[Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)])])]),Doc.Element("div",[AttrProxy.Create("class",isMobile?"container tweet-mobile-ui preset-container":"container preset-container")],[inputUI,Doc.BindView(function(r)
   {
-   case 0:
-    return Doc.Element("div",[],[Doc.Element("h5",[],[Doc.TextNode("Error with credentials, try refreshing browser")])]);
-    break;
-   case 1:
-    return Client.tryItDummyUI(isMobile,$1);
-    break;
-   case 2:
-    tweetCache=[];
-    tweetCacheUser1=Client.emptyUser();
-    tweetCacheUser2=Client.emptyUser();
-    tweetCacheChoice=0;
-    outputUIData=Var.Create$1({
-     $:2
-    });
-    user1=Var.Create$1("");
-    user2=Var.Create$1("");
-    Client.userSelectionUI(isMobile,1,user1);
-    Client.userSelectionUI(isMobile,1,user2);
-    inputUI=!isMobile?Doc.Element("div",[AttrProxy.Create("class","form form-inline")],[Client.userSelectionUI(false,1,user1),Doc.Element("div",[AttrModule.Class("form-group")],[Doc.Element("h1",[],[Doc.TextNode("&")])]),Client.userSelectionUI(false,2,user2),Doc.Element("div",[AttrProxy.Create("class","form-group")],[Doc.Element("div",[AttrProxy.Create("class","input-group col-md-10")],[Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)])])]):Doc.Element("div",[AttrProxy.Create("class","form form-horizontal form-mobile")],[Client.userSelectionUI(true,1,user1),Client.userSelectionUI(true,2,user2),Doc.Element("div",[AttrProxy.Create("class","form-group form-group-mobile")],[Doc.Element("div",[AttrProxy.Create("class","input-group col-xs-12")],[Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)])])]);
-    return Doc.Element("div",[AttrProxy.Create("class",isMobile?"container tweet-mobile-ui preset-container":"container preset-container")],[inputUI,Doc.BindView(function(r)
-    {
-     return Client.buildOutputUI(isMobile,r);
-    },outputUIData.v)]);
-    break;
-  }
+   return Client.buildOutputUI(isMobile,r);
+  },outputUIData.v)])):Client.tryItDummyUI(isMobile,loginUrlOption.$0);
  };
  Client.userSelectionUI=function(isMobile,i,x)
  {
@@ -313,8 +298,8 @@
  };
  Client.buildOutputUIWeb=function(result)
  {
-  var t,t$1,t$2,t$3,t$4,t$5;
-  return Website_Templates.outputuiweb((t=(t$1=(t$2=(t$3=(t$4=(t$5=new List.T({
+  var t,t$1,t$2,t$3;
+  return Website_Templates.outputuiweb((t=(t$1=(t$2=(t$3=new List.T({
    $:1,
    $0:{
     $:0,
@@ -326,32 +311,16 @@
    $:1,
    $0:{
     $:0,
-    $0:"user1username",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode("@"+result.User1.Username)]))
-   },
-   $1:t$5
-  })),new List.T({
-   $:1,
-   $0:{
-    $:0,
     $0:"images",
     $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("class","img-circle img-left"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User1.Image)],[]),Doc.Element("img",[AttrProxy.Create("class","img-circle img-right"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User2.Image)],[])]))
-   },
-   $1:t$4
-  })),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"user2fullname",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User2.FullName)]))
    },
    $1:t$3
   })),new List.T({
    $:1,
    $0:{
     $:0,
-    $0:"user2username",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode("@"+result.User2.Username)]))
+    $0:"user2fullname",
+    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User2.FullName)]))
    },
    $1:t$2
   })),new List.T({
@@ -459,13 +428,13 @@
    $0:"outputuiweb"
   },function()
   {
-   return $.parseHTML("<div class=\"output-ui\">\r\n\u0009<div class=\"row\"> \r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 left-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User1FullName\"></h4>\r\n\u0009\u0009\u0009<h5 ws-hole=\"User1Username\"></h5>\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"overlapping-images col-md-4 col-lg-4\" ws-hole=\"Images\">\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 right-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User2FullName\"></h4>\r\n\u0009\u0009\u0009<h5 ws-hole=\"User2Username\"></h5>\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<h3 class=\"text-center\"> TweetMashup.com presents:</h3>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<p class=\"tweet-text text-center\" ws-hole=\"Text\">\r\n\u0009</div>\r\n\u0009<div class=\"text-center row\" ws-hole=\"Link\">\r\n\u0009</div>\r\n</div>");
+   return $.parseHTML("<div class=\"output-ui\">\r\n\u0009<div class=\"row\"> \r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 left-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User1FullName\"></h4>\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"overlapping-images col-md-4 col-lg-4\" ws-hole=\"Images\">\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 right-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User2FullName\"></h4>\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<h3 class=\"text-center\"> TweetMashup.com presents:</h3>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<p class=\"tweet-text text-center\" ws-hole=\"Text\">\r\n\u0009</div>\r\n\u0009<div class=\"text-center row\" ws-hole=\"Link\">\r\n\u0009</div>\r\n</div>");
   },h):Doc.PrepareTemplate("outputuiweb",{
    $:1,
    $0:"outputuiweb"
   },function()
   {
-   return $.parseHTML("<div class=\"output-ui\">\r\n\u0009<div class=\"row\"> \r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 left-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User1FullName\"></h4>\r\n\u0009\u0009\u0009<h5 ws-hole=\"User1Username\"></h5>\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"overlapping-images col-md-4 col-lg-4\" ws-hole=\"Images\">\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 right-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User2FullName\"></h4>\r\n\u0009\u0009\u0009<h5 ws-hole=\"User2Username\"></h5>\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<h3 class=\"text-center\"> TweetMashup.com presents:</h3>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<p class=\"tweet-text text-center\" ws-hole=\"Text\">\r\n\u0009</div>\r\n\u0009<div class=\"text-center row\" ws-hole=\"Link\">\r\n\u0009</div>\r\n</div>");
+   return $.parseHTML("<div class=\"output-ui\">\r\n\u0009<div class=\"row\"> \r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 left-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User1FullName\"></h4>\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"overlapping-images col-md-4 col-lg-4\" ws-hole=\"Images\">\r\n\u0009\u0009</div>\r\n\u0009\u0009<div class=\"col-md-4 col-lg-4 right-name hidden-sm hidden-xs\">\r\n\u0009\u0009\u0009<h4 ws-hole=\"User2FullName\"></h4>\r\n\u0009\u0009</div>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<h3 class=\"text-center\"> TweetMashup.com presents:</h3>\r\n\u0009</div>\r\n\u0009<div class=\"row\">\r\n\u0009\u0009<p class=\"tweet-text text-center\" ws-hole=\"Text\">\r\n\u0009</div>\r\n\u0009<div class=\"text-center row\" ws-hole=\"Link\">\r\n\u0009</div>\r\n</div>");
   });
  };
  Website_Templates.presetuiweb=function(h)

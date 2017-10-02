@@ -153,13 +153,11 @@ module Client =
             ]
 
     
-    let tryIt (isMobile: bool) (loginOption: string option) (loginUrlOption: string option) =
-        match (loginOption,loginUrlOption) with
-        | (None,None) ->
-            div [h5 [text "Error with credentials, try refreshing browser"]]
-        | (_,Some l) ->
+    let tryIt (isMobile: bool) (login: string) (loginUrlOption: string option) =
+        match loginUrlOption with
+        | Some l ->
             tryItDummyUI isMobile l
-        | (Some login,_) ->
+        | None ->
             let mutable tweetCache = Array.empty<Combined>
             let mutable tweetCacheUser1 = emptyUser
             let mutable tweetCacheUser2 = emptyUser
@@ -202,7 +200,7 @@ module Client =
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
                     tempResult <- Success resultValue
-                do! Server.logMashup isMobile loginOption user1StoredValue user2StoredValue (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
+                do! Server.logMashup isMobile (Some login) user1StoredValue user2StoredValue (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 }
                 |> Microsoft.FSharp.Control.Async.Start
             let inputUI =
@@ -235,7 +233,7 @@ module Client =
                 Doc.BindView (buildOutputUI isMobile) outputUIView
                 ] 
 
-    let preset (isMobile: bool) (loginOption: string option) (userPairs : (SmallUser*SmallUser) []) = 
+    let preset (isMobile: bool) (login: string) (userPairs : (SmallUser*SmallUser) []) = 
         let mutable tweetCache = Array.empty<Combined>
         let mutable tweetCacheUser1 = emptyUser
         let mutable tweetCacheUser2 = emptyUser
@@ -268,7 +266,7 @@ module Client =
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
                     tempResult <- Success resultValue
-                do! Server.logMashup isMobile loginOption user1.Username user2.Username (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
+                do! Server.logMashup isMobile (Some login) user1.Username user2.Username (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 } |> Microsoft.FSharp.Control.Async.Start
             if isMobile then
                 PresetUIMobile.PresetUIMobile().GoButton(
