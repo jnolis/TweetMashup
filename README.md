@@ -4,11 +4,12 @@ The code behind the website tweetmashup.com. Written in F#, using [Tweetinvi](ht
 
 ## How to run:
 
-  1. Download Visual Studio 2015, be sure to include F# functionality
+  1. Download Visual Studio 2017, be sure to include F# functionality.
   2. Get a Twitter API [app key set](https://apps.twitter.com/).
-  2. In the `Website` folder of the repository, create an xml file called `AppSettingsSecrets.config` which will contain the credentials you created in the previous step (see template below)
-  3. In the `web.config` file in the website folder, adjust the `storeLocation` and `credentialLocation` values to be two folders where you want to store the tweet caches and credential caches.
-  4. Open the project in Visual Studio, build and run it.
+  2. In the `Website` folder of the repository, create an xml file called `AppSettingsSecrets.config` which will contain the credentials you created in the previous step (see template below).
+  3. In the `web.config` file in the website folder, adjust the database connection string to connect to your SQL Server.
+  4. Run the create tables sql script in your database to initialize the necessary tables.
+  5. Open the project in Visual Studio, build and run it.
   
 ### Template for AppSettingsSecrets.config
 
