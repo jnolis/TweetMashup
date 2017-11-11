@@ -49,9 +49,9 @@ type TweetWordData = {
     Word: string
     ///The ID of the tweet that contains it
     Tweet:int64
-    ///The number of characters before the word (used to keep the mashed up tweet <140 characters)
+    ///The number of characters before the word (used to keep the mashed up tweet below max characters)
     CharactersBeforeWord: int
-    ///The number of characters after the word (used to keep the mashed up tweet <140 characters)
+    ///The number of characters after the word (used to keep the mashed up tweet below max characters)
     CharactersAfterWord: int
     }
 
@@ -481,7 +481,7 @@ module Twitter =
         ///Determines the maximum length we could use for a tweet by passing adding context to an empty tweet and counting the remaining characters. Used to limit which tweets we generate.
         let getMaxTweetLength (username1:string) (username2:string): int =
             let (tweet,length) = (tweetWithContext username1 username2 "")
-            140 - length
+            280 - length
             |> max 0
 
         ///Checks if a tweet could be made using the selected word.
