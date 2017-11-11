@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,WebSharper,Json,Provider,Web,Control,FSharpInlineControl,InlineControl,IntelliFactory,Runtime,Collections,Dictionary,FSharpMap,Operators,Unchecked,Arrays,FSharpSet,BalancedTree,List,Enumerator,Map,Seq;
+ var Global,WebSharper,Json,Provider,Web,Control,FSharpInlineControl,InlineControl,IntelliFactory,Runtime,Collections,LinkedList,Arrays,Dictionary,FSharpMap,Operators,Unchecked,FSharpSet,BalancedTree,List,Enumerator,Map,Seq;
  Global=window;
  WebSharper=Global.WebSharper=Global.WebSharper||{};
  Json=WebSharper.Json=WebSharper.Json||{};
@@ -13,17 +13,26 @@
  IntelliFactory=Global.IntelliFactory;
  Runtime=IntelliFactory&&IntelliFactory.Runtime;
  Collections=WebSharper&&WebSharper.Collections;
+ LinkedList=Collections&&Collections.LinkedList;
+ Arrays=WebSharper&&WebSharper.Arrays;
  Dictionary=Collections&&Collections.Dictionary;
  FSharpMap=Collections&&Collections.FSharpMap;
  Operators=WebSharper&&WebSharper.Operators;
  Unchecked=WebSharper&&WebSharper.Unchecked;
- Arrays=WebSharper&&WebSharper.Arrays;
  FSharpSet=Collections&&Collections.FSharpSet;
  BalancedTree=Collections&&Collections.BalancedTree;
  List=WebSharper&&WebSharper.List;
  Enumerator=WebSharper&&WebSharper.Enumerator;
  Map=Collections&&Collections.Map;
  Seq=WebSharper&&WebSharper.Seq;
+ Provider.DecodeLinkedList=Runtime.Curried3(function(decEl,$1,o)
+ {
+  var l,decEl$1,i,$2;
+  l=new LinkedList.New();
+  decEl$1=decEl();
+  for(i=0,$2=o.length-1;i<=$2;i++)l.AddLast(decEl$1(Arrays.get(o,i)));
+  return l;
+ });
  Provider.DecodeStringDictionary=Runtime.Curried3(function(decEl,$1,o)
  {
   var d,decEl$1,k;
@@ -178,6 +187,24 @@
  {
   return Provider.EncodeTuple(decs);
  };
+ Provider.EncodeLinkedList=Runtime.Curried3(function(encEl,$1,d)
+ {
+  var o,e,e$1;
+  o=[];
+  e=encEl();
+  e$1=Enumerator.Get(d);
+  try
+  {
+   while(e$1.MoveNext())
+    o.push(e(e$1.Current()));
+  }
+  finally
+  {
+   if("Dispose"in e$1)
+    e$1.Dispose();
+  }
+  return o;
+ });
  Provider.EncodeStringDictionary=Runtime.Curried3(function(encEl,$1,d)
  {
   var o,e,e$1,a;
