@@ -112,8 +112,8 @@ module Twitter =
     ///TweetInvi user authentication is a two step process. Step one generates a URL for the person to click to get authenticated.
     ///This function does that (and caches the user info), then returns the URL. Whoops side effects in functional programming.
     ///Here, login is a GUID that gets stored in a user cookie</summary>
-    let initAuthentication (login) =
-        let context = Tweetinvi.AuthFlow.InitAuthentication(Tweetinvi.Auth.ApplicationCredentials,System.Web.HttpContext.Current.Request.Url.AbsoluteUri + "/Login")
+    let initAuthentication (login:string) =
+        let context = Tweetinvi.AuthFlow.InitAuthentication(Tweetinvi.Auth.ApplicationCredentials,System.Web.HttpContext.Current.Request.Url.AbsoluteUri + "Login")
         use connection = createSqlConnection()
         
         let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
