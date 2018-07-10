@@ -35,6 +35,15 @@ body {
     zoom: 1;
 }
 
+.nav-tabs>li>a {
+    margin-right: 2px;
+    line-height: 1.42857143;
+    border: 1px solid #ddd;
+    border-radius: 4px 4px 0 0;
+    background: #e0e0e0;
+    color: #555;
+}
+
 .nav-tabs, .nav-pills {
     text-align:center;
 }
@@ -44,8 +53,8 @@ body {
 }
 
 .bg-primary {
-    background-color: #F9F9F9;
-    color: #404040;
+/* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#f26d7e+0,f48249+100 */
+background: none;
 }
 
 h1 {
@@ -112,7 +121,7 @@ aside {
 
 .img-left
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     left: calc(35% - 64px);
@@ -121,7 +130,7 @@ aside {
 
 .img-right
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     z-index: 2;
@@ -157,7 +166,7 @@ aside {
 
 .img-left-small
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     left: calc(35% - 48px);
@@ -166,7 +175,7 @@ aside {
 
 .img-right-small
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     z-index: 2;
@@ -182,7 +191,7 @@ aside {
 }
 .img-left-tiny
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     left: calc(35% - 24px);
@@ -191,7 +200,7 @@ aside {
 
 .img-right-tiny
 {
-    border: 4px solid #ffffff;
+    border: 4px solid #f26d7e;
     display: block;
     position: absolute;
     z-index: 2;
@@ -224,21 +233,21 @@ aside {
 
 .go-button
 {
-    background-color: #8E44AD;
+    background-color: #f26d7e;
     color: #ffffff;
     border: 1px transparent;
 }
 
 .go-button:hover
 {
-    background-color: #6F3C84;
+    background-color: #B52237;
     color: #ffffff;
     border: 1px transparent;
 }
 
 .go-button:focus
 {
-    background-color: #5F396F;
+    background-color: #940D20;
     color: #ffffff;
     border: 1px transparent;
 }
@@ -262,7 +271,7 @@ float: right!important;
 .navbar {
     margin: 0 0 0 0;
     border: 0px transparent;
-    background-color: #F9F9F9;
+    background-color: none;
 }
 
 .form-group-mobile {
@@ -314,4 +323,8 @@ float: right!important;
 
 .output-ui-mobile {
 	margin-bottom:5px;
+}
+
+a {
+   color: #f26d7e;
 }
