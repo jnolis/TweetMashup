@@ -1,8 +1,8 @@
 (function()
 {
  "use strict";
- var Global,WebSharper,Control,Observer,Message,HotStream,HotStream$1,Observable,Microsoft,FSharp,Control$1,ObservableModule,Event,Event$1,DelegateEvent,DelegateEvent$1,FSharpEvent,FSharpDelegateEvent,EventModule,MailboxProcessor,IntelliFactory,Runtime,Util,List,Seq,Unchecked,Arrays,Concurrency,TimeoutException,Operators,Collections,LinkedList;
- Global=window;
+ var Global,WebSharper,Control,Observer,Message,HotStream,HotStream$1,Observable,Microsoft,FSharp,Control$1,ObservableModule,Event,Event$1,DelegateEvent,DelegateEvent$1,Obj,FSharpEvent,FSharpDelegateEvent,EventModule,MailboxProcessor,IntelliFactory,Runtime,Util,List,Seq,Unchecked,Arrays,Concurrency,TimeoutException,Operators,Collections,LinkedList;
+ Global=self;
  WebSharper=Global.WebSharper=Global.WebSharper||{};
  Control=WebSharper.Control=WebSharper.Control||{};
  Observer=Control.Observer=Control.Observer||{};
@@ -18,6 +18,7 @@
  Event$1=Event.Event=Event.Event||{};
  DelegateEvent=Control.DelegateEvent=Control.DelegateEvent||{};
  DelegateEvent$1=DelegateEvent.DelegateEvent=DelegateEvent.DelegateEvent||{};
+ Obj=WebSharper&&WebSharper.Obj;
  FSharpEvent=Control.FSharpEvent=Control.FSharpEvent||{};
  FSharpDelegateEvent=Control.FSharpDelegateEvent=Control.FSharpDelegateEvent||{};
  EventModule=Control$1.EventModule=Control$1.EventModule||{};
@@ -714,14 +715,16 @@
    Handlers:Handlers
   });
  };
- FSharpEvent=Control.FSharpEvent=Runtime.Class({},WebSharper.Obj,FSharpEvent);
+ FSharpEvent=Control.FSharpEvent=Runtime.Class({},Obj,FSharpEvent);
  FSharpEvent.New=Runtime.Ctor(function()
  {
+  Obj.New.call(this);
   this.event=Event$1.New([]);
  },FSharpEvent);
- FSharpDelegateEvent=Control.FSharpDelegateEvent=Runtime.Class({},WebSharper.Obj,FSharpDelegateEvent);
+ FSharpDelegateEvent=Control.FSharpDelegateEvent=Runtime.Class({},Obj,FSharpDelegateEvent);
  FSharpDelegateEvent.New=Runtime.Ctor(function()
  {
+  Obj.New.call(this);
   this.event=DelegateEvent$1.New([]);
  },FSharpDelegateEvent);
  EventModule.Split=function(f,e)
@@ -1148,7 +1151,7 @@
   {
    return this.errorEvent.event;
   }
- },WebSharper.Obj,MailboxProcessor);
+ },Obj,MailboxProcessor);
  MailboxProcessor.Start=function(initial,token)
  {
   var mb;
@@ -1164,6 +1167,7 @@
    return $this.resume();
   }
   $this=this;
+  Obj.New.call(this);
   this.initial=initial;
   this.token=token;
   this.started=false;

@@ -2,7 +2,7 @@
 {
  "use strict";
  var Global,Website,Client,SC$1,Website_Templates,WebSharper,Concurrency,Remoting,AjaxRemotingProvider,UI,Next,Var,Arrays,List,Doc,AttrProxy,View,AttrModule,$;
- Global=window;
+ Global=self;
  Website=Global.Website=Global.Website||{};
  Client=Website.Client=Website.Client||{};
  SC$1=Global.StartupCode$Website$Client=Global.StartupCode$Website$Client||{};
@@ -26,7 +26,6 @@
   var tweetCache,tweetCacheUser1,tweetCacheUser2,tweetCacheChoice,outputUIData;
   function pairUI(user1,user2)
   {
-   var t,t$1;
    function onSubmit()
    {
     var b;
@@ -37,7 +36,7 @@
       $:1,
       $0:""
      };
-     return tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[null,user1.Username,user2.Username]),function(a)
+     return tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-1253515627",[null,user1.Username,user2.Username]),function(a)
      {
       var d,d$1,resultValue$1;
       return a.$==1?(d=a.$0,(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
@@ -78,31 +77,31 @@
      $1:Doc.Concat(List.ofArray([Doc.ButtonView(user1.FullName+" & "+user2.FullName,[AttrProxy.Create("class","btn go-button col-xs-12"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)]))
     },
     $1:List.T.Empty
-   })):Website_Templates.presetuiweb((t=(t$1=new List.T({
-    $:1,
-    $0:{
-     $:0,
-     $0:"images",
-     $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("src",user1.Image),AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")],[]),Doc.Element("img",[AttrProxy.Create("src",user2.Image),AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")],[])]))
-    },
-    $1:List.T.Empty
-   }),new List.T({
-    $:1,
-    $0:{
-     $:0,
-     $0:"gobutton",
-     $1:Doc.Concat(List.ofArray([Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)]))
-    },
-    $1:t$1
-   })),new List.T({
+   })):Website_Templates.presetuiweb(new List.T({
     $:1,
     $0:{
      $:0,
      $0:"usernames",
      $1:Doc.Concat(List.ofArray([Doc.TextNode(user1.FullName+" & "+user2.FullName)]))
     },
-    $1:t
-   })));
+    $1:new List.T({
+     $:1,
+     $0:{
+      $:0,
+      $0:"gobutton",
+      $1:Doc.Concat(List.ofArray([Doc.ButtonView("Go!",[AttrProxy.Create("class","btn go-button btn-lg"),AttrProxy.Create("value","Go!")],View.Const(),onSubmit)]))
+     },
+     $1:new List.T({
+      $:1,
+      $0:{
+       $:0,
+       $0:"images",
+       $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("src",user1.Image),AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")],[]),Doc.Element("img",[AttrProxy.Create("src",user2.Image),AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96")],[])]))
+      },
+      $1:List.T.Empty
+     })
+    })
+   }));
   }
   tweetCache=[];
   tweetCacheUser1=Client.emptyUser();
@@ -134,7 +133,7 @@
     };
     user1StoredValue=user1.c;
     user2StoredValue=user2.c;
-    return tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
+    return tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-1253515627",[{
      $:1,
      $0:login
     },user1.c,user2.c]),function(a)
@@ -196,19 +195,14 @@
   {
    case 0:
     return Client.buildOutputUIWeb(r.$0);
-    break;
    case 1:
     return Client.buildOutputUIFailureWeb(r.$0);
-    break;
    case 2:
     return Client.buildOutputUIMobile(r.$0);
-    break;
    case 3:
     return Client.buildOutputUIFailureMobile(r.$0);
-    break;
    case 4:
     return Doc.Element("div",[],[]);
-    break;
   }
  };
  Client.buildOutputUIFailureMobile=function(message)
@@ -237,85 +231,83 @@
  };
  Client.buildOutputUIMobile=function(result)
  {
-  var t,t$1,t$2;
-  return Website_Templates.outputuimobile((t=(t$1=(t$2=new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"images",
-    $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User1.Image)],[]),Doc.Element("img",[AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User2.Image)],[])]))
-   },
-   $1:List.T.Empty
-  }),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"usernames",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User1.FullName+" & "+result.User2.FullName)]))
-   },
-   $1:t$2
-  })),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"text",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.Combined.Tweet)]))
-   },
-   $1:t$1
-  })),new List.T({
+  return Website_Templates.outputuimobile(new List.T({
    $:1,
    $0:{
     $:0,
     $0:"link",
     $1:Doc.Concat(List.ofArray([Doc.Element("a",[AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")],[Doc.Element("i",[AttrProxy.Create("class","fa fa-twitter wow bounceIn")],[]),Doc.Element("span",[AttrProxy.Create("class","label")],[Doc.TextNode("Tweet this!")])])]))
    },
-   $1:t
-  })));
+   $1:new List.T({
+    $:1,
+    $0:{
+     $:0,
+     $0:"text",
+     $1:Doc.Concat(List.ofArray([Doc.TextNode(result.Combined.Tweet)]))
+    },
+    $1:new List.T({
+     $:1,
+     $0:{
+      $:0,
+      $0:"usernames",
+      $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User1.FullName+" & "+result.User2.FullName)]))
+     },
+     $1:new List.T({
+      $:1,
+      $0:{
+       $:0,
+       $0:"images",
+       $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("class","img-circle img-left-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User1.Image)],[]),Doc.Element("img",[AttrProxy.Create("class","img-circle img-right-small"),AttrProxy.Create("width","96"),AttrProxy.Create("height","96"),AttrProxy.Create("src",result.User2.Image)],[])]))
+      },
+      $1:List.T.Empty
+     })
+    })
+   })
+  }));
  };
  Client.buildOutputUIWeb=function(result)
  {
-  var t,t$1,t$2,t$3;
-  return Website_Templates.outputuiweb((t=(t$1=(t$2=(t$3=new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"user1fullname",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User1.FullName)]))
-   },
-   $1:List.T.Empty
-  }),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"images",
-    $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("class","img-circle img-left"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User1.Image)],[]),Doc.Element("img",[AttrProxy.Create("class","img-circle img-right"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User2.Image)],[])]))
-   },
-   $1:t$3
-  })),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"user2fullname",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User2.FullName)]))
-   },
-   $1:t$2
-  })),new List.T({
-   $:1,
-   $0:{
-    $:0,
-    $0:"text",
-    $1:Doc.Concat(List.ofArray([Doc.TextNode(result.Combined.Tweet)]))
-   },
-   $1:t$1
-  })),new List.T({
+  return Website_Templates.outputuiweb(new List.T({
    $:1,
    $0:{
     $:0,
     $0:"link",
     $1:Doc.Concat(List.ofArray([Doc.Element("a",[AttrProxy.Create("class","btn btn-lg twitter-button"),AttrProxy.Create("href","https://twitter.com/intent/tweet?text="+result.Combined.TweetWithContext),AttrProxy.Create("target","_blank")],[Doc.Element("i",[AttrProxy.Create("class","fa fa-twitter wow bounceIn")],[]),Doc.Element("span",[AttrProxy.Create("class","label")],[Doc.TextNode("Tweet this!")])])]))
    },
-   $1:t
-  })));
+   $1:new List.T({
+    $:1,
+    $0:{
+     $:0,
+     $0:"text",
+     $1:Doc.Concat(List.ofArray([Doc.TextNode(result.Combined.Tweet)]))
+    },
+    $1:new List.T({
+     $:1,
+     $0:{
+      $:0,
+      $0:"user2fullname",
+      $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User2.FullName)]))
+     },
+     $1:new List.T({
+      $:1,
+      $0:{
+       $:0,
+       $0:"images",
+       $1:Doc.Concat(List.ofArray([Doc.Element("img",[AttrProxy.Create("class","img-circle img-left"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User1.Image)],[]),Doc.Element("img",[AttrProxy.Create("class","img-circle img-right"),AttrProxy.Create("width","128"),AttrProxy.Create("height","128"),AttrProxy.Create("src",result.User2.Image)],[])]))
+      },
+      $1:new List.T({
+       $:1,
+       $0:{
+        $:0,
+        $0:"user1fullname",
+        $1:Doc.Concat(List.ofArray([Doc.TextNode(result.User1.FullName)]))
+       },
+       $1:List.T.Empty
+      })
+     })
+    })
+   })
+  }));
  };
  Client.emptyUser=function()
  {

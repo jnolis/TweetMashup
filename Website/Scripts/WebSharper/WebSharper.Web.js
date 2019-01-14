@@ -1,11 +1,11 @@
 (function()
 {
  "use strict";
- var Global,WebSharper,Json,Provider,Web,Control,FSharpInlineControl,InlineControl,IntelliFactory,Runtime,Collections,LinkedList,Arrays,Dictionary,FSharpMap,Operators,Unchecked,FSharpSet,BalancedTree,List,Enumerator,Map,Seq;
- Global=window;
+ var Global,WebSharper,ClientSideJson,Provider,Web,Control,FSharpInlineControl,InlineControl,IntelliFactory,Runtime,Collections,LinkedList,Arrays,Dictionary,FSharpMap,List,Operators,Unchecked,FSharpSet,BalancedTree,Enumerator,Map,Seq,DateTimeOffset;
+ Global=self;
  WebSharper=Global.WebSharper=Global.WebSharper||{};
- Json=WebSharper.Json=WebSharper.Json||{};
- Provider=Json.Provider=Json.Provider||{};
+ ClientSideJson=WebSharper.ClientSideJson=WebSharper.ClientSideJson||{};
+ Provider=ClientSideJson.Provider=ClientSideJson.Provider||{};
  Web=WebSharper.Web=WebSharper.Web||{};
  Control=Web.Control=Web.Control||{};
  FSharpInlineControl=Web.FSharpInlineControl=Web.FSharpInlineControl||{};
@@ -17,14 +17,15 @@
  Arrays=WebSharper&&WebSharper.Arrays;
  Dictionary=Collections&&Collections.Dictionary;
  FSharpMap=Collections&&Collections.FSharpMap;
+ List=WebSharper&&WebSharper.List;
  Operators=WebSharper&&WebSharper.Operators;
  Unchecked=WebSharper&&WebSharper.Unchecked;
  FSharpSet=Collections&&Collections.FSharpSet;
  BalancedTree=Collections&&Collections.BalancedTree;
- List=WebSharper&&WebSharper.List;
  Enumerator=WebSharper&&WebSharper.Enumerator;
  Map=Collections&&Collections.Map;
  Seq=WebSharper&&WebSharper.Seq;
+ DateTimeOffset=WebSharper&&WebSharper.DateTimeOffset;
  Provider.DecodeLinkedList=Runtime.Curried3(function(decEl,$1,o)
  {
   var l,decEl$1,i,$2;
@@ -33,6 +34,24 @@
   for(i=0,$2=o.length-1;i<=$2;i++)l.AddLast(decEl$1(Arrays.get(o,i)));
   return l;
  });
+ Provider.DecodeArrayDictionary=function(decKey,decEl)
+ {
+  return function()
+  {
+   return function(o)
+   {
+    var decKey$1,decEl$1,d,i,$1,f;
+    decKey$1=decKey();
+    decEl$1=decEl();
+    d=new Dictionary.New$5();
+    for(i=0,$1=o.length-1;i<=$1;i++){
+     f=Arrays.get(o,i);
+     d.Add(decKey$1(f[0]),decEl$1(f[1]));
+    }
+    return d;
+   };
+  };
+ };
  Provider.DecodeStringDictionary=Runtime.Curried3(function(decEl,$1,o)
  {
   var d,decEl$1,k;
@@ -46,6 +65,24 @@
    break;
   return d;
  });
+ Provider.DecodeArrayMap=function(decKey,decEl)
+ {
+  return function()
+  {
+   return function(o)
+   {
+    var m,decKey$1,decEl$1,i,$1,f;
+    decKey$1=decKey();
+    decEl$1=decEl();
+    m=new FSharpMap.New(List.T.Empty);
+    for(i=0,$1=o.length-1;i<=$1;i++){
+     f=Arrays.get(o,i);
+     m=m.Add(decKey$1(f[0]),decEl$1(f[1]));
+    }
+    return m;
+   };
+  };
+ };
  Provider.DecodeStringMap=Runtime.Curried3(function(decEl,$1,o)
  {
   var m,decEl$1,k;
@@ -155,7 +192,13 @@
          o[name]=(dec(null))(x[name]);
        }
        else
-        Operators.FailWith("Invalid field option kind");
+        if(kind===3)
+        {
+         if(x[name]===void 0)
+          o[name]=(dec(null))(x[name]);
+        }
+        else
+         Operators.FailWith("Invalid field option kind");
     }
     o=t===void 0?{}:new t();
     Arrays.iter(function($1)
@@ -179,9 +222,19 @@
    return e(Arrays.get(a,i));
   });
  });
+ Provider.DecodeDateTimeOffset=Runtime.Curried3(function($1,$2,x)
+ {
+  return x.hasOwnProperty("d")?{
+   d:(new Global.Date(x.d)).getTime(),
+   o:Operators.toInt(x.o*60000/60000)
+  }:{
+   d:(new Global.Date(x)).getTime(),
+   o:Operators.toInt(0/60000)
+  };
+ });
  Provider.DecodeDateTime=Runtime.Curried3(function($1,$2,x)
  {
-  return(new Global.Date(x)).getTime();
+  return x.hasOwnProperty("d")?(new Global.Date(x.d)).getTime():(new Global.Date(x)).getTime();
  });
  Provider.DecodeTuple=function(decs)
  {
@@ -200,11 +253,39 @@
   }
   finally
   {
-   if("Dispose"in e$1)
+   if(typeof e$1=="object"&&"Dispose"in e$1)
     e$1.Dispose();
   }
   return o;
  });
+ Provider.EncodeArrayDictionary=function(encKey,encEl)
+ {
+  return function()
+  {
+   return function(d)
+   {
+    var e,a,k,e$1,a$1,ps;
+    a=[];
+    k=encKey();
+    e$1=encEl();
+    e=d.GetEnumerator$1();
+    try
+    {
+     while(e.MoveNext())
+      {
+       a$1=Operators.KeyValue(e.Current());
+       ps=[[k(a$1[0]),e$1(a$1[1])]];
+       a.push.apply(a,ps);
+      }
+    }
+    finally
+    {
+     e.Dispose();
+    }
+    return a;
+   };
+  };
+ };
  Provider.EncodeStringDictionary=Runtime.Curried3(function(encEl,$1,d)
  {
   var o,e,e$1,a;
@@ -221,11 +302,30 @@
   }
   finally
   {
-   if("Dispose"in e$1)
+   if(typeof e$1=="object"&&"Dispose"in e$1)
     e$1.Dispose();
   }
   return o;
  });
+ Provider.EncodeArrayMap=function(encKey,encEl)
+ {
+  return function()
+  {
+   return function(m)
+   {
+    var a,k,e;
+    a=[];
+    k=encKey();
+    e=encEl();
+    Map.Iterate(function(key,el)
+    {
+     var ps;
+     ps=[[k(key),e(el)]],a.push.apply(a,ps);
+    },m);
+    return a;
+   };
+  };
+ };
  Provider.EncodeStringMap=Runtime.Curried3(function(encEl,$1,m)
  {
   var o,e;
@@ -316,7 +416,13 @@
          o[name]=(enc(null))(x[name]);
        }
        else
-        Operators.FailWith("Invalid field option kind");
+        if(kind===3)
+        {
+         if(x[name]===void 0)
+          o[name]=(enc(null))(x[name]);
+        }
+        else
+         Operators.FailWith("Invalid field option kind");
     }
     o={};
     Arrays.iter(function($1)
@@ -337,6 +443,13 @@
    a.push(e(x));
   },l);
   return a;
+ });
+ Provider.EncodeDateTimeOffset=Runtime.Curried3(function($1,$2,x)
+ {
+  return{
+   d:(new Global.Date(DateTimeOffset.get_DateTime(x))).toISOString(),
+   o:x.o
+  };
  });
  Provider.EncodeDateTime=Runtime.Curried3(function($1,$2,x)
  {
@@ -365,7 +478,7 @@
    return Arrays.fold(function($1,$2)
    {
     return $1[$2];
-   },Global,this.funcName).apply(null,this.args);
+   },self,this.funcName).apply(null,this.args);
   }
  },Control,FSharpInlineControl);
  InlineControl=Web.InlineControl=Runtime.Class({
@@ -374,7 +487,7 @@
    return Arrays.fold(function($1,$2)
    {
     return $1[$2];
-   },Global,this.funcName).apply(null,this.args);
+   },self,this.funcName).apply(null,this.args);
   }
  },Control,InlineControl);
 }());
