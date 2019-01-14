@@ -111,22 +111,29 @@ module Twitter =
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "64")
+        config.Add("cacheMemoryLimitMegabytes", "16")
         new MemoryCache("partialLoginInfoCache",config)
 
     let mutable loginInfoCache = 
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "256")
+        config.Add("cacheMemoryLimitMegabytes", "64")
         new MemoryCache("loginInfoCache",config)
         
     let mutable userInfoCache = 
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "128")
+        config.Add("cacheMemoryLimitMegabytes", "64")
         new MemoryCache("userInfoCache",config)
+
+    let mutable userTweetInfoCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "256")
+        new MemoryCache("userTweetInfoCache",config)
 
     let getFromCache (cache: byref<MemoryCache>) (getValue: string -> 'V option) (expirationDays: float option) (key:string)=
         let newValue = new Lazy<'V option>(fun () -> getValue key)
@@ -284,22 +291,6 @@ module Twitter =
         |> (substitute "\\s+" " ")
         |> (substitute "https{0,1}://t.co/\\S*" "")
         |> (fun y -> y.Trim(' ').TrimEnd(' '))
-
-    let mutable utiCache = 
-        let config = System.Collections.Specialized.NameValueCollection()
-        config.Add("pollingInterval", "00:01:00")
-        config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "1024")
-        new MemoryCache("utiCache",config)
-
-    let mutable loginCache = 
-        let config = System.Collections.Specialized.NameValueCollection()
-        config.Add("pollingInterval", "00:01:00")
-        config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "256")
-        new MemoryCache("loginCache",config)
-
-
             
     ///A function to get a user _and their tweets_ from the Twitter API using Tweetinvi. If no credentials are provided then the app credentials are used. Also uses a cache
     let getTweetsAndUserInfo (credentials: Models.ITwitterCredentials option) (username:string) = 
@@ -391,7 +382,7 @@ module Twitter =
                         | _ -> None
                        )
         
-        getFromCache &utiCache getCombinedInfo (Some 1.0) username
+        getFromCache &userTweetInfoCache getCombinedInfo (Some 1.0) username
         
     ///Takes a tweet and makes it good for the "tweet this!" button. (adds usernames and a link)
     let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
@@ -501,7 +492,7 @@ module Twitter =
             | Some c ->
                 let credentials = 
                     c
-                    |> getFromCache &loginCache getCredentials (Some 1.0)
+                    |> getCredentials
                     |> Option.map simpleCredentialsToCredentials
                 Option.iter Tweetinvi.Auth.SetCredentials credentials
                 credentials
