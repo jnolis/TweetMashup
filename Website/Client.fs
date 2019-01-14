@@ -200,7 +200,6 @@ module Client =
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
                     tempResult <- Success resultValue
-                do! Server.logMashup isMobile (Some login) user1StoredValue user2StoredValue (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 }
                 |> Microsoft.FSharp.Control.Async.Start
             let inputUI =
@@ -266,7 +265,6 @@ module Client =
                     tweetCacheChoice <- tweetCacheChoice + 1
                     outputUIData.Value <- Success resultValue
                     tempResult <- Success resultValue
-                do! Server.logMashup isMobile (Some login) user1.Username user2.Username (match tempResult with | Success s -> Some s.Combined.Tweet | _ -> None)
                 } |> Microsoft.FSharp.Control.Async.Start
             if isMobile then
                 PresetUIMobile.PresetUIMobile().GoButton(

@@ -37,7 +37,7 @@
       $:1,
       $0:""
      };
-     return Concurrency.Combine(tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[null,user1.Username,user2.Username]),function(a)
+     return tweetCacheChoice>=tweetCache.length||user1.Username!==tweetCacheUser1.Username||user2.Username!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[null,user1.Username,user2.Username]),function(a)
      {
       var d,d$1,resultValue$1;
       return a.$==1?(d=a.$0,(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),Var.Set(outputUIData,{
@@ -67,19 +67,7 @@
      }),tempResult={
       $:0,
       $0:resultValue
-     },Concurrency.Zero())),Concurrency.Delay(function()
-     {
-      return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,{
-       $:1,
-       $0:login
-      },user1.Username,user2.Username,tempResult.$==0?{
-       $:1,
-       $0:tempResult.$0.Combined.Tweet
-      }:null]),function()
-      {
-       return Concurrency.Return(null);
-      });
-     }));
+     },Concurrency.Zero()));
     })),null);
    }
    return isMobile?Website_Templates.presetuimobile(new List.T({
@@ -146,7 +134,7 @@
     };
     user1StoredValue=user1.c;
     user2StoredValue=user2.c;
-    return Concurrency.Combine(tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
+    return tweetCacheChoice>=tweetCache.length||user1StoredValue!==tweetCacheUser1.Username||user2StoredValue!==tweetCacheUser2.Username?Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.makeMashup:-436435442",[{
      $:1,
      $0:login
     },user1.c,user2.c]),function(a)
@@ -179,19 +167,7 @@
     }),tempResult={
      $:0,
      $0:resultValue
-    },Concurrency.Zero())),Concurrency.Delay(function()
-    {
-     return Concurrency.Bind((new AjaxRemotingProvider.New()).Async("Website:Website.Server.logMashup:463903631",[isMobile,{
-      $:1,
-      $0:login
-     },user1StoredValue,user2StoredValue,tempResult.$==0?{
-      $:1,
-      $0:tempResult.$0.Combined.Tweet
-     }:null]),function()
-     {
-      return Concurrency.Return(null);
-     });
-    }));
+    },Concurrency.Zero()));
    })),null);
   }
   return loginUrlOption==null?(tweetCache=[],tweetCacheUser1=Client.emptyUser(),tweetCacheUser2=Client.emptyUser(),tweetCacheChoice=0,outputUIData=Var.Create$1({

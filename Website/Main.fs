@@ -80,8 +80,6 @@ module Site =
             isAuthenticated
 
     let homePage (isMobile:bool) (login:string) (ctx:Context<EndPoint>) =
-        Analytics.writeView login System.DateTimeOffset.Now 
-        |> Async.Start
 
         let (isAuthenticated,loginUrl) = 
             let isAuthenticated = Option.isSome (getCredentials login)

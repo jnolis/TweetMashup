@@ -4,10 +4,8 @@ open Tweetinvi
 open System
 open System.Text.RegularExpressions
 open Newtonsoft.Json
-open System.Data.SqlClient
 open System.Data
 open System.Runtime.Caching
-open Shared
 
 ///The information that stores a twitter user
 type SmallUser = {
@@ -43,6 +41,7 @@ type Mashup =
     User2: SmallUser
     }
 
+
 ///Data on a word that a person has used in a particular tweet
 type TweetWordData = {
     ///The word itself
@@ -74,7 +73,6 @@ type AsyncReturnInfo =
 type SimpleCredentials = {
     Login: string
     Username: string
-    CreationDate: DateTimeOffset
     ConsumerKey: string
     ConsumerSecret: string
     AccessToken: string
@@ -90,14 +88,10 @@ type CredentialSet =
 module Twitter =
     let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","").Substring(0,min 15 username.Length)
     let pairCombos =
-        use connection = createSqlConnection()
-        let pullPairs = new SqlCommand("Select User1, User2 FROM PresetPairs", connection)
-        do connection.Open()
-        use reader = pullPairs.ExecuteReader()
-        let pairs = System.Collections.Generic.List<string*string>()
-        while reader.Read() do
-            pairs.Add(reader.GetString(0),reader.GetString(1))
-        Seq.cache pairs
+        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
+        |> System.IO.File.ReadAllText
+        |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
+        |> Seq.cache
 
     let allowedNoAuth = 
         Seq.append (Seq.map fst pairCombos) (Seq.map snd pairCombos)
@@ -112,47 +106,71 @@ module Twitter =
     ///TweetInvi user authentication is a two step process. Step one generates a URL for the person to click to get authenticated.
     ///This function does that (and caches the user info), then returns the URL. Whoops side effects in functional programming.
     ///Here, login is a GUID that gets stored in a user cookie</summary>
+
+    let mutable partialLoginInfoCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "64")
+        new MemoryCache("partialLoginInfoCache",config)
+
+    let mutable loginInfoCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "256")
+        new MemoryCache("loginInfoCache",config)
+        
+    let mutable userInfoCache = 
+        let config = System.Collections.Specialized.NameValueCollection()
+        config.Add("pollingInterval", "00:01:00")
+        config.Add("physicalMemoryLimitPercentage", "0")
+        config.Add("cacheMemoryLimitMegabytes", "128")
+        new MemoryCache("userInfoCache",config)
+
+    let getFromCache (cache: byref<MemoryCache>) (getValue: string -> 'V option) (expirationDays: float option) (key:string)=
+        let newValue = new Lazy<'V option>(fun () -> getValue key)
+        let expiration = 
+            match expirationDays with
+            | Some x -> System.DateTimeOffset.Now.AddDays(x)
+            | None -> System.Runtime.Caching.ObjectCache.InfiniteAbsoluteExpiration
+        let oldValueObj = 
+            cache.AddOrGetExisting(key, newValue, 
+                new CacheItemPolicy(AbsoluteExpiration=expiration))
+        try
+            match oldValueObj with
+            | null -> newValue.Value
+            | _ -> 
+                let nonLazyOldValue = (oldValueObj :?> Lazy<'V option>).Value
+                match nonLazyOldValue with
+                | None -> 
+                    let nonLazyNewValue = newValue.Value
+                    if Option.isSome nonLazyNewValue then
+                        cache.Set(key, nonLazyNewValue, new CacheItemPolicy(AbsoluteExpiration=expiration))
+                    nonLazyNewValue
+                | x -> x
+        with
+        | _ ->
+            cache.Remove(key) |> ignore
+            None
+
     let initAuthentication (login:string) =
         let context = Tweetinvi.AuthFlow.InitAuthentication(Tweetinvi.Auth.ApplicationCredentials,System.Web.HttpContext.Current.Request.Url.AbsoluteUri + "Login")
-        use connection = createSqlConnection()
-        
-        let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
-        do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-        
-        let creationDate = System.DateTimeOffset.Now
-
-        let addNew = new SqlCommand("INSERT INTO PartialLoginInfo (Login,AuthorizationId,CreationDate) VALUES (@login,@context,@date)",connection)
-        do addNew.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-        do addNew.Parameters.Add(new SqlParameter("@context", SqlDbType.VarChar,Value=context.Token.AuthorizationUniqueIdentifier)) |> ignore
-        do addNew.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
-        
-        do connection.Open()
-        do clearExisting.ExecuteNonQuery() |> ignore
-        try
-        do addNew.ExecuteNonQuery() |> ignore
-        with
-        | _ -> ()
-        do connection.Close()
-
+        let cacheItem = new CacheItem(key=login,value=context.Token.AuthorizationUniqueIdentifier)
+        let cacheItemPolicy = new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0))
+        partialLoginInfoCache.Remove(login) |> ignore
+        partialLoginInfoCache.Add(cacheItem, cacheItemPolicy) |> ignore
         context.AuthorizationURL  
 
     ///This function finishes the authentication, using the verifierCode returned from the twitter site, and the cached user info from before, again using the login from the cookie
     let finishAuthentication (verifierCode:string) (login) =
-        use connection = createSqlConnection()
-
-        let pullExisting = new SqlCommand("Select AuthorizationId FROM PartialLoginInfo WHERE Login = @login", connection)
-        do pullExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            
-        do connection.Open()
-        let contextOption = 
-            match pullExisting.ExecuteScalar() with
+        
+        let contextOption =
+            match partialLoginInfoCache.Get(login) with
             | null -> None
             | x -> 
-                let clearExisting = new SqlCommand("DELETE FROM PartialLoginInfo WHERE Login = @login", connection)
-                do clearExisting.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-                do clearExisting.ExecuteNonQuery() |> ignore
+                partialLoginInfoCache.Remove(login) |> ignore
                 Some (x :?> string)
-        
 
         match contextOption with
         | Some context ->
@@ -160,60 +178,30 @@ module Twitter =
             let creationDate = System.DateTimeOffset.Now
             let currentUser = User.GetAuthenticatedUser(credentials)
             
-            let clearExistingLogin = new SqlCommand("DELETE FROM LoginInfo WHERE Login = @login", connection)
-            do clearExistingLogin.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            do clearExistingLogin.ExecuteNonQuery() |> ignore
+            let newRecord = {
+                    Login = login
+                    Username = currentUser.ScreenName
+                    ConsumerKey = credentials.ConsumerKey
+                    ConsumerSecret = credentials.ConsumerSecret
+                    AccessToken = credentials.AccessToken
+                    AccessTokenSecret = credentials.AccessTokenSecret
+                    }
+
+            let cacheItem = new CacheItem(key=login,value=newRecord)
+            let cacheItemPolicy = new CacheItemPolicy(AbsoluteExpiration=System.Runtime.Caching.ObjectCache.InfiniteAbsoluteExpiration)
+            loginInfoCache.Remove(login) |> ignore
+            loginInfoCache.Add(cacheItem, cacheItemPolicy) |> ignore
             
-            let addNewLogin = new SqlCommand("INSERT INTO LoginInfo (Login,Username,CreationDate,ConsumerKey,ConsumerSecret,AccessToken,AccessTokenSecret) VALUES (@login,@username,@date,@ck,@cs,@at,@ats)",connection)
-            do addNewLogin.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=currentUser.ScreenName)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@ck", SqlDbType.VarChar,Value=credentials.ConsumerKey)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@cs", SqlDbType.VarChar,Value=credentials.ConsumerSecret)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@at", SqlDbType.VarChar,Value=credentials.AccessToken)) |> ignore
-            do addNewLogin.Parameters.Add(new SqlParameter("@ats", SqlDbType.VarChar,Value=credentials.AccessTokenSecret)) |> ignore
-            try
-            do addNewLogin.ExecuteNonQuery() |> ignore
-            with
-            | _ -> ()
-            let clearExistingUser = new SqlCommand("DELETE FROM UserInfo WHERE Login = @login", connection)
-            do clearExistingUser.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            do clearExistingUser.ExecuteNonQuery() |> ignore
-            
-            let addNewUser = new SqlCommand("INSERT INTO UserInfo (Login,Username,CreationDate,FollowerCount,FollowingCount) VALUES (@login,@username,@date,@followerCount,@followingCount)",connection)
-            do addNewUser.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            do addNewUser.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=currentUser.ScreenName)) |> ignore
-            do addNewUser.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
-            do addNewUser.Parameters.Add(new SqlParameter("@followerCount", SqlDbType.Int,Value=currentUser.FollowersCount)) |> ignore
-            do addNewUser.Parameters.Add(new SqlParameter("@followingCount", SqlDbType.Int,Value=currentUser.FriendsCount)) |> ignore
-            try
-            do addNewUser.ExecuteNonQuery() |> ignore
-            with
-            | _ -> ()
             Some credentials
         | None -> None
 
+    
     ///Check to see if the login is already authenticated.
     let getCredentials (login: string) = 
-        use connection = createSqlConnection()
-
-        let pullCredentials = new SqlCommand("Select Login, Username, CreationDate, ConsumerKey, ConsumerSecret, AccessToken, AccessTokenSecret FROM LoginInfo WHERE Login = @login", connection)
-        do pullCredentials.Parameters.Add(new SqlParameter("@login", SqlDbType.VarChar,Value=login)) |> ignore
-            
-        do connection.Open()
-        use reader = pullCredentials.ExecuteReader()
-        if reader.Read() then
-            {
-                Login = reader.GetString(0)
-                Username = reader.GetString(1)
-                CreationDate = reader.GetDateTimeOffset(2)
-                ConsumerKey = reader.GetString(3)
-                ConsumerSecret = reader.GetString(4)
-                AccessToken = reader.GetString(5)
-                AccessTokenSecret = reader.GetString(6)
-            }
-            |> Some
-        else None
+        match loginInfoCache.Get(login) with
+            | null -> None
+            | x -> 
+                Some (x :?> SimpleCredentials)
 
 
     ///Get the app credentials from the config file
@@ -309,70 +297,8 @@ module Twitter =
         config.Add("cacheMemoryLimitMegabytes", "256")
         new MemoryCache("loginCache",config)
 
-    let getFromCache (cache: byref<MemoryCache>) (getValue: string -> 'V option) (username:string)=
-        let newValue = new Lazy<'V option>(fun () -> getValue username)
-        let oldValueObj = 
-            cache.AddOrGetExisting(username, newValue, 
-                new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
-        try
-            match oldValueObj with
-            | null -> newValue.Value
-            | _ -> 
-                let nonLazyOldValue = (oldValueObj :?> Lazy<'V option>).Value
-                match nonLazyOldValue with
-                | None -> 
-                    let nonLazyNewValue = newValue.Value
-                    if Option.isSome nonLazyNewValue then
-                        cache.Set(username, nonLazyNewValue, new CacheItemPolicy(AbsoluteExpiration=System.DateTimeOffset.Now.AddDays(1.0)))
-                    nonLazyNewValue
-                | x -> x
-        with
-        | _ ->
-            cache.Remove(username) |> ignore
-            None
 
-    ///A function that checks if the data is stored in the database, and pulls if available and not too old. if too old, updates.
-    let getUserTweetInfoFromDatabase (getValue: string -> UserTweetsInfo option) (username: string) =
-        let tooOld (dt:System.DateTimeOffset) = System.DateTimeOffset.Now.Subtract(dt).Days > 1
-
-        use connection = createSqlConnection()
-        let pullInfo = new SqlCommand("Select CreationDate, Value FROM UserTweetInfo WHERE Username = @username", connection)
-        do pullInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
             
-        do connection.Open()
-        use reader = pullInfo.ExecuteReader()
-        let result =
-            if reader.Read() then 
-                Some (reader.GetDateTimeOffset(0), reader.GetString(1))
-            else None
-        reader.Close()
-        if result.IsNone || tooOld (fst result.Value) then
-            if result.IsSome then
-                let clearExistingInfo = new SqlCommand("DELETE FROM UserTweetInfo WHERE Username = @username", connection)
-                do clearExistingInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
-                do clearExistingInfo.ExecuteNonQuery() |> ignore
-
-            match getValue username with
-            | Some uti ->
-                let creationDate = System.DateTimeOffset.Now
-                let value = Newtonsoft.Json.JsonConvert.SerializeObject uti
-                let writeInfo = new SqlCommand("INSERT INTO UserTweetInfo (Username,CreationDate,Value) VALUES (@username,@date,@value)", connection)
-                do writeInfo.Parameters.Add(new SqlParameter("@username", SqlDbType.VarChar,Value=username)) |> ignore
-                do writeInfo.Parameters.Add(new SqlParameter("@date", SqlDbType.DateTimeOffset,Value=creationDate)) |> ignore
-                do writeInfo.Parameters.Add(new SqlParameter("@value", SqlDbType.VarChar,Value=value)) |> ignore
-                try
-                do writeInfo.ExecuteNonQuery() |> ignore
-                with
-                | _ -> ()
-                Some uti
-            | None ->
-                None
-        else
-            result.Value
-            |> snd
-            |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<UserTweetsInfo>(x))
-            |> Some
-
     ///A function to get a user _and their tweets_ from the Twitter API using Tweetinvi. If no credentials are provided then the app credentials are used. Also uses a cache
     let getTweetsAndUserInfo (credentials: Models.ITwitterCredentials option) (username:string) = 
         if Option.isNone credentials && not (Set.contains username allowedNoAuth) then None else //only allow to not have credentials if the username is in the allowed list
@@ -463,7 +389,7 @@ module Twitter =
                         | _ -> None
                        )
         
-        getFromCache &utiCache (getUserTweetInfoFromDatabase getCombinedInfo) username
+        getFromCache &utiCache getCombinedInfo (Some 1.0) username
         
     ///Takes a tweet and makes it good for the "tweet this!" button. (adds usernames and a link)
     let tweetWithContext (username1:string) (username2:string) (text:string) : string*int =
@@ -573,7 +499,7 @@ module Twitter =
             | Some c ->
                 let credentials = 
                     c
-                    |> getFromCache &loginCache getCredentials
+                    |> getFromCache &loginCache getCredentials (Some 1.0)
                     |> Option.map simpleCredentialsToCredentials
                 Option.iter Tweetinvi.Auth.SetCredentials credentials
                 credentials
