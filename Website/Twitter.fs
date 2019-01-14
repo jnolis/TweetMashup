@@ -266,7 +266,9 @@ module Twitter =
     ///A function that takes a user from TweetInvi and converts it to a SmallUser that can be stored or sent to the client
     let userToSmallUser (u:Models.IUser) : SmallUser option =
         try 
-        Some {Username = u.ScreenName; FullName = u.Name; Image = u.ProfileImageUrl400x400; FollowerCount = u.FollowersCount; FollowingCount = u.FriendsCount}
+            let rgx = new Regex("^http://")
+            let image = rgx.Replace(u.ProfileImageUrl400x400,"https://")
+            Some {Username = u.ScreenName; FullName = u.Name; Image = image; FollowerCount = u.FollowersCount; FollowingCount = u.FriendsCount}
         with
         | _ -> None
 
