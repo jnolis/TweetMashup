@@ -72,7 +72,6 @@ type AsyncReturnInfo =
 ///A users credentials. I use this instead of the tweetinvi interfaces because records can be stored in json by Newtonsoft
 type SimpleCredentials = {
     Login: string
-    Username: string
     ConsumerKey: string
     ConsumerSecret: string
     AccessToken: string
@@ -88,7 +87,7 @@ type CredentialSet =
 module Twitter =
     let filterUsername (username:string) = username.ToLower().Replace("@","").Replace(" ","").Substring(0,min 15 username.Length)
     let pairCombos =
-        System.Web.HttpContext.Current.Request.PhysicalApplicationPath + @"Content/AccountPairs.json"
+        System.Web.HttpContext.Current.Server.MapPath("/Content/AccountPairs.json")
         |> System.IO.File.ReadAllText
         |> (fun x -> Newtonsoft.Json.JsonConvert.DeserializeObject<(string*string) seq> (x))
         |> Seq.cache
@@ -118,21 +117,15 @@ module Twitter =
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "64")
+        config.Add("cacheMemoryLimitMegabytes", "32")
         new MemoryCache("loginInfoCache",config)
-        
-    let mutable userInfoCache = 
-        let config = System.Collections.Specialized.NameValueCollection()
-        config.Add("pollingInterval", "00:01:00")
-        config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "64")
-        new MemoryCache("userInfoCache",config)
+
 
     let mutable userTweetInfoCache = 
         let config = System.Collections.Specialized.NameValueCollection()
         config.Add("pollingInterval", "00:01:00")
         config.Add("physicalMemoryLimitPercentage", "0")
-        config.Add("cacheMemoryLimitMegabytes", "256")
+        config.Add("cacheMemoryLimitMegabytes", "128")
         new MemoryCache("userTweetInfoCache",config)
 
     let getFromCache (cache: byref<MemoryCache>) (getValue: string -> 'V option) (expirationDays: float option) (key:string)=
@@ -187,7 +180,6 @@ module Twitter =
             
             let newRecord = {
                     Login = login
-                    Username = currentUser.ScreenName
                     ConsumerKey = credentials.ConsumerKey
                     ConsumerSecret = credentials.ConsumerSecret
                     AccessToken = credentials.AccessToken
