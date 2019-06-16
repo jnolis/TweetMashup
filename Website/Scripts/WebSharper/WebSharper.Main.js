@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,WebSharper,JavaScript,JS,Error,NonStandardPromiseRejectionException,Promise,Pervasives,Json,Obj,Remoting,XhrProvider,AjaxRemotingProvider,SC$1,HtmlContentExtensions,SingleNode,Activator,SC$2,Collections,EqualityComparer,Comparers,EquatableEqualityComparer,BaseEqualityComparer,Comparer,ComparableComparer,BaseComparer,Operators,Nullable,Utils,Concurrency,CT,AsyncBody,Scheduler,SC$3,Enumerator,T,Optional,Arrays,Seq,List,Arrays2D,CancellationTokenSource,Char,Util,DateUtil,DateTimeOffset,Delegate,DictionaryUtil,KeyCollection,ValueCollection,Dictionary,Exception,MatchFailureException,IndexOutOfRangeException,OperationCanceledException,ArgumentException,ArgumentOutOfRangeException,ArgumentNullException,InvalidOperationException,AggregateException,TimeoutException,FormatException,OverflowException,TaskCanceledException,System,Guid,HashSetUtil,HashSet,LazyExtensionsProxy,LazyRecord,Lazy,T$1,Slice,Option,Queue,Random,Ref,Result,Control,Stack,Strings,Task,Task1,TaskCompletionSource,Unchecked,Microsoft,FSharp,Core,FSharpValueOption,Numeric,IntelliFactory,Runtime,Promise$1,JSON,String,Date,console,Math;
+ var Global,WebSharper,JavaScript,JS,Error,NonStandardPromiseRejectionException,Promise,Pervasives,Json,Obj,Remoting,XhrProvider,AjaxRemotingProvider,SC$1,HtmlContentExtensions,SingleNode,Activator,SC$2,Collections,EqualityComparer,Comparers,EquatableEqualityComparer,BaseEqualityComparer,Comparer,ComparableComparer,BaseComparer,Operators,Nullable,Utils,Concurrency,CT,AsyncBody,Scheduler,SC$3,Enumerator,T,Optional,Arrays,Seq,List,Arrays2D,CancellationTokenSource,Char,Util,DateUtil,DateTimeOffset,Delegate,DictionaryUtil,KeyCollection,ValueCollection,Dictionary,Exception,MatchFailureException,IndexOutOfRangeException,OperationCanceledException,ArgumentException,ArgumentOutOfRangeException,ArgumentNullException,InvalidOperationException,AggregateException,TimeoutException,FormatException,OverflowException,TaskCanceledException,System,Guid,HashSetUtil,HashSet,LazyExtensionsProxy,LazyRecord,Lazy,T$1,Slice,Option,Queue,Random,Ref,Result,Control,Stack,Strings,Task,Task1,TaskCompletionSource,Unchecked,Microsoft,FSharp,Core,FSharpValueOption,ValueOption,Numeric,IntelliFactory,Runtime,Promise$1,JSON,String,Date,console,Math;
  Global=self;
  WebSharper=Global.WebSharper=Global.WebSharper||{};
  JavaScript=WebSharper.JavaScript=WebSharper.JavaScript||{};
@@ -91,6 +91,7 @@
  FSharp=Microsoft.FSharp=Microsoft.FSharp||{};
  Core=FSharp.Core=FSharp.Core||{};
  FSharpValueOption=Core.FSharpValueOption=Core.FSharpValueOption||{};
+ ValueOption=WebSharper.ValueOption=WebSharper.ValueOption||{};
  Numeric=WebSharper.Numeric=WebSharper.Numeric||{};
  IntelliFactory=Global.IntelliFactory;
  Runtime=IntelliFactory&&IntelliFactory.Runtime;
@@ -2845,6 +2846,13 @@
  {
   return ar.length===1?ar[0]:Operators.FailWith("The input does not have precisely one element.");
  };
+ Arrays.tryExactlyOne=function(ar)
+ {
+  return ar.length===1?{
+   $:1,
+   $0:ar[0]
+  }:null;
+ };
  Arrays.unfold=function(f,s)
  {
   return Arrays.ofSeq(Seq.unfold(f,s));
@@ -4806,6 +4814,14 @@
   var $1;
   return list.$==1&&(list.$1.$==0&&($1=list.$0,true))?$1:Operators.FailWith("The input does not have precisely one element.");
  };
+ List.tryExactlyOne=function(list)
+ {
+  var $1;
+  return list.$==1&&(list.$1.$==0&&($1=list.$0,true))?{
+   $:1,
+   $0:$1
+  }:null;
+ };
  List.unfold=function(f,s)
  {
   return List.ofSeq(Seq.unfold(f,s));
@@ -5108,14 +5124,15 @@
   return{
    GetEnumerator:function()
    {
-    var _enum;
+    var _enum,c;
     try
     {
      _enum=Enumerator.Get(f(x));
     }
     catch(e)
     {
-     x.Dispose();
+     c=x;
+     c.Dispose();
      throw e;
     }
     return new T.New(null,null,function(e$1)
@@ -5123,8 +5140,10 @@
      return _enum.MoveNext()&&(e$1.c=_enum.Current(),true);
     },function()
     {
+     var c$1;
      _enum.Dispose();
-     x.Dispose();
+     c$1=x;
+     c$1.Dispose();
     });
    }
   };
@@ -5449,6 +5468,23 @@
   try
   {
    return e.MoveNext()?(x=e.Current(),e.MoveNext()?Operators.InvalidOp("Sequence contains more than one element"):x):Operators.InvalidOp("Sequence contains no elements");
+  }
+  finally
+  {
+   if(typeof e=="object"&&"Dispose"in e)
+    e.Dispose();
+  }
+ };
+ Seq.tryExactlyOne=function(s)
+ {
+  var e,x;
+  e=Enumerator.Get(s);
+  try
+  {
+   return e.MoveNext()?(x=e.Current(),e.MoveNext()?null:{
+    $:1,
+    $0:x
+   }):null;
   }
   finally
   {
@@ -7170,21 +7206,55 @@
      return cmp;
     }
  };
- FSharpValueOption=Core.FSharpValueOption=Runtime.Class({
-  get_Value:function()
-  {
-   return this.$==1?this.$0:Operators.InvalidOp("ValueOption.Value");
-  }
- },null,FSharpValueOption);
- FSharpValueOption.ValueNone=new FSharpValueOption({
+ FSharpValueOption.ValueNone={
   $:0
- });
- FSharpValueOption.get_Test=function()
+ };
+ FSharpValueOption.get_Value=function($this)
  {
-  return(new FSharpValueOption({
+  return $this.$==1?$this.$0:Operators.InvalidOp("ValueOption.Value");
+ };
+ ValueOption.filter=function(f,o)
+ {
+  var $1;
+  return o.$==1&&f(o.$0)?o:FSharpValueOption.ValueNone;
+ };
+ ValueOption.fold=function(f,s,x)
+ {
+  return x.$==0?s:f(s,x.$0);
+ };
+ ValueOption.foldBack=function(f,x,s)
+ {
+  return x.$==0?s:f(x.$0,s);
+ };
+ ValueOption.ofNullable=function(o)
+ {
+  return o==null?FSharpValueOption.ValueNone:{
    $:1,
-   $0:2
-  })).get_Value();
+   $0:Nullable.get(o)
+  };
+ };
+ ValueOption.ofObj=function(o)
+ {
+  return o==null?FSharpValueOption.ValueNone:{
+   $:1,
+   $0:o
+  };
+ };
+ ValueOption.toArray=function(x)
+ {
+  return x.$==0?[]:[x.$0];
+ };
+ ValueOption.toList=function(x)
+ {
+  return x.$==0?T$1.Empty:List.ofArray([x.$0]);
+ };
+ ValueOption.toNullable=function(o)
+ {
+  return o.$==1?o.$0:null;
+ };
+ ValueOption.toObj=function(o)
+ {
+  return o.$==0?null:o.$0;
  };
  Numeric.TryParseBool=function(s,r)
  {

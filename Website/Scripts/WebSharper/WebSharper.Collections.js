@@ -607,7 +607,9 @@
    return v==null;
   }:function(a)
   {
-   return Unchecked.Equals(item,a);
+   var c;
+   c=item;
+   return Unchecked.Equals(c,a);
   });
   return m===-1?false:($this.splice.apply($this,[m,1]),true);
  };
